@@ -6,7 +6,8 @@
 
 .jumbotron h1{
 	color:#FFF;
-	font-family:"Arial Bold", sans-serif
+	font-family:"Arial Bold", sans-serif;
+	margin-top:160px;
 }
 
 .jumbotron p{
@@ -28,4 +29,9 @@
 
 .logo {
 	margin: 10px;
+}
+
+.col-md-3 {
+	background-color:#DDD;
+	height:200px;
 }
