@@ -1,6 +1,7 @@
 .jumbotron {
 	background-image:url('./background.jpg');
-	height: 500px;
+	height: 720px;
+	margin-left:70px;
 	margin-right:20px;
 }
 
@@ -12,10 +13,21 @@
 
 .jumbotron p{
 	color:#FFF;
+	margin-bottom:130px;
+}
+.jumbotron .learn-more p{
+	font-size: 16px;
+	margin-bottom:0px;
+}
+
+.jumbotron .learn-more h3{
+	color:#FFF;
 }
 
 .nav {
 	font-size:16px;
+	margin-top:10px;
+	margin-left:35px;
 }
 
 .learn-more {
@@ -23,15 +35,17 @@
 }
 
 .login-bar {
-	margin-right:20px;
 	margin-top:25px;
 }
 
 .logo {
-	margin: 10px;
+	margin-top:20px;
+	margin-left:20px;
 }
 
-.col-md-3 {
-	background-color:#DDD;
-	height:200px;
+input {
+	margin-bottom:10px;
 }
+
+
+
