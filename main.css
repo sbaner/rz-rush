@@ -1,6 +1,6 @@
 .jumbotron {
 	background-image:url('./background.jpg');
-	height: 720px;
+	height: 735px;
 	margin-left:70px;
 	margin-right:20px;
 }
@@ -38,6 +38,10 @@
 	margin-top:25px;
 }
 
+.form-group {
+	padding:1;
+}
+
 .logo {
 	margin-top:20px;
 	margin-left:20px;
@@ -56,5 +60,17 @@ input {
 	font-size:12px;
 }
 
+.btn {
+	color:#FFF;
+	background-color: #428bca;
+	float:right;
+}
 
+body {
+	font-family:"Open Sans", sans-serif;
+	background-color:#EEE;
+}
 
+.col-md-1 {
+	padding-left:0px;
+}
