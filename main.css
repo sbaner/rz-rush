@@ -1,0 +1,30 @@
+.jumbotron {
+	background-image:url('./background.jpg');
+	height: 500px;
+}
+
+.jumbotron h1{
+	color:#FFF;
+	font-family:"Arial Bold", sans-serif
+}
+
+.jumbotron p{
+	color:#FFF;
+}
+
+.nav {
+	font-size:16px;
+}
+
+.learn-more {
+	background: #DDD;
+}
+
+.login-bar {
+	margin-right:5px;
+	margin-top:25px;
+}
+
+.logo {
+	margin: 10px;
+}
