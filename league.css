@@ -50,3 +50,8 @@ table {
 .title-bar {
 	font-weight:bold;
 }
+@media (max-width:600px) {
+.nomobile {
+	visibility: hidden;
+}
+}
