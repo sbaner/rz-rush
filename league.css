@@ -53,5 +53,19 @@ table {
 @media (max-width:600px) {
 .nomobile {
 	visibility: hidden;
+	}
 }
+
+@media handheld and (orientation:portrait) {
+	.nomobile {
+		visibility: hidden;
+	}
 }
+
+@media handheld and (orientation:landscape) {
+	.nomobile {
+		visibility: visible;
+	}
+}
+
+
