@@ -1,6 +1,7 @@
 .jumbotron {
 	background-image:url('./background.jpg');
 	height: 500px;
+	margin-right:20px;
 }
 
 .jumbotron h1{
@@ -21,7 +22,7 @@
 }
 
 .login-bar {
-	margin-right:5px;
+	margin-right:20px;
 	margin-top:25px;
 }
 
