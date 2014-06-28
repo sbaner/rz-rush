@@ -1,0 +1,70 @@
+
+.main {
+	background-color:#666;
+	padding-left:10px;
+	padding-bottom:10px;
+	padding-right:10px;
+	color:#FFF;
+	font-family:"Open Sans", sans-serif;
+}
+
+.main h3 {
+	font-family:"Arial Bold",sans-serif;
+	font-weight:bold;
+	padding-top:10px;
+}
+
+.panel {
+	margin-left:10px;
+}
+
+.side-bar {
+	margin-top:30px;
+	padding-top:1px;
+	padding-left:10px;
+	padding-bottom:5px;
+	background-color:#DDD;
+}
+
+.team-card img{
+	padding:10px;
+}
+
+.team-card p {
+	font-size:16px;
+}
+
+
+.side-bar h3 {
+	font-weight:bold;
+}
+
+.side-bar .nav {
+	margin:0px;
+}
+
+table {
+	color:black;
+}
+.title-bar {
+	font-weight:bold;
+}
+@media (max-width:600px) {
+.nomobile {
+	visibility: hidden;
+	}
+}
+
+@media handheld and (orientation:portrait) {
+	.nomobile {
+		visibility: hidden;
+	}
+}
+
+@media handheld and (orientation:landscape) {
+	.nomobile {
+		visibility: visible;
+	}
+}
+
+
