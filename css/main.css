@@ -1,6 +1,5 @@
 .jumbotron {
 	background-image:url('./background.jpg');
-	height: 650px;
 	margin-bottom:0px;
 	padding:0px;
 }
@@ -69,6 +68,9 @@ body {
 	background-color:#EEE;
 }
 @media not handheld and (orientation:portrait) {
+	.jumbotron {
+		height:650px;
+	}
 	.carousel-caption h3 {
 		font-size:50px;
 	}
