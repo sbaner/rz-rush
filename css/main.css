@@ -1,8 +1,6 @@
 .jumbotron {
 	background-image:url('./background.jpg');
 	height: 735px;
-	margin-left:70px;
-	margin-right:20px;
 }
 
 .jumbotron h1{
@@ -13,7 +11,7 @@
 
 .jumbotron p{
 	color:#FFF;
-	margin-bottom:110px;
+	margin-bottom:75px;
 }
 .jumbotron .learn-more p{
 	font-size: 16px;
@@ -27,7 +25,6 @@
 .nav {
 	font-size:16px;
 	margin-top:10px;
-	margin-left:35px;
 }
 
 .learn-more {
