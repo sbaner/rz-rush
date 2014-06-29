@@ -75,3 +75,13 @@ body {
 .carousel-caption p {
 	font-size:18px;
 }
+
+@media handheld {
+	.carousel-caption h3 {
+	visibility:none;
+	}
+
+	.carousel-caption p {
+		font-size:10px;
+	}
+}
