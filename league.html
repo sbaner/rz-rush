@@ -8,6 +8,8 @@
     <link href="css/bootstrap.css" rel="stylesheet" />
     <link href="css/main.css" rel="stylesheet" />
     <link href="css/league.css" rel="stylesheet" />
+	<script src="js/jquery-1.11.1.min.js"></script>
+	<script src="js/bootstrap.js"></script>
     <title>RedZone Rush - League</title>
   </head>
   <body>
@@ -24,8 +26,13 @@
               <li>
                 <a href="index.html">Home</a>
               </li>
-              <li class="active">
-                <a href="league.html">League</a>
+              <li class="active dropdown">
+                <a class="dropdown-toggle" data-toggle="dropdown" href="#">League <span class="caret"></span></a>
+					<ul class="dropdown-menu" role="menu">
+						<li role="presentation"><a role="menuitem" tabindex="-1" href="league.html">League 1</a></li>
+						<li role="presentation" class="divider"></li>
+						<li role="presentation"><a role="menuitem" tabindex="-1" href="league.html">League 2</a></li>
+					</ul>
               </li>
               <li>
                 <a href="team.html">Team</a>

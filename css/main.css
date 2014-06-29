@@ -68,6 +68,10 @@ body {
 	background-color:#EEE;
 }
 
-.col-md-1 {
-	padding-left:0px;
+.carousel-caption h3 {
+	font-size:50px;
+}
+
+.carousel-caption p {
+	font-size:18px;
 }
