@@ -1,6 +1,8 @@
 .jumbotron {
 	background-image:url('./background.jpg');
-	height: 735px;
+	height: 650px;
+	margin-bottom:0px;
+	padding:0px;
 }
 
 .jumbotron h1{
@@ -11,7 +13,6 @@
 
 .jumbotron p{
 	color:#FFF;
-	margin-bottom:75px;
 }
 .jumbotron .learn-more p{
 	font-size: 16px;
@@ -67,16 +68,17 @@ body {
 	font-family:"Open Sans", sans-serif;
 	background-color:#EEE;
 }
+@media not handheld and (orientation:portrait) {
+	.carousel-caption h3 {
+		font-size:50px;
+	}
 
-.carousel-caption h3 {
-	font-size:50px;
+	.carousel-caption p {
+		font-size:18px;
+	}
 }
 
-.carousel-caption p {
-	font-size:18px;
-}
-
-@media handheld {
+@media handheld and (orientation:portrait) {
 	.carousel-caption h3 {
 	visibility:none;
 	}
