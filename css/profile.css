@@ -44,15 +44,27 @@
 	font-size:16px;
 }
 
-.last-col {
+.third-col {
 	color:#DDD;
 	padding-top:60px;
 }
 
-.last-col h4 {
+.third-col h4 {
 	font-family:"Verdana",sans-serif;
 }
 
-.last-col p {
+.third-col p {
 	font-size:16px;
+	
+}.last-col {
+	color:#DDD;
+	padding-top:100px;
+}
+
+.last-col .container .row {
+	padding-bottom:15px;
+}
+
+.btn {
+	float:left;
 }

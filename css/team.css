@@ -16,6 +16,34 @@ table {
 	font-weight:bold;
 }
 
+.main {
+	padding-top:10px;
+}
+.team-header {
+	background-color:#888;
+	padding-bottom:10px;
+	color:#FFF;
+}
+
+.middle-col {
+	padding-top:80px;
+}
+.team-header h3 {
+	text-transform:none;
+	padding-top:0;
+}
+.team-header a{
+	color:#222;
+}
+.team-header img {
+	height:150px;
+}
+
+.team-header p {
+	font-size:16px;
+}
+
+
 .injured {
 	background-color:#FFB0B0;
 }
