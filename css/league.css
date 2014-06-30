@@ -49,6 +49,10 @@ table {
 .title-bar {
 	font-weight:bold;
 }
+
+.myteam {
+	background-color:#B0FFB1;
+}
 @media (max-width:600px) {
 .nomobile {
 	visibility: hidden;
