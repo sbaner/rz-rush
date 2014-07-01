@@ -25,9 +25,7 @@
 
 .main {
 	background-color:#666;
-	padding-left:10px;
-	padding-bottom:10px;
-	padding-right:10px;
+	padding:10px;
 	color:#FFF;
 	font-family:"Open Sans", sans-serif;
 }
@@ -35,7 +33,7 @@
 .main h3 {
 	font-family:"Open Sans",sans-serif;
 	font-weight:bold;
-	padding-top:10px;
+	margin-top:10px;
 	text-transform:uppercase;
 }
 

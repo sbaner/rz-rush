@@ -1,0 +1,48 @@
+.player-header{
+	background-image:url('player-bg.jpg')	;
+	color:#FFF;
+}
+
+.player-header img{
+	height:110px;
+	margin:10px;
+	border-style:solid;
+	border-color:#DDD;
+	border-width:2px;
+}
+
+.player-header p{
+	font-size:16px;
+}
+
+.name {
+	padding-bottom:5px;
+	border-bottom-style:solid;
+	border-bottom-color:#FFF;
+	border-bottom-width:1px;
+}
+.position {
+	padding-left:5px;
+}
+
+.sec-col {
+	padding-top:50px;
+}
+
+.third-col {
+	padding-top:50px;
+}
+
+.stats {
+	padding:10px;
+	background-color:#888;
+}
+
+.stats a {
+	color:#000;
+}
+
+.stats .tab-pane {
+	padding:10px;
+}
+
