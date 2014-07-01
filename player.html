@@ -26,13 +26,16 @@
               <li>
                 <a href="profile.html">Profile</a>
               </li>
-               <li class="dropdown">
+              <li class="dropdown">
                 <a class="dropdown-toggle" data-toggle="dropdown" href="#">League <span class="caret"></span></a>
-					<ul class="dropdown-menu" role="menu">
-						<li role="presentation"><a role="menuitem" tabindex="-1" href="league.html">League 1</a></li>
-						<li role="presentation" class="divider"></li>
-						<li role="presentation"><a role="menuitem" tabindex="-1" href="league.html">League 2</a></li>
-					</ul>
+                <ul class="dropdown-menu" role="menu">
+                  <li role="presentation">
+                    <a role="menuitem" tabindex="-1" href="league.html">League 1</a>
+                  </li>
+                  <li role="presentation">
+                    <a role="menuitem" tabindex="-1" href="league.html">League 2</a>
+                  </li>
+                </ul>
               </li>
               <li>
                 <a href="team.html">Team</a>
@@ -72,7 +75,8 @@
                     <div class="first-col">
                       <h3 class="name">Bob Jones</h3>
                       <img src="face/face.jpg" />
-                      <h4 class="position">QB, <a href="team.html">New York Giants</a></h4>
+                      <h4 class="position">QB, 
+                      <a href="team.html">New York Giants</a></h4>
                     </div>
                   </div>
                   <div class="col-md-3">
@@ -82,16 +86,16 @@
                       </h4>
                       <p>Height: 6&#39; 3&quot;</p>
                       <p>Weight: 210 lbs</p>
+                      <p>Drafted: Round 4, Pick 16, NYG</p>
                       <p>Experience: 4th season</p>
-                      <p>Awards:</p>
+                      <p>Contract: 1 year, $125,345,345</p>
                     </div>
                   </div>
                   <div class="col-md-5">
                     <div class="third-col">
                       <h4>
-                        <b>Attributes</b>
+                        <b>Awards</b>
                       </h4>
-                      <p>Attributes go here</p>
                     </div>
                   </div>
                 </div>
@@ -103,15 +107,77 @@
                 <li class="active">
                   <a href="#careerstats" role="tab" data-toggle="tab">Career Stats</a>
                 </li>
-				<li>
+                <li>
                   <a href="#gamelogs" role="tab" data-toggle="tab">Game Logs</a>
                 </li>
-                
+                <li>
+                  <a href="#progression" role="tab" data-toggle="tab">Player Progression</a>
+                </li>
               </ul>
               <!-- Tab panes -->
               <div class="tab-content">
                 <div class="tab-pane active" id="careerstats">Stats go here</div>
                 <div class="tab-pane" id="gamelogs">Game Logs go here</div>
+                <div class="tab-pane" id="progression">
+                  <div class="container">
+                    <div class="row">
+                      <div class="col-md-8">
+                        <div class="progression">
+                            <div class="row">
+                              <div class="col-md-2"><p>Overall:</p></div>
+                              <div class="col-md-9">
+                                <div class="progress">
+                                  <div class="progress-bar" role="progressbar" aria-valuenow="60" aria-valuemin="0"
+                                  aria-valuemax="100" style="width: 60%;">60</div>
+                                  <div class="progress-bar progress-bar-success" role="progressbar" aria-valuenow="20"
+                                  aria-valuemin="0" aria-valuemax="100" style="width: 20%">+20</div>
+                                </div>
+                              </div>
+							  <div class="col-md-1"><p>80</p></div>
+                            </div>
+                            <div class="row">
+                              <div class="col-md-2"><p>Accuracy:</p></div>
+                              <div class="col-md-9">
+                                <div class="progress">
+                                  <div class="progress-bar" role="progressbar" aria-valuenow="80" aria-valuemin="0"
+                                  aria-valuemax="100" style="width: 80%;">87</div>
+                                  <div class="progress-bar progress-bar-success" role="progressbar" aria-valuenow="7"
+                                  aria-valuemin="0" aria-valuemax="100" style="width: 7%">+7</div>
+                                </div>
+                              </div>
+							  <div class="col-md-1"><p>94</p></div>
+                            </div>
+                            <div class="row">
+                              <div class="col-md-2"><p>Speed:</p></div>
+                              <div class="col-md-9">
+                                <div class="progress">
+                                  <div class="progress-bar" role="progressbar" aria-valuenow="36" aria-valuemin="0"
+                                  aria-valuemax="100" style="width: 36%;">36</div>
+                                  <div class="progress-bar progress-bar-success" role="progressbar" aria-valuenow="0"
+                                  aria-valuemin="0" aria-valuemax="100" style="width: 0%">
+                                    <span class="sr-only">+0</span>
+                                  </div>
+                                </div>
+                              </div>
+							  <div class="col-md-1"><p>36</p></div>
+                            </div>
+                            <div class="row">
+                              <div class="col-md-2"><p>Strength:</p></div>
+                              <div class="col-md-9">
+                                <div class="progress">
+                                  <div class="progress-bar" role="progressbar" aria-valuenow="46" aria-valuemin="0"
+                                  aria-valuemax="100" style="width: 46%;">46</div>
+                                  <div class="progress-bar progress-bar-success" role="progressbar" aria-valuenow="13"
+                                  aria-valuemin="0" aria-valuemax="100" style="width: 13%">+13</div>
+                                </div>
+                              </div>
+							  <div class="col-md-1"><p>59</p></div>
+                            </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
