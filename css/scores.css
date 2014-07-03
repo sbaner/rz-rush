@@ -1,0 +1,58 @@
+.score-card {
+	background-color:#DDD;
+	margin-top:15px;
+	padding-top:10px;
+	padding-bottom:10px;
+}
+
+.score-card .nav-pills {
+	padding:5px;
+	background-color:#BBB;
+	margin:0px;
+}
+.score-card .nav-pills a{
+	font-size:14px;
+}
+
+.team-result {
+	background-color:#BBB;
+	padding-top:1px;
+	padding-bottom:1px;
+	padding-left:10px;
+	padding-right:10px;
+}
+
+.team-result h3 {
+	text-transform:none;
+	border-bottom-style:solid;
+	border-bottom-width:1px;
+	border-bottom-color:white;
+}
+
+.hidden-score {
+	visibility:hidden;
+}
+
+#all-scores a {
+	color:white;
+}
+
+.all-results {
+	padding:10px;
+	margin-top:10px;
+}
+
+.all-results .col-md-6 {
+	padding:0px;
+}
+
+.result {
+	background-color:#BBB;
+	padding:10px;
+	margin-right:10px;
+	margin-bottom:10px;
+}
+
+.result .col-md-6 {
+	margin-left:20px;
+}

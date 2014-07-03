@@ -4758,6 +4758,7 @@ a.thumbnail.active {
           box-shadow: none;
 }
 .progress-bar-success {
+  color:#000;
   background-color: #5cb85c;
 }
 .progress-striped .progress-bar-success {
