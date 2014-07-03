@@ -45,7 +45,10 @@
 
 table {
 	color:black;
+	
 }
+
+
 .title-bar {
 	font-weight:bold;
 }
@@ -53,21 +56,10 @@ table {
 .myteam {
 	background-color:#B0FFB1;
 }
-@media (max-width:600px) {
-.nomobile {
-	visibility: hidden;
-	}
-}
 
 @media handheld and (orientation:portrait) {
-	.nomobile {
-		visibility: hidden;
-	}
-}
-
-@media handheld and (orientation:landscape) {
-	.nomobile {
-		visibility: visible;
+	.panel {
+		overflow:scroll;
 	}
 }
 
