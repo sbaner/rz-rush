@@ -14,6 +14,10 @@
 	font-size:14px;
 }
 
+.week-header {
+	color:black;
+}
+
 .team-result {
 	background-color:#BBB;
 	padding-top:1px;
