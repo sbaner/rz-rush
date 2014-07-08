@@ -3,23 +3,21 @@
   <head>
     <meta name="generator"
     content="HTML Tidy for HTML5 (experimental) for Windows https://github.com/w3c/tidy-html5/tree/c63cc39" />
-    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link href='http://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css' />
     <link href="css/bootstrap.css" rel="stylesheet" />
     <link href="css/main.css" rel="stylesheet" />
     <link href="css/scores.css" rel="stylesheet" />
-    <script language="javascript">
-            function showscores() {
-                var allscores = document.getElementById("all-scores");
-				var showme = allscores.getElementsByTagName("h4");
-				for (var i=0, max=showme.length; i < max; i++) {
-					showme[i].style.visibility = "visible";
-				}
-                
-            }
-        </script>
-    <script src="js/jquery-1.11.1.min.js"></script>
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
     <script src="js/bootstrap.js"></script>
+	<script>
+		$(document).ready(function(){
+		$(".hidden-score").hide();
+			$("#showbutton").click(function(){
+				$(".hidden-score").fadeToggle();
+			});
+		});
+	</script>
 	
     <title>RedZone Rush - Scores &amp; Schedule</title>
 
@@ -99,7 +97,7 @@
           </div>
         </div>
         <div class="col-md-8">
-          <div class="main"><button type="button" class="btn btn-default" onclick="showscores()">Show Scores</button>
+          <div class="main"><button type="button" class="btn btn-default" id="showbutton">Show/Hide Scores</button>
             <h3>Scores</h3> 
             <div class="score-card">
               <!-- Nav tabs -->

@@ -33,10 +33,6 @@
 	border-bottom-color:white;
 }
 
-.hidden-score {
-	visibility:hidden;
-}
-
 #all-scores a {
 	color:white;
 }
@@ -46,9 +42,6 @@
 	margin-top:10px;
 }
 
-#hidebutton {
-	visibility:hidden;
-}
 
 .all-results .col-md-6 {
 	padding:0px;
