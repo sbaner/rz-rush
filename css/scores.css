@@ -46,6 +46,10 @@
 	margin-top:10px;
 }
 
+#hidebutton {
+	visibility:hidden;
+}
+
 .all-results .col-md-6 {
 	padding:0px;
 }
