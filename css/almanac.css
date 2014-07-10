@@ -1,0 +1,40 @@
+.stat-card {
+	padding:10px;
+	background-color:#DDD;
+}
+
+.tab-pane {
+	margin-top:10px;
+	background-color:#FFF;
+	padding-top:10px;
+	padding-left:10px;
+	padding-right:10px;
+}
+.table {
+	color:#000;
+	font-size:16px;
+}
+
+.record-name {
+	font-weight:bold;
+}
+
+.tab-pane h4 {
+	color:#000;
+	font-weight:bold;
+	padding-bottom:5px;
+	border-bottom-style:solid;
+	border-bottom-width:1px;
+	border-bottom-color:#AAA;
+}
+
+.champ-card {
+	color:#000;
+	background-color:#DDD;
+	padding:15px;
+	margin-bottom:10px;
+}
+
+.champ-card h4 {
+	border-bottom-style:none;
+}

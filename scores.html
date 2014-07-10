@@ -10,9 +10,9 @@
     <link href="css/scores.css" rel="stylesheet" />
     <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
     <script src="js/bootstrap.js"></script>
+	<script>document.write('<style>.hidden-score { display: none; }</style>');</script>
 	<script>
 		$(document).ready(function(){
-		$(".hidden-score").hide();
 			$("#showbutton").click(function(){
 				$(".hidden-score").fadeToggle();
 			});
@@ -87,7 +87,7 @@
                   <a href="#">Free Agents</a>
                 </li>
                 <li>
-                  <a href="#">Almanac</a>
+                  <a href="leaguealmanac.html">Almanac</a>
                 </li>
                 <li>
                   <a href="#">Message Board</a>
