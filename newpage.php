@@ -16,7 +16,7 @@
     <div class="container-fluid">
       <div class="row">
         <div class="col-md-2">
-          <a href="./index.html">
+          <a href="./index.php">
             <img class="logo" src="./logo-small.png" />
           </a>
         </div>
@@ -24,18 +24,18 @@
           <div class="nav">
             <ul class="nav nav-pills navbar-left">
               <li>
-                <a href="profile.html">Profile</a>
+                <a href="profile.php">Profile</a>
               </li>
               <li class="dropdown">
                 <a class="dropdown-toggle" data-toggle="dropdown" href="#">League <span class="caret"></span></a>
 					<ul class="dropdown-menu" role="menu">
-						<li role="presentation"><a role="menuitem" tabindex="-1" href="league.html">League 1</a></li>
+						<li role="presentation"><a role="menuitem" tabindex="-1" href="league.php">League 1</a></li>
 						<li role="presentation" class="divider"></li>
-						<li role="presentation"><a role="menuitem" tabindex="-1" href="league.html">League 2</a></li>
+						<li role="presentation"><a role="menuitem" tabindex="-1" href="league.php">League 2</a></li>
 					</ul>
               </li>
               <li>
-                <a href="team.html">Team</a>
+                <a href="team.php">Team</a>
               </li>
               
               <li>
@@ -50,15 +50,15 @@
           <div class="side-bar">
             <div class="team-card">
             <h3>My team</h3>
-            <a href="team.html">
+            <a href="team.php">
               <img src="nfl-logos/19.png" />
             </a> 
-            <a href="team.html">
+            <a href="team.php">
               <p>New York Giants</p>
             </a>
 			<p>Week 1</p>
             <p>Next game: @<a href="#">DAL</a></p>
-			<p><a href="league.html">League X</a></p>
+			<p><a href="league.php">League X</a></p>
             <h3>____ Links</h3></div>
             <div class="nav">
               <ul class="nav nav-pills nav-stacked navbar-left">

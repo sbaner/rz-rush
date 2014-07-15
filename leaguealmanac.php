@@ -16,7 +16,7 @@
     <div class="container-fluid">
       <div class="row">
         <div class="col-md-2">
-          <a href="./index.html">
+          <a href="./index.php">
             <img class="logo" src="./logo-small.png" />
           </a>
         </div>
@@ -24,21 +24,21 @@
           <div class="nav">
             <ul class="nav nav-pills navbar-left">
               <li>
-                <a href="profile.html">Profile</a>
+                <a href="profile.php">Profile</a>
               </li>
               <li class="dropdown">
                 <a class="dropdown-toggle" data-toggle="dropdown" href="#">League <span class="caret"></span></a>
                 <ul class="dropdown-menu" role="menu">
                   <li role="presentation">
-                    <a role="menuitem" tabindex="-1" href="league.html">League 1</a>
+                    <a role="menuitem" tabindex="-1" href="league.php">League 1</a>
                   </li>
                   <li role="presentation">
-                    <a role="menuitem" tabindex="-1" href="league.html">League 2</a>
+                    <a role="menuitem" tabindex="-1" href="league.php">League 2</a>
                   </li>
                 </ul>
               </li>
               <li>
-                <a href="team.html">Team</a>
+                <a href="team.php">Team</a>
               </li>
               <li>
                 <a href="#">Help</a>
@@ -52,32 +52,32 @@
           <div class="side-bar">
             <div class="team-card">
             <h3>My team</h3>
-            <a href="team.html">
+            <a href="team.php">
               <img src="nfl-logos/19.png" />
             </a> 
-            <a href="team.html">
+            <a href="team.php">
               <p>New York Giants</p>
             </a>
             <p>Week 1</p>
             <p>Next game: @
             <a href="#">DAL</a></p>
             <p>
-              <a href="league.html">League X</a>
+              <a href="league.php">League X</a>
             </p>
             <h3>League Links</h3></div>
             <div class="nav">
               <ul class="nav nav-pills nav-stacked navbar-left">
                 <li>
-                  <a href="league.html">Standings</a>
+                  <a href="league.php">Standings</a>
                 </li>
                 <li>
-                  <a href="scores.html">Scores &amp; Schedule</a>
+                  <a href="scores.php">Scores &amp; Schedule</a>
                 </li>
                 <li>
                   <a href="#">Free Agents</a>
                 </li>
                 <li class="active">
-                  <a href="leaguealmanac.html">Almanac</a>
+                  <a href="leaguealmanac.php">Almanac</a>
                 </li>
                 <li>
                   <a href="#">Message Board</a>
@@ -121,50 +121,50 @@
                             <tr>
                               <td>Longest Tenured Owner</td>
                               <td>
-                                <a href="profile.html">roosevelt</a>
+                                <a href="profile.php">roosevelt</a>
                               </td>
                               <td>
-                                <a href="team.html">New York Empire</a>
+                                <a href="team.php">New York Empire</a>
                               </td>
                               <td>2 seasons</td>
                             </tr>
                             <tr>
                               <td>Most Championships</td>
                               <td>
-                                <a href="profile.html">roosevelt</a>
+                                <a href="profile.php">roosevelt</a>
                               </td>
                               <td>
-                                <a href="team.html">New York Empire</a>
+                                <a href="team.php">New York Empire</a>
                               </td>
                               <td>2</td>
                             </tr>
                             <tr>
                               <td>Most Wins (Regular Season)</td>
                               <td>
-                                <a href="profile.html">roosevelt</a>
+                                <a href="profile.php">roosevelt</a>
                               </td>
                               <td>
-                                <a href="team.html">New York Empire</a>
+                                <a href="team.php">New York Empire</a>
                               </td>
                               <td>32</td>
                             </tr>
                             <tr>
                               <td>Most Wins (Postseason)</td>
                               <td>
-                                <a href="profile.html">roosevelt</a>
+                                <a href="profile.php">roosevelt</a>
                               </td>
                               <td>
-                                <a href="team.html">New York Empire</a>
+                                <a href="team.php">New York Empire</a>
                               </td>
                               <td>6</td>
                             </tr>
                             <tr>
                               <td>Best Win % (min 2 seasons)</td>
                               <td>
-                                <a href="profile.html">roosevelt</a>
+                                <a href="profile.php">roosevelt</a>
                               </td>
                               <td>
-                                <a href="team.html">New York Empire</a>
+                                <a href="team.php">New York Empire</a>
                               </td>
                               <td>1.000</td>
                             </tr>
@@ -186,80 +186,80 @@
                             <tr>
                               <td>Passing Yards</td>
                               <td>
-                                <a href="player.html">Bob Jones</a>
+                                <a href="player.php">Bob Jones</a>
                               </td>
                               <td>
-                                <a href="team.html">New York Empire</a>
+                                <a href="team.php">New York Empire</a>
                               </td>
                               <td>5234</td>
                             </tr>
                             <tr>
                               <td>Passing TDs</td>
                               <td>
-                                <a href="player.html">Bob Jones</a>
+                                <a href="player.php">Bob Jones</a>
                               </td>
                               <td>
-                                <a href="team.html">New York Empire</a>
+                                <a href="team.php">New York Empire</a>
                               </td>
                               <td>60</td>
                             </tr>
                             <tr>
                               <td>Receiving Yards</td>
                               <td>
-                                <a href="player.html">Bob Jones</a>
+                                <a href="player.php">Bob Jones</a>
                               </td>
                               <td>
-                                <a href="team.html">New York Empire</a>
+                                <a href="team.php">New York Empire</a>
                               </td>
                               <td>2104</td>
                             </tr>
                             <tr>
                               <td>Receiving TDs</td>
                               <td>
-                                <a href="player.html">Bob Jones</a>
+                                <a href="player.php">Bob Jones</a>
                               </td>
                               <td>
-                                <a href="team.html">New York Empire</a>
+                                <a href="team.php">New York Empire</a>
                               </td>
                               <td>16</td>
                             </tr>
                             <tr>
                               <td>Rushing Yards</td>
                               <td>
-                                <a href="player.html">Bob Jones</a>
+                                <a href="player.php">Bob Jones</a>
                               </td>
                               <td>
-                                <a href="team.html">New York Empire</a>
+                                <a href="team.php">New York Empire</a>
                               </td>
                               <td>2148</td>
                             </tr>
                             <tr>
                               <td>Rushing TDs</td>
                               <td>
-                                <a href="player.html">Bob Jones</a>
+                                <a href="player.php">Bob Jones</a>
                               </td>
                               <td>
-                                <a href="team.html">New York Empire</a>
+                                <a href="team.php">New York Empire</a>
                               </td>
                               <td>18</td>
                             </tr>
                             <tr>
                               <td>Sacks</td>
                               <td>
-                                <a href="player.html">Bob Jones</a>
+                                <a href="player.php">Bob Jones</a>
                               </td>
                               <td>
-                                <a href="team.html">New York Empire</a>
+                                <a href="team.php">New York Empire</a>
                               </td>
                               <td>22</td>
                             </tr>
                             <tr>
                               <td>Interceptions</td>
                               <td>
-                                <a href="player.html">Bob Jones</a>
+                                <a href="player.php">Bob Jones</a>
                               </td>
                               <td>
-                                <a href="team.html">New York Empire</a>
+                                <a href="team.php">New York Empire</a>
                               </td>
                               <td>15</td>
                             </tr>
@@ -277,56 +277,56 @@
                           <tr>
                             <td>Passing Yards</td>
                             <td>
-                              <a href="player.html">Bob Jones</a>
+                              <a href="player.php">Bob Jones</a>
                             </td>
                             <td>5234</td>
                           </tr>
                           <tr>
                             <td>Passing TDs</td>
                             <td>
-                              <a href="player.html">Bob Jones</a>
+                              <a href="player.php">Bob Jones</a>
                             </td>
                             <td>60</td>
                           </tr>
                           <tr>
                             <td>Receiving Yards</td>
                             <td>
-                              <a href="player.html">Bob Jones</a>
+                              <a href="player.php">Bob Jones</a>
                             </td>
                             <td>2104</td>
                           </tr>
                           <tr>
                             <td>Receiving TDs</td>
                             <td>
-                              <a href="player.html">Bob Jones</a>
+                              <a href="player.php">Bob Jones</a>
                             </td>
                             <td>16</td>
                           </tr>
                           <tr>
                             <td>Rushing Yards</td>
                             <td>
-                              <a href="player.html">Bob Jones</a>
+                              <a href="player.php">Bob Jones</a>
                             </td>
                             <td>2148</td>
                           </tr>
                           <tr>
                             <td>Rushing TDs</td>
                             <td>
-                              <a href="player.html">Bob Jones</a>
+                              <a href="player.php">Bob Jones</a>
                             </td>
                             <td>18</td>
                           </tr>
                           <tr>
                             <td>Sacks</td>
                             <td>
-                              <a href="player.html">Bob Jones</a>
+                              <a href="player.php">Bob Jones</a>
                             </td>
                             <td>22</td>
                           </tr>
                           <tr>
                             <td>Interceptions</td>
                             <td>
-                              <a href="player.html">Bob Jones</a>
+                              <a href="player.php">Bob Jones</a>
                             </td>
                             <td>15</td>
                           </tr>
@@ -343,7 +343,7 @@
                                 </div>
                                 <div class="col-md-6">
                                   <h4>
-                                    <a href="team.html">New York Giants</a>
+                                    <a href="team.php">New York Giants</a>
                                   </h4>
                                 </div>
                                 <div class="col-md-4">
@@ -356,7 +356,7 @@
                                 </div>
                                 <div class="col-md-6">
                                   <h4>
-                                    <a href="team.html">New York Jets</a>
+                                    <a href="team.php">New York Jets</a>
                                   </h4>
                                 </div>
                                 <div class="col-md-4">
@@ -365,10 +365,10 @@
                               </div>
 							  <div class="row">
 								<div class="col-md-3">
-									<a href="league.html">Standings</a>
+									<a href="league.php">Standings</a>
 								</div>
 								<div class="col-md-3">
-									<a href="scores.html">Schedule</a>
+									<a href="scores.php">Schedule</a>
 								</div>
 								<div class="col-md-3">
 									<a href="#">Season Stats</a>
@@ -386,7 +386,7 @@
                                 </div>
                                 <div class="col-md-6">
                                   <h4>
-                                    <a href="team.html">New York Giants</a>
+                                    <a href="team.php">New York Giants</a>
                                   </h4>
                                 </div>
                                 <div class="col-md-4">
@@ -399,7 +399,7 @@
                                 </div>
                                 <div class="col-md-6">
                                   <h4>
-                                    <a href="team.html">New York Jets</a>
+                                    <a href="team.php">New York Jets</a>
                                   </h4>
                                 </div>
                                 <div class="col-md-4">
@@ -408,10 +408,10 @@
                               </div>
 							  <div class="row">
 								<div class="col-md-3">
-									<a href="league.html">Standings</a>
+									<a href="league.php">Standings</a>
 								</div>
 								<div class="col-md-3">
-									<a href="scores.html">Schedule</a>
+									<a href="scores.php">Schedule</a>
 								</div>
 								<div class="col-md-3">
 									<a href="#">Season Stats</a>

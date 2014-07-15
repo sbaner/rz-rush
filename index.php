@@ -15,7 +15,7 @@
     <div class="container-fluid">
       <div class="row">
         <div class="col-md-2">
-          <a href="./index.html">
+          <a href="./index.php">
             <img class="logo" src="./logo-small.png" />
           </a>
         </div>
@@ -26,10 +26,10 @@
                 <a href="#">Home</a>
               </li>
 			  <li>
-                <a href="league.html">League</a>
+                <a href="league.php">League</a>
               </li>
               <li>
-                <a href="team.html">Sign Up</a>
+                <a href="register.php">Sign Up</a>
               </li>
               <li>
                 <a href="#">Help</a>
@@ -41,16 +41,22 @@
       <div class="row">
         <div class="col-md-2">
           <div class="login-bar">
-            <form class="navbar-form navbar-left" role="login">
+            <form class="navbar-form navbar-left" id="login-form" name="login-form" method="post" action="login.php" role="login">
               <div class="form-group">
-                <input type="text" class="form-control" placeholder="Username" />
+                <input type="text" class="form-control" name="username" placeholder="Username" />
                 <br />
-                <input type="password" class="form-control" placeholder="Password" />
+                <input type="password" class="form-control" name="password" placeholder="Password" />
                 <br />
                 <button type="submit" class="btn btn-default">Login</button>
               </div>
-            </form>
-          </div>
+            </form> 
+			<?php
+			$result = $_GET["result"];
+			if ($result=="fail") {
+				echo "Wrong username or password. Try again or <a href=\"login/register.php\">sign up</a>";
+			} 
+			?>
+          </div> 
         </div>
         <div class="col-md-10">
           

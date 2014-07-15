@@ -16,7 +16,7 @@
     <div class="container-fluid">
       <div class="row">
         <div class="col-md-2">
-          <a href="./index.html">
+          <a href="./index.php">
             <img class="logo" src="./logo-small.png" />
           </a>
         </div>
@@ -24,18 +24,18 @@
           <div class="nav">
             <ul class="nav nav-pills navbar-left">
               <li>
-                <a href="profile.html">Profile</a>
+                <a href="profile.php">Profile</a>
               </li>
               <li class="dropdown">
                 <a class="dropdown-toggle" data-toggle="dropdown" href="#">League <span class="caret"></span></a>
 					<ul class="dropdown-menu" role="menu">
-						<li role="presentation"><a role="menuitem" tabindex="-1" href="league.html">League 1</a></li>
+						<li role="presentation"><a role="menuitem" tabindex="-1" href="league.php">League 1</a></li>
 						<li role="presentation" class="divider"></li>
-						<li role="presentation"><a role="menuitem" tabindex="-1" href="league.html">League 2</a></li>
+						<li role="presentation"><a role="menuitem" tabindex="-1" href="league.php">League 2</a></li>
 					</ul>
               </li>
               <li class="active">
-                <a href="team.html">Team</a>
+                <a href="team.php">Team</a>
               </li>
               
               <li>
@@ -50,23 +50,23 @@
           <div class="side-bar">
             <div class="team-card">
             <h3>My team</h3>
-            <a href="team.html">
+            <a href="team.php">
               <img src="nfl-logos/19.png" />
             </a> 
-            <a href="team.html">
+            <a href="team.php">
               <p>New York Giants</p>
             </a>
 			<p>Week 1</p>
             <p>Next game: @<a href="#">DAL</a></p>
-			<p><a href="league.html">League X</a></p>
+			<p><a href="league.php">League X</a></p>
             <h3>Team Links</h3></div>
             <div class="nav">
               <ul class="nav nav-pills nav-stacked navbar-left">
                 <li class="active">
-                  <a href="team.html">Roster</a>
+                  <a href="team.php">Roster</a>
                 </li>
                 <li>
-                  <a href="scores.html">Scores &amp; Schedule</a>
+                  <a href="scores.php">Scores &amp; Schedule</a>
                 </li><li>
                   <a href="#">Depth Chart</a>
                 </li>
@@ -94,7 +94,7 @@
 						</div>
 						<div class="col-md-3 col-md-offset-1">
 							<div class="middle-col">
-								<p>Owned by <a href="profile.html">Roosevelt</a> since: 6/20/14</p>
+								<p>Owned by <a href="profile.php">Roosevelt</a> since: 6/20/14</p>
 								<p>Championships: 1</p>
 							</div>
 						</div>
@@ -126,28 +126,28 @@
                 <tbody>
                   <tr>
                     <td>QB</td>
-                    <td><a href="player.html">Bob Jones</a></td>
+                    <td><a href="player.php">Bob Jones</a></td>
 					<td class="healthy">Healthy</td>
                     <td>1</td>
                     <td>$125,345,345</td>
 					<td><button type="button" class="btn btn-default">Extend/Restructure Contract</button></td>
                   </tr><tr class="injured">
                     <td>QB</td>
-                    <td><a href="player.html">Bob Jones</a></td>
+                    <td><a href="player.php">Bob Jones</a></td>
 					<td class="healthy">Torn ACL</td>
                     <td>1</td>
                     <td>$125,345,345</td>
 					<td><button type="button" class="btn btn-default">Extend/Restructure Contract</button></td>
                   </tr><tr>
                     <td>QB</td>
-                    <td><a href="player.html">Bob Jones</a></td>
+                    <td><a href="player.php">Bob Jones</a></td>
 					<td class="healthy">Healthy</td>
                     <td>1</td>
                     <td>$125,345,345</td>
 					<td><button type="button" class="btn btn-default">Extend/Restructure Contract</button></td>
                   </tr><tr>
                     <td>QB</td>
-                    <td><a href="player.html">Bob Jones</a></td>
+                    <td><a href="player.php">Bob Jones</a></td>
 					<td class="healthy">Healthy</td>
                     <td>1</td>
                     <td>$125,345,345</td>

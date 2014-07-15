@@ -16,7 +16,7 @@
     <div class="container-fluid">
       <div class="row">
         <div class="col-md-2">
-          <a href="./index.html">
+          <a href="./index.php">
             <img class="logo" src="./logo-small.png" />
           </a>
         </div>
@@ -24,18 +24,18 @@
           <div class="nav">
             <ul class="nav nav-pills navbar-left">
               <li class="active">
-                <a href="profile.html">Profile</a>
+                <a href="profile.php">Profile</a>
               </li>
               <li class="dropdown">
                 <a class="dropdown-toggle" data-toggle="dropdown" href="#">League <span class="caret"></span></a>
 					<ul class="dropdown-menu" role="menu">
-						<li role="presentation"><a role="menuitem" tabindex="-1" href="league.html">League 1</a></li>
+						<li role="presentation"><a role="menuitem" tabindex="-1" href="league.php">League 1</a></li>
 						<li role="presentation" class="divider"></li>
-						<li role="presentation"><a role="menuitem" tabindex="-1" href="league.html">League 2</a></li>
+						<li role="presentation"><a role="menuitem" tabindex="-1" href="league.php">League 2</a></li>
 					</ul>
               </li>
               <li>
-                <a href="team.html">Team</a>
+                <a href="team.php">Team</a>
               </li>
               
               <li>
@@ -50,9 +50,9 @@
           <div class="side-bar">
             <div class="team-card">
             <h3>My teams</h3>
-            <p><a href="team.html">
+            <p><a href="team.php">
               New York Giants
-            </a><br>(League 1)</p><p><a href="team.html">
+            </a><br>(League 1)</p><p><a href="team.php">
               New York Empire
             </a><br>(League 2)</p>
             <h3>Profile Links</h3></div>
@@ -86,10 +86,10 @@
 							<div class="col-md-3">
 								<div class="middle-col">
 									<h4>Teams</h4>
-									<p><a href="team.html">
+									<p><a href="team.php">
 										New York Giants
 										</a><br>(League 1)</p><p>
-										<a href="team.html">
+										<a href="team.php">
 										New York Empire
 										</a><br>(League 2)</p>
 								</div>
