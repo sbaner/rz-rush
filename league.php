@@ -6,7 +6,28 @@
 		$email = $_SESSION['email'];
 	} else {
 		header('Location: index.php');
-	}	
+	}
+
+	if (!empty($_GET['leagueid'])) {
+		$leagueid = $_GET['leagueid'];
+	} else {
+		header('Location: 404.php');
+	}
+	$conn = mysqli_connect('mysql7.000webhost.com', 'a6436541_rzr', 'rzr_3541', 'a6436541_login');
+	$league_result = mysqli_query($conn,"SELECT * FROM `league` WHERE id=$leagueid");
+	if(mysqli_num_rows($league_result) == 0) {
+		//no such league
+		header('Location: 404.php');
+	} else {
+		//get league info
+		$leagueData = mysqli_fetch_array($league_result, MYSQL_ASSOC);
+		$leaguename = $leagueData['leaguename'];
+		$frequency = $leagueData['frequency'];
+		$salarycap = $leagueData['salarycap'];
+		$injuries = $leagueData['injuries'];
+		$users = $leagueData['users'];
+	}
+	
 ?>
 <!DOCTYPE html>
 <html>
@@ -92,8 +113,8 @@
         </div>
         <div class="col-md-8">
           <div class="main">
-            <h3>League</h3>
-            <p>2014 Standings, regular season (Note: All  NFL names and logos are for placeholder purposes only.)</p>
+            <h3><?php echo $leaguename;?></h3>
+            <p>2014 Standings, regular season</p>
             <div class="panel panel-secondary">
               <!-- Default panel contents -->
               <div class="panel-heading">AFC East</div>
@@ -108,85 +129,56 @@
                     <th width="8%">T</th>
                     <th width="8%">PCT</th>
                     <th width="8%">GB</th>
-                    <th width="8%" class="nomobile">PF</th>
-                    <th width="8%" class="nomobile">PA</th>
-                    <th width="8%" class="nomobile">CONF</th>
-                    <th width="8%" class="nomobile">DIV</th>
-                    <th width="8%" class="nomobile">STRK</th>
+                    <th width="8%">PF</th>
+                    <th width="8%" >PA</th>
+                    <th width="8%" >CONF</th>
+                    <th width="8%" >DIV</th>
+                    <th width="8%" >STRK</th>
                   </tr>
                 </thead>
                 <tbody>
-                  <tr>
+                  <?php
+				  $result = mysqli_query($conn, "SELECT * FROM `team` WHERE `league`={$leagueid} AND `division`='afc_east' ORDER BY season_win,division_win,conf_win,points_for DESC");
+				  for ($i = 1; $i < 5; $i++) {
+					$teamData = mysqli_fetch_array($result, MYSQL_ASSOC);
+					$location = $teamData['location'];
+					$teamname = $teamData['teamname'];
+					$season_win = $teamData['season_win'];
+					$season_loss = $teamData['season_loss'];
+					$season_tie = $teamData['season_tie'];
+					if ($season_win + $season_loss + $season_tie != 0) {
+						$pct = ($season_win+($season_tie/2))/($season_win + $season_loss + $season_tie);
+					} else {
+						$pct = 0;
+					}
+					$division_win = $teamData['division_win'];
+					$division_loss = $teamData['division_loss'];
+					$conf_win = $teamData['conf_win'];
+					$conf_loss = $teamData['conf_loss'];
+					$points_for = $teamData['points_for'];
+					$points_against = $teamData['points_against'];
+					$logopath = "uploads/logos/".$teamData['logofile'];
+					
+					echo "<tr>
                     <td>
-                      <a href="team.php"><img src="nfl-logos/17.png" height="40px" /></a>
+                      <a href=\"team.php\"><img src=\"".$logopath."\" height=\"40px\" /></a>
+					  
                     </td>
-                    <td><a href="team.php">New England
-                    <br />Patriots</a></td>
+                    <td><a href=\"team.php\">".$location."
+                    <br />".$teamname."</a></td>
+                    <td>".$season_win."</td>
+                    <td>".$season_loss."</td>
+                    <td>".$season_tie."</td>
+                    <td>".$pct."</td>
                     <td>0</td>
-                    <td>0</td>
-                    <td>0</td>
-                    <td>0</td>
-                    <td>0</td>
-                    <td class="nomobile">0</td>
-                    <td class="nomobile">0</td>
-                    <td class="nomobile">0-0</td>
-                    <td class="nomobile">0-0</td>
-                    <td class="nomobile">-</td>
-                  </tr>
-                  <tr>
-                    <td>
-                      <a href="team.php"><img src="nfl-logos/20.png" height="40px" /></a>
-                    </td>
-                    <td><a href="team.php">New York
-                    <br />Jets</a></td>
-                    <td>0</td>
-                    <td>0</td>
-                    <td>0</td>
-                    <td>0</td>
-                    <td>0</td>
-                    <td class="nomobile">0</td>
-                    <td class="nomobile">0</td>
-                    <td class="nomobile">0-0</td>
-                    <td class="nomobile">0-0</td>
-                    <td class="nomobile">-</td>
-                  </tr>
-                  <tr>
-                    <td>
-                      <a href="team.php"><img src="nfl-logos/15.png" height="40px" /></a>
-                    </td>
-                    <td><a href="team.php">Miami
-                    <br />Dolphins</a></td>
-                    <td>0</td>
-                    <td>0</td>
-                    <td>0</td>
-                    <td>0</td>
-                    <td>0</td>
-                    <td class="nomobile">0</td>
-                    <td class="nomobile">0</td>
-                    <td class="nomobile">0-0</td>
-                    <td class="nomobile">0-0</td>
-                    <td class="nomobile">-</td>
-                  </tr>
-                  <tr>
-                    <td>
-                      <a href="team.php"><img src="nfl-logos/2.png" height="40px" /></a>
-                    </td>
-                    <td><a href="team.php">Buffalo
-                    <br />Bills</a></td>
-                    <td>0</td>
-                    <td>0</td>
-                    <td>0</td>
-                    <td>0</td>
-                    <td>0</td>
-                    <td class="nomobile">0</td>
-                    <td class="nomobile">0</td>
-                    <td class="nomobile">0-0</td>
-                    <td class="nomobile">0-0</td>
-                    <td class="nomobile">-</td>
-                  </tr>
-                  <tr>
-                    <td></td>
-                  </tr>
+                    <td >".$points_for."</td>
+                    <td >".$points_against."</td>
+                    <td >".$conf_win."-".$conf_loss."</td>
+                    <td >".$division_win."-".$division_loss."</td>
+                    <td >-</td>
+                  </tr>";
+				  }
+				  ?>
                 </tbody>
               </table></div>
             </div>
@@ -204,85 +196,54 @@
                     <th width="8%">T</th>
                     <th width="8%">PCT</th>
                     <th width="8%">GB</th>
-                    <th width="8%" class="nomobile">PF</th>
-                    <th width="8%" class="nomobile">PA</th>
-                    <th width="8%" class="nomobile">CONF</th>
-                    <th width="8%" class="nomobile">DIV</th>
-                    <th width="8%" class="nomobile">STRK</th>
+                    <th width="8%" >PF</th>
+                    <th width="8%" >PA</th>
+                    <th width="8%" >CONF</th>
+                    <th width="8%" >DIV</th>
+                    <th width="8%" >STRK</th>
                   </tr>
                 </thead>
                 <tbody>
-                  <tr>
+                  <?php
+				  $result = mysqli_query($conn, "SELECT * FROM `team` WHERE `league`={$leagueid} AND `division`='afc_north' ORDER BY season_win,division_win,conf_win,points_for DESC");
+				  for ($i = 1; $i < 5; $i++) {
+					$teamData = mysqli_fetch_array($result, MYSQL_ASSOC);
+					$location = $teamData['location'];
+					$teamname = $teamData['teamname'];
+					$season_win = $teamData['season_win'];
+					$season_loss = $teamData['season_loss'];
+					$season_tie = $teamData['season_tie'];
+					if ($season_win + $season_loss + $season_tie != 0) {
+						$pct = ($season_win+($season_tie/2))/($season_win + $season_loss + $season_tie);
+					} else {
+						$pct = 0;
+					}
+					$division_win = $teamData['division_win'];
+					$division_loss = $teamData['division_loss'];
+					$conf_win = $teamData['conf_win'];
+					$conf_loss = $teamData['conf_loss'];
+					$points_for = $teamData['points_for'];
+					$points_against = $teamData['points_against'];
+					
+					echo "<tr>
                     <td>
-                      <a href="team.php"><img src="nfl-logos/4.png" height="40px" /></a>
+                      <a href=\"team.php\"><img src=\"".$logopath."\" height=\"40px\" /></a>
                     </td>
-                    <td><a href="team.php">Cincinnati
-                    <br />Bengals</a></td>
+                    <td><a href=\"team.php\">".$location."
+                    <br />".$teamname."</a></td>
+                    <td>".$season_win."</td>
+                    <td>".$season_loss."</td>
+                    <td>".$season_tie."</td>
+                    <td>".$pct."</td>
                     <td>0</td>
-                    <td>0</td>
-                    <td>0</td>
-                    <td>0</td>
-                    <td>0</td>
-                    <td class="nomobile">0</td>
-                    <td class="nomobile">0</td>
-                    <td class="nomobile">0-0</td>
-                    <td class="nomobile">0-0</td>
-                    <td class="nomobile">-</td>
-                  </tr>
-                  <tr>
-                    <td>
-                      <a href="team.php"><img src="nfl-logos/23.png" height="40px" /></a>
-                    </td>
-                    <td><a href="team.php">Pittsburgh
-                    <br />Steelers</a></td>
-                    <td>0</td>
-                    <td>0</td>
-                    <td>0</td>
-                    <td>0</td>
-                    <td>0</td>
-                    <td class="nomobile">0</td>
-                    <td class="nomobile">0</td>
-                    <td class="nomobile">0-0</td>
-                    <td class="nomobile">0-0</td>
-                    <td class="nomobile">-</td>
-                  </tr>
-                  <tr>
-                    <td>
-                      <a href="team.php"><img src="nfl-logos/31.png" height="40px" /></a>
-                    </td>
-                    <td><a href="team.php">Baltimore
-                    <br />Ravens</a></td>
-                    <td>0</td>
-                    <td>0</td>
-                    <td>0</td>
-                    <td>0</td>
-                    <td>0</td>
-                    <td class="nomobile">0</td>
-                    <td class="nomobile">0</td>
-                    <td class="nomobile">0-0</td>
-                    <td class="nomobile">0-0</td>
-                    <td class="nomobile">-</td>
-                  </tr>
-                  <tr>
-                    <td>
-                      <a href="team.php"><img src="nfl-logos/5.png" height="40px" /></a>
-                    </td>
-                    <td><a href="team.php">Cleveland
-                    <br />Browns</a></td>
-                    <td>0</td>
-                    <td>0</td>
-                    <td>0</td>
-                    <td>0</td>
-                    <td>0</td>
-                    <td class="nomobile">0</td>
-                    <td class="nomobile">0</td>
-                    <td class="nomobile">0-0</td>
-                    <td class="nomobile">0-0</td>
-                    <td class="nomobile">-</td>
-                  </tr>
-                  <tr>
-                    <td></td>
-                  </tr>
+                    <td >".$points_for."</td>
+                    <td >".$points_against."</td>
+                    <td >".$conf_win."-".$conf_loss."</td>
+                    <td >".$division_win."-".$division_loss."</td>
+                    <td >-</td>
+                  </tr>";
+				  }
+				  ?>
                 </tbody>
               </table></div>
             </div>
@@ -300,85 +261,54 @@
                     <th width="8%">T</th>
                     <th width="8%">PCT</th>
                     <th width="8%">GB</th>
-                    <th width="8%" class="nomobile">PF</th>
-                    <th width="8%" class="nomobile">PA</th>
-                    <th width="8%" class="nomobile">CONF</th>
-                    <th width="8%" class="nomobile">DIV</th>
-                    <th width="8%" class="nomobile">STRK</th>
+                    <th width="8%" >PF</th>
+                    <th width="8%" >PA</th>
+                    <th width="8%" >CONF</th>
+                    <th width="8%" >DIV</th>
+                    <th width="8%" >STRK</th>
                   </tr>
                 </thead>
                 <tbody>
-                  <tr>
+                  <?php
+				  $result = mysqli_query($conn, "SELECT * FROM `team` WHERE `league`={$leagueid} AND `division`='afc_south' ORDER BY season_win,division_win,conf_win,points_for DESC");
+				  for ($i = 1; $i < 5; $i++) {
+					$teamData = mysqli_fetch_array($result, MYSQL_ASSOC);
+					$location = $teamData['location'];
+					$teamname = $teamData['teamname'];
+					$season_win = $teamData['season_win'];
+					$season_loss = $teamData['season_loss'];
+					$season_tie = $teamData['season_tie'];
+					if ($season_win + $season_loss + $season_tie != 0) {
+						$pct = ($season_win+($season_tie/2))/($season_win + $season_loss + $season_tie);
+					} else {
+						$pct = 0;
+					}
+					$division_win = $teamData['division_win'];
+					$division_loss = $teamData['division_loss'];
+					$conf_win = $teamData['conf_win'];
+					$conf_loss = $teamData['conf_loss'];
+					$points_for = $teamData['points_for'];
+					$points_against = $teamData['points_against'];
+					
+					echo "<tr>
                     <td>
-                      <a href="team.php"><img src="nfl-logos/11.png" height="40px" /></a>
+                      <a href=\"team.php\"><img src=\"".$logopath."\" height=\"40px\" /></a>
                     </td>
-                    <td><a href="team.php">Indianapolis
-                    <br />Colts</a></td>
+                    <td><a href=\"team.php\">".$location."
+                    <br />".$teamname."</a></td>
+                    <td>".$season_win."</td>
+                    <td>".$season_loss."</td>
+                    <td>".$season_tie."</td>
+                    <td>".$pct."</td>
                     <td>0</td>
-                    <td>0</td>
-                    <td>0</td>
-                    <td>0</td>
-                    <td>0</td>
-                    <td class="nomobile">0</td>
-                    <td class="nomobile">0</td>
-                    <td class="nomobile">0-0</td>
-                    <td class="nomobile">0-0</td>
-                    <td class="nomobile">-</td>
-                  </tr>
-                  <tr>
-                    <td>
-                      <a href="team.php"><img src="nfl-logos/10.png" height="40px" /></a>
-                    </td>
-                    <td><a href="team.php">Tennessee
-                    <br />Titans</a></td>
-                    <td>0</td>
-                    <td>0</td>
-                    <td>0</td>
-                    <td>0</td>
-                    <td>0</td>
-                    <td class="nomobile">0</td>
-                    <td class="nomobile">0</td>
-                    <td class="nomobile">0-0</td>
-                    <td class="nomobile">0-0</td>
-                    <td class="nomobile">-</td>
-                  </tr>
-                  <tr>
-                    <td>
-                      <a href="team.php"><img src="nfl-logos/30.png" height="40px" /></a>
-                    </td>
-                    <td><a href="team.php">Jacksonville
-                    <br />Jaguars</a></td>
-                    <td>0</td>
-                    <td>0</td>
-                    <td>0</td>
-                    <td>0</td>
-                    <td>0</td>
-                    <td class="nomobile">0</td>
-                    <td class="nomobile">0</td>
-                    <td class="nomobile">0-0</td>
-                    <td class="nomobile">0-0</td>
-                    <td class="nomobile">-</td>
-                  </tr>
-                  <tr>
-                    <td>
-                      <a href="team.php"><img src="nfl-logos/32.png" height="40px" /></a>
-                    </td>
-                    <td><a href="team.php">Houston
-                    <br />Texans</a></td>
-                    <td>0</td>
-                    <td>0</td>
-                    <td>0</td>
-                    <td>0</td>
-                    <td>0</td>
-                    <td class="nomobile">0</td>
-                    <td class="nomobile">0</td>
-                    <td class="nomobile">0-0</td>
-                    <td class="nomobile">0-0</td>
-                    <td class="nomobile">-</td>
-                  </tr>
-                  <tr>
-                    <td></td>
-                  </tr>
+                    <td >".$points_for."</td>
+                    <td >".$points_against."</td>
+                    <td >".$conf_win."-".$conf_loss."</td>
+                    <td >".$division_win."-".$division_loss."</td>
+                    <td >-</td>
+                  </tr>";
+				  }
+				  ?>
                 </tbody>
               </table></div>
             </div>
@@ -396,85 +326,54 @@
                     <th width="8%">T</th>
                     <th width="8%">PCT</th>
                     <th width="8%">GB</th>
-                    <th width="8%" class="nomobile">PF</th>
-                    <th width="8%" class="nomobile">PA</th>
-                    <th width="8%" class="nomobile">CONF</th>
-                    <th width="8%" class="nomobile">DIV</th>
-                    <th width="8%" class="nomobile">STRK</th>
+                    <th width="8%" >PF</th>
+                    <th width="8%" >PA</th>
+                    <th width="8%" >CONF</th>
+                    <th width="8%" >DIV</th>
+                    <th width="8%" >STRK</th>
                   </tr>
                 </thead>
                 <tbody>
-                  <tr>
+                  <?php
+				  $result = mysqli_query($conn, "SELECT * FROM `team` WHERE `league`={$leagueid} AND `division`='afc_west' ORDER BY season_win,division_win,conf_win,points_for DESC");
+				  for ($i = 1; $i < 5; $i++) {
+					$teamData = mysqli_fetch_array($result, MYSQL_ASSOC);
+					$location = $teamData['location'];
+					$teamname = $teamData['teamname'];
+					$season_win = $teamData['season_win'];
+					$season_loss = $teamData['season_loss'];
+					$season_tie = $teamData['season_tie'];
+					if ($season_win + $season_loss + $season_tie != 0) {
+						$pct = ($season_win+($season_tie/2))/($season_win + $season_loss + $season_tie);
+					} else {
+						$pct = 0;
+					}
+					$division_win = $teamData['division_win'];
+					$division_loss = $teamData['division_loss'];
+					$conf_win = $teamData['conf_win'];
+					$conf_loss = $teamData['conf_loss'];
+					$points_for = $teamData['points_for'];
+					$points_against = $teamData['points_against'];
+					
+					echo "<tr>
                     <td>
-                      <a href="team.php"><img src="nfl-logos/7.png" height="40px" /></a>
+                      <a href=\"team.php\"><img src=\"".$logopath."\" height=\"40px\" /></a>
                     </td>
-                    <td><a href="team.php">Denver
-                    <br />Broncos</a></td>
+                    <td><a href=\"team.php\">".$location."
+                    <br />".$teamname."</a></td>
+                    <td>".$season_win."</td>
+                    <td>".$season_loss."</td>
+                    <td>".$season_tie."</td>
+                    <td>".$pct."</td>
                     <td>0</td>
-                    <td>0</td>
-                    <td>0</td>
-                    <td>0</td>
-                    <td>0</td>
-                    <td class="nomobile">0</td>
-                    <td class="nomobile">0</td>
-                    <td class="nomobile">0-0</td>
-                    <td class="nomobile">0-0</td>
-                    <td class="nomobile">-</td>
-                  </tr>
-                  <tr>
-                    <td>
-                      <a href="team.php"><img src="nfl-logos/12.png" height="40px" /></a>
-                    </td>
-                    <td><a href="team.php">Kansas City
-                    <br />Chiefs</a></td>
-                    <td>0</td>
-                    <td>0</td>
-                    <td>0</td>
-                    <td>0</td>
-                    <td>0</td>
-                    <td class="nomobile">0</td>
-                    <td class="nomobile">0</td>
-                    <td class="nomobile">0-0</td>
-                    <td class="nomobile">0-0</td>
-                    <td class="nomobile">-</td>
-                  </tr>
-                  <tr>
-                    <td>
-                      <a href="team.php"><img src="nfl-logos/24.png" height="40px" /></a>
-                    </td>
-                    <td><a href="team.php">San Diego
-                    <br />Chargers</a></td>
-                    <td>0</td>
-                    <td>0</td>
-                    <td>0</td>
-                    <td>0</td>
-                    <td>0</td>
-                    <td class="nomobile">0</td>
-                    <td class="nomobile">0</td>
-                    <td class="nomobile">0-0</td>
-                    <td class="nomobile">0-0</td>
-                    <td class="nomobile">-</td>
-                  </tr>
-                  <tr>
-                    <td>
-                      <a href="team.php"><img src="nfl-logos/13.png" height="40px" /></a>
-                    </td>
-                    <td><a href="team.php">Oakland
-                    <br />Raiders</a></td>
-                    <td>0</td>
-                    <td>0</td>
-                    <td>0</td>
-                    <td>0</td>
-                    <td>0</td>
-                    <td class="nomobile">0</td>
-                    <td class="nomobile">0</td>
-                    <td class="nomobile">0-0</td>
-                    <td class="nomobile">0-0</td>
-                    <td class="nomobile">-</td>
-                  </tr>
-                  <tr>
-                    <td></td>
-                  </tr>
+                    <td >".$points_for."</td>
+                    <td >".$points_against."</td>
+                    <td >".$conf_win."-".$conf_loss."</td>
+                    <td >".$division_win."-".$division_loss."</td>
+                    <td >-</td>
+                  </tr>";
+				  }
+				  ?>
                 </tbody>
               </table></div>
             </div>
@@ -493,85 +392,54 @@
                     <th width="8%">T</th>
                     <th width="8%">PCT</th>
                     <th width="8%">GB</th>
-                    <th width="8%" class="nomobile">PF</th>
-                    <th width="8%" class="nomobile">PA</th>
-                    <th width="8%" class="nomobile">CONF</th>
-                    <th width="8%" class="nomobile">DIV</th>
-                    <th width="8%" class="nomobile">STRK</th>
+                    <th width="8%" >PF</th>
+                    <th width="8%" >PA</th>
+                    <th width="8%" >CONF</th>
+                    <th width="8%" >DIV</th>
+                    <th width="8%" >STRK</th>
                   </tr>
                 </thead>
                 <tbody>
-                  <tr>
+                  <?php
+				  $result = mysqli_query($conn, "SELECT * FROM `team` WHERE `league`={$leagueid} AND `division`='nfc_east' ORDER BY season_win,division_win,conf_win,points_for DESC");
+				  for ($i = 1; $i < 5; $i++) {
+					$teamData = mysqli_fetch_array($result, MYSQL_ASSOC);
+					$location = $teamData['location'];
+					$teamname = $teamData['teamname'];
+					$season_win = $teamData['season_win'];
+					$season_loss = $teamData['season_loss'];
+					$season_tie = $teamData['season_tie'];
+					if ($season_win + $season_loss + $season_tie != 0) {
+						$pct = ($season_win+($season_tie/2))/($season_win + $season_loss + $season_tie);
+					} else {
+						$pct = 0;
+					}
+					$division_win = $teamData['division_win'];
+					$division_loss = $teamData['division_loss'];
+					$conf_win = $teamData['conf_win'];
+					$conf_loss = $teamData['conf_loss'];
+					$points_for = $teamData['points_for'];
+					$points_against = $teamData['points_against'];
+					
+					echo "<tr>
                     <td>
-                      <a href="team.php"><img src="nfl-logos/21.png" height="40px" /></a>
+                      <a href=\"team.php\"><img src=\"".$logopath."\" height=\"40px\" /></a>
                     </td>
-                    <td><a href="team.php">Philadelphia
-                    <br />Eagles</a></td>
+                    <td><a href=\"team.php\">".$location."
+                    <br />".$teamname."</a></td>
+                    <td>".$season_win."</td>
+                    <td>".$season_loss."</td>
+                    <td>".$season_tie."</td>
+                    <td>".$pct."</td>
                     <td>0</td>
-                    <td>0</td>
-                    <td>0</td>
-                    <td>0</td>
-                    <td>0</td>
-                    <td class="nomobile">0</td>
-                    <td class="nomobile">0</td>
-                    <td class="nomobile">0-0</td>
-                    <td class="nomobile">0-0</td>
-                    <td class="nomobile">-</td>
-                  </tr>
-                  <tr>
-                    <td>
-                      <a href="team.php"><img src="nfl-logos/6.png" height="40px" /></a>
-                    </td>
-                    <td><a href="team.php">Dallas
-                    <br />Cowboys</a></td>
-                    <td>0</td>
-                    <td>0</td>
-                    <td>0</td>
-                    <td>0</td>
-                    <td>0</td>
-                    <td class="nomobile">0</td>
-                    <td class="nomobile">0</td>
-                    <td class="nomobile">0-0</td>
-                    <td class="nomobile">0-0</td>
-                    <td class="nomobile">-</td>
-                  </tr>
-                  <tr class="myteam">
-                    <td>
-                      <a href="team.php"><img src="nfl-logos/19.png" height="40px" /></a>
-                    </td>
-                    <td><a href="team.php">New York
-                    <br />Giants</a></td>
-                    <td>0</td>
-                    <td>0</td>
-                    <td>0</td>
-                    <td>0</td>
-                    <td>0</td>
-                    <td class="nomobile">0</td>
-                    <td class="nomobile">0</td>
-                    <td class="nomobile">0-0</td>
-                    <td class="nomobile">0-0</td>
-                    <td class="nomobile">-</td>
-                  </tr>
-                  <tr>
-                    <td>
-                      <a href="team.php"><img src="nfl-logos/28.png" height="40px" /></a>
-                    </td>
-                    <td><a href="team.php">Washington
-                    <br />Redskins</a></td>
-                    <td>0</td>
-                    <td>0</td>
-                    <td>0</td>
-                    <td>0</td>
-                    <td>0</td>
-                    <td class="nomobile">0</td>
-                    <td class="nomobile">0</td>
-                    <td class="nomobile">0-0</td>
-                    <td class="nomobile">0-0</td>
-                    <td class="nomobile">-</td>
-                  </tr>
-                  <tr>
-                    <td></td>
-                  </tr>
+                    <td >".$points_for."</td>
+                    <td >".$points_against."</td>
+                    <td >".$conf_win."-".$conf_loss."</td>
+                    <td >".$division_win."-".$division_loss."</td>
+                    <td >-</td>
+                  </tr>";
+				  }
+				  ?>
                 </tbody>
               </table></div></div>
 			  <div class="panel panel-primary">
@@ -589,85 +457,54 @@
                     <th width="8%">T</th>
                     <th width="8%">PCT</th>
                     <th width="8%">GB</th>
-                    <th width="8%" class="nomobile">PF</th>
-                    <th width="8%" class="nomobile">PA</th>
-                    <th width="8%" class="nomobile">CONF</th>
-                    <th width="8%" class="nomobile">DIV</th>
-                    <th width="8%" class="nomobile">STRK</th>
+                    <th width="8%" >PF</th>
+                    <th width="8%" >PA</th>
+                    <th width="8%" >CONF</th>
+                    <th width="8%" >DIV</th>
+                    <th width="8%" >STRK</th>
                   </tr>
                 </thead>
                 <tbody>
-                  <tr>
+                  <?php
+				  $result = mysqli_query($conn, "SELECT * FROM `team` WHERE `league`={$leagueid} AND `division`='nfc_north' ORDER BY season_win,division_win,conf_win,points_for DESC");
+				  for ($i = 1; $i < 5; $i++) {
+					$teamData = mysqli_fetch_array($result, MYSQL_ASSOC);
+					$location = $teamData['location'];
+					$teamname = $teamData['teamname'];
+					$season_win = $teamData['season_win'];
+					$season_loss = $teamData['season_loss'];
+					$season_tie = $teamData['season_tie'];
+					if ($season_win + $season_loss + $season_tie != 0) {
+						$pct = ($season_win+($season_tie/2))/($season_win + $season_loss + $season_tie);
+					} else {
+						$pct = 0;
+					}
+					$division_win = $teamData['division_win'];
+					$division_loss = $teamData['division_loss'];
+					$conf_win = $teamData['conf_win'];
+					$conf_loss = $teamData['conf_loss'];
+					$points_for = $teamData['points_for'];
+					$points_against = $teamData['points_against'];
+					
+					echo "<tr>
                     <td>
-                      <a href="team.php"><img src="nfl-logos/9.png" height="40px" /></a>
+                      <a href=\"team.php\"><img src=\"".$logopath."\" height=\"40px\" /></a>
                     </td>
-                    <td><a href="team.php">Green Bay
-                    <br />Packers</a></td>
+                    <td><a href=\"team.php\">".$location."
+                    <br />".$teamname."</a></td>
+                    <td>".$season_win."</td>
+                    <td>".$season_loss."</td>
+                    <td>".$season_tie."</td>
+                    <td>".$pct."</td>
                     <td>0</td>
-                    <td>0</td>
-                    <td>0</td>
-                    <td>0</td>
-                    <td>0</td>
-                    <td class="nomobile">0</td>
-                    <td class="nomobile">0</td>
-                    <td class="nomobile">0-0</td>
-                    <td class="nomobile">0-0</td>
-                    <td class="nomobile">-</td>
-                  </tr>
-                  <tr>
-                    <td>
-                      <a href="team.php"><img src="nfl-logos/3.png" height="40px" /></a>
-                    </td>
-                    <td><a href="team.php">Chicago
-                    <br />Bears</a></td>
-                    <td>0</td>
-                    <td>0</td>
-                    <td>0</td>
-                    <td>0</td>
-                    <td>0</td>
-                    <td class="nomobile">0</td>
-                    <td class="nomobile">0</td>
-                    <td class="nomobile">0-0</td>
-                    <td class="nomobile">0-0</td>
-                    <td class="nomobile">-</td>
-                  </tr>
-                  <tr>
-                    <td>
-                      <a href="team.php"><img src="nfl-logos/8.png" height="40px" /></a>
-                    </td>
-                    <td><a href="team.php">Detroit
-                    <br />Lions</a></td>
-                    <td>0</td>
-                    <td>0</td>
-                    <td>0</td>
-                    <td>0</td>
-                    <td>0</td>
-                    <td class="nomobile">0</td>
-                    <td class="nomobile">0</td>
-                    <td class="nomobile">0-0</td>
-                    <td class="nomobile">0-0</td>
-                    <td class="nomobile">-</td>
-                  </tr>
-                  <tr>
-                    <td>
-                      <a href="team.php"><img src="nfl-logos/16.png" height="40px" /></a>
-                    </td>
-                    <td><a href="team.php">Minnesota
-                    <br />Vikings</a></td>
-                    <td>0</td>
-                    <td>0</td>
-                    <td>0</td>
-                    <td>0</td>
-                    <td>0</td>
-                    <td class="nomobile">0</td>
-                    <td class="nomobile">0</td>
-                    <td class="nomobile">0-0</td>
-                    <td class="nomobile">0-0</td>
-                    <td class="nomobile">-</td>
-                  </tr>
-                  <tr>
-                    <td></td>
-                  </tr>
+                    <td >".$points_for."</td>
+                    <td >".$points_against."</td>
+                    <td >".$conf_win."-".$conf_loss."</td>
+                    <td >".$division_win."-".$division_loss."</td>
+                    <td >-</td>
+                  </tr>";
+				  }
+				  ?>
                 </tbody>
               </table></div></div>
 			  <div class="panel panel-primary">
@@ -685,85 +522,54 @@
                     <th width="8%">T</th>
                     <th width="8%">PCT</th>
                     <th width="8%">GB</th>
-                    <th width="8%" class="nomobile">PF</th>
-                    <th width="8%" class="nomobile">PA</th>
-                    <th width="8%" class="nomobile">CONF</th>
-                    <th width="8%" class="nomobile">DIV</th>
-                    <th width="8%" class="nomobile">STRK</th>
+                    <th width="8%" >PF</th>
+                    <th width="8%" >PA</th>
+                    <th width="8%" >CONF</th>
+                    <th width="8%" >DIV</th>
+                    <th width="8%" >STRK</th>
                   </tr>
                 </thead>
                 <tbody>
-                  <tr>
+                  <?php
+				  $result = mysqli_query($conn, "SELECT * FROM `team` WHERE `league`={$leagueid} AND `division`='nfc_south' ORDER BY season_win,division_win,conf_win,points_for DESC");
+				  for ($i = 1; $i < 5; $i++) {
+					$teamData = mysqli_fetch_array($result, MYSQL_ASSOC);
+					$location = $teamData['location'];
+					$teamname = $teamData['teamname'];
+					$season_win = $teamData['season_win'];
+					$season_loss = $teamData['season_loss'];
+					$season_tie = $teamData['season_tie'];
+					if ($season_win + $season_loss + $season_tie != 0) {
+						$pct = ($season_win+($season_tie/2))/($season_win + $season_loss + $season_tie);
+					} else {
+						$pct = 0;
+					}
+					$division_win = $teamData['division_win'];
+					$division_loss = $teamData['division_loss'];
+					$conf_win = $teamData['conf_win'];
+					$conf_loss = $teamData['conf_loss'];
+					$points_for = $teamData['points_for'];
+					$points_against = $teamData['points_against'];
+					
+					echo "<tr>
                     <td>
-                      <a href="team.php"><img src="nfl-logos/29.png" height="40px" /></a>
+                      <a href=\"team.php\"><img src=\"".$logopath."\" height=\"40px\" /></a>
                     </td>
-                    <td><a href="team.php">Carolina
-                    <br />Panthers</a></td>
+                    <td><a href=\"team.php\">".$location."
+                    <br />".$teamname."</a></td>
+                    <td>".$season_win."</td>
+                    <td>".$season_loss."</td>
+                    <td>".$season_tie."</td>
+                    <td>".$pct."</td>
                     <td>0</td>
-                    <td>0</td>
-                    <td>0</td>
-                    <td>0</td>
-                    <td>0</td>
-                    <td class="nomobile">0</td>
-                    <td class="nomobile">0</td>
-                    <td class="nomobile">0-0</td>
-                    <td class="nomobile">0-0</td>
-                    <td class="nomobile">-</td>
-                  </tr>
-                  <tr>
-                    <td>
-                      <a href="team.php"><img src="nfl-logos/18.png" height="40px" /></a>
-                    </td>
-                    <td><a href="team.php">New Orleans
-                    <br />Saints</a></td>
-                    <td>0</td>
-                    <td>0</td>
-                    <td>0</td>
-                    <td>0</td>
-                    <td>0</td>
-                    <td class="nomobile">0</td>
-                    <td class="nomobile">0</td>
-                    <td class="nomobile">0-0</td>
-                    <td class="nomobile">0-0</td>
-                    <td class="nomobile">-</td>
-                  </tr>
-                  <tr>
-                    <td>
-                      <a href="team.php"><img src="nfl-logos/27.png" height="40px" /></a>
-                    </td>
-                    <td><a href="team.php">Tampa Bay
-                    <br />Buccaneers</a></td>
-                    <td>0</td>
-                    <td>0</td>
-                    <td>0</td>
-                    <td>0</td>
-                    <td>0</td>
-                    <td class="nomobile">0</td>
-                    <td class="nomobile">0</td>
-                    <td class="nomobile">0-0</td>
-                    <td class="nomobile">0-0</td>
-                    <td class="nomobile">-</td>
-                  </tr>
-                  <tr>
-                    <td>
-                      <a href="team.php"><img src="nfl-logos/1.png" height="40px" /></a>
-                    </td>
-                    <td><a href="team.php">Atlanta
-                    <br />Falcons</a></td>
-                    <td>0</td>
-                    <td>0</td>
-                    <td>0</td>
-                    <td>0</td>
-                    <td>0</td>
-                    <td class="nomobile">0</td>
-                    <td class="nomobile">0</td>
-                    <td class="nomobile">0-0</td>
-                    <td class="nomobile">0-0</td>
-                    <td class="nomobile">-</td>
-                  </tr>
-                  <tr>
-                    <td></td>
-                  </tr>
+                    <td >".$points_for."</td>
+                    <td >".$points_against."</td>
+                    <td >".$conf_win."-".$conf_loss."</td>
+                    <td >".$division_win."-".$division_loss."</td>
+                    <td >-</td>
+                  </tr>";
+				  }
+				  ?>
                 </tbody>
               </table></div></div>
 			  <div class="panel panel-primary">
@@ -781,85 +587,54 @@
                     <th width="8%">T</th>
                     <th width="8%">PCT</th>
                     <th width="8%">GB</th>
-                    <th width="8%" class="nomobile">PF</th>
-                    <th width="8%" class="nomobile">PA</th>
-                    <th width="8%" class="nomobile">CONF</th>
-                    <th width="8%" class="nomobile">DIV</th>
-                    <th width="8%" class="nomobile">STRK</th>
+                    <th width="8%" >PF</th>
+                    <th width="8%" >PA</th>
+                    <th width="8%" >CONF</th>
+                    <th width="8%" >DIV</th>
+                    <th width="8%" >STRK</th>
                   </tr>
                 </thead>
                 <tbody>
-                  <tr>
+                  <?php
+				  $result = mysqli_query($conn, "SELECT * FROM `team` WHERE `league`={$leagueid} AND `division`='nfc_west' ORDER BY season_win,division_win,conf_win,points_for DESC");
+				  for ($i = 1; $i < 5; $i++) {
+					$teamData = mysqli_fetch_array($result, MYSQL_ASSOC);
+					$location = $teamData['location'];
+					$teamname = $teamData['teamname'];
+					$season_win = $teamData['season_win'];
+					$season_loss = $teamData['season_loss'];
+					$season_tie = $teamData['season_tie'];
+					if ($season_win + $season_loss + $season_tie != 0) {
+						$pct = ($season_win+($season_tie/2))/($season_win + $season_loss + $season_tie);
+					} else {
+						$pct = 0;
+					}
+					$division_win = $teamData['division_win'];
+					$division_loss = $teamData['division_loss'];
+					$conf_win = $teamData['conf_win'];
+					$conf_loss = $teamData['conf_loss'];
+					$points_for = $teamData['points_for'];
+					$points_against = $teamData['points_against'];
+					
+					echo "<tr>
                     <td>
-                      <a href="team.php"><img src="nfl-logos/26.png" height="40px" /></a>
+                      <a href=\"team.php\"><img src=\"".$logopath."\" height=\"40px\" /></a>
                     </td>
-                    <td><a href="team.php">Seattle
-                    <br />Seahawks</a></td>
+                    <td><a href=\"team.php\">".$location."
+                    <br />".$teamname."</a></td>
+                    <td>".$season_win."</td>
+                    <td>".$season_loss."</td>
+                    <td>".$season_tie."</td>
+                    <td>".$pct."</td>
                     <td>0</td>
-                    <td>0</td>
-                    <td>0</td>
-                    <td>0</td>
-                    <td>0</td>
-                    <td class="nomobile">0</td>
-                    <td class="nomobile">0</td>
-                    <td class="nomobile">0-0</td>
-                    <td class="nomobile">0-0</td>
-                    <td class="nomobile">-</td>
-                  </tr>
-                  <tr>
-                    <td>
-                      <a href="team.php"><img src="nfl-logos/25.png" height="40px" /></a>
-                    </td>
-                    <td><a href="team.php">San Francisco
-                    <br />49ers</a></td>
-                    <td>0</td>
-                    <td>0</td>
-                    <td>0</td>
-                    <td>0</td>
-                    <td>0</td>
-                    <td class="nomobile">0</td>
-                    <td class="nomobile">0</td>
-                    <td class="nomobile">0-0</td>
-                    <td class="nomobile">0-0</td>
-                    <td class="nomobile">-</td>
-                  </tr>
-                  <tr>
-                    <td>
-                      <a href="team.php"><img src="nfl-logos/22.png" height="40px" /></a>
-                    </td>
-                    <td><a href="team.php">Arizona
-                    <br />Cardinals</a></td>
-                    <td>0</td>
-                    <td>0</td>
-                    <td>0</td>
-                    <td>0</td>
-                    <td>0</td>
-                    <td class="nomobile">0</td>
-                    <td class="nomobile">0</td>
-                    <td class="nomobile">0-0</td>
-                    <td class="nomobile">0-0</td>
-                    <td class="nomobile">-</td>
-                  </tr>
-                  <tr>
-                    <td>
-                      <a href="team.php"><img src="nfl-logos/14.png" height="40px" /></a>
-                    </td>
-                    <td><a href="team.php">St. Louis
-                    <br />Rams</a></td>
-                    <td>0</td>
-                    <td>0</td>
-                    <td>0</td>
-                    <td>0</td>
-                    <td>0</td>
-                    <td class="nomobile">0</td>
-                    <td class="nomobile">0</td>
-                    <td class="nomobile">0-0</td>
-                    <td class="nomobile">0-0</td>
-                    <td class="nomobile">-</td>
-                  </tr>
-                  <tr>
-                    <td></td>
-                  </tr>
+                    <td >".$points_for."</td>
+                    <td >".$points_against."</td>
+                    <td >".$conf_win."-".$conf_loss."</td>
+                    <td >".$division_win."-".$division_loss."</td>
+                    <td >-</td>
+                  </tr>";
+				  }
+				  ?>
                 </tbody>
               </table></div></div>
 			  <div class="container">
@@ -870,13 +645,35 @@
 				</div>
 				<div class="row">
 					<div class="col-md-1">
-						Frequency: Every day
+						Frequency: <?php 
+							if ($frequency=="ed") {
+								echo "Every day";
+							} else if ($frequency=="eod") {
+								echo "Every other day";
+							} else if ($frequency=="smf") {
+								echo "Saturdays, Mondays, Wednesdays";
+							}
+						?>
 					</div><div class="col-md-1">
-						Salary cap: Standard
+						Salary cap: <?php
+							if ($salarycap=="y") {
+								echo "Yes";
+							} else if ($salarycap=="n") {
+								echo "No";
+							}
+						?>
 					</div><div class="col-md-1">
-						Injuries: Standard
+						Injuries: <?php
+							if ($injuries=="y") {
+								echo "Yes";
+							} else if ($injuries=="n") {
+								echo "No";
+							}
+						?>
 					</div><div class="col-md-2">
-						Non-CPU players: 1/32
+						Non-CPU players: <?php
+							echo $users;
+						?>/32
 					</div>
 					</div>
 				</div>

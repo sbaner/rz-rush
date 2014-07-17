@@ -56,42 +56,9 @@
         </div>
       </div>
       <div class="row">
-        <div class="col-md-2">
-          <div class="side-bar">
-            <div class="team-card">
-            <h3>My teams</h3>
-            <p><a href="team.php">
-              New York Giants
-            </a><br>(League 1)</p><p><a href="team.php">
-              New York Empire
-            </a><br>(League 2)</p>
-            <h3>Profile Links</h3></div>
-            <div class="nav">
-              <ul class="nav nav-pills nav-stacked navbar-left">
-                <li>
-                  <a href="profile.php">View Profile</a>
-                </li>
-				<li class="active">
-                  <a href="editprofile.php">Edit Profile</a>
-                </li>
-                <li>
-                  <a href="#">Add/Remove Teams</a>
-                </li>
-                <li>
-                  <a href="#">Premium</a>
-                </li>
-              </ul>
-            </div>
-			<h3>Your Friends</h3>
-			<p>No one :(</p>
-          </div>
-		  <form class="form-horizontal" id="logout-form" action="logout.php" role="form">
-			<button type="submit" class="btn btn-default">Log out</button>
-		</form>
-        </div>
-        <div class="col-md-offset-1 col-md-6">
+        <div class="col-md-offset-3 col-md-6">
           <div class="main">
-		  <h3>Edit Profile</h3>
+		  <h3>Create League</h3>
             <form class="form-horizontal" method="POST" id="new-league" action="leaguecreate.php" role="form">
               <div class="form-group">
                 <label for="league-name" class="col-sm-2 control-label">League Name</label>

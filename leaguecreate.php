@@ -19,7 +19,7 @@
 		} else if ($frequency == "Every other day") {
 			$freq = "eod";
 		} else if ($frequency == "Saturday/Monday/Wednesday") {
-			$freq = "smf";
+			$freq = "smw";
 		} else {
 			echo "No frequency selected?";
 			die();
@@ -42,10 +42,10 @@
 			echo "No injury selected?";
 			die();
 		}
-		
+		$year = date("Y");
 		$conn = mysqli_connect('mysql7.000webhost.com', 'a6436541_rzr', 'rzr_3541', 'a6436541_login');
-		mysqli_query($conn,"INSERT INTO `league`(`leaguename`, `frequency`, `salarycap`, `injuries`) 
-				VALUES ('{$leaguename}', '{$freq}', '{$salary}', '{$injury}')");
+		mysqli_query($conn,"INSERT INTO `league`(`leaguename`, `frequency`, `salarycap`, `injuries`,`users`,`year`) 
+				VALUES ('{$leaguename}', '{$freq}', '{$salary}', '{$injury}',0,'{$year}')");
 		if (mysqli_affected_rows($conn) == 1) {
 			echo "League create success!";
 			$leagueid = mysqli_insert_id($conn);
@@ -68,8 +68,9 @@
 			"Tornadoes","Hawks","Slammers","Legends","Wild","Lightning","Sharpshooters","Commandos");
 		echo "League ".$leagueid." created.<br>";
 		for ($i = 0; $i < 32; $i++) {
-			mysqli_query($conn,"INSERT INTO `team`(`league`, `division`, `location`, `teamname`) VALUES ('{$leagueid}', '{$division[$i]}', '{$location[$i]}', '{$teamname[$i]}')");
+			mysqli_query($conn,"INSERT INTO `team`(`league`, `division`, `location`, `teamname`,`season_win`,`season_loss`,`total_win`,`total_loss`,`championships`,`division_win`,`division_loss`,`conf_win`,`conf_loss`,`points_for`,`points_against`,`season_tie`,`total_tie`,`logofile`) VALUES ('{$leagueid}', '{$division[$i]}', '{$location[$i]}', '{$teamname[$i]}', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,'helmet.png')");
 			echo "Created ".$location[$i]." ".$teamname[$i].".<br>";
+			header('Location: league.php?leagueid='.$leagueid);
 		}
 		
 	} else {
