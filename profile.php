@@ -1,3 +1,29 @@
+<?php
+	session_start();
+	if(isset($_SESSION['userID'])) {
+		$userID = $_SESSION['userID'];
+		$username = $_SESSION['username'];
+		$email = $_SESSION['email'];
+	} else {
+		header('Location: index.php');
+	}
+	if (!empty($_GET['profileid'])) {
+	  $profileID = $_GET['profileid'];
+	} else {
+		$profileID = $userID;
+	}
+	
+	$conn = mysqli_connect('mysql7.000webhost.com', 'a6436541_rzr', 'rzr_3541', 'a6436541_login');
+	$member_result = mysqli_query($conn,"SELECT * FROM member WHERE `id`='$profileID'");
+	if(mysqli_num_rows($member_result) == 0) { //user not found
+		header('Location: 404.php');
+	} else {
+		$memberData = mysqli_fetch_array($member_result, MYSQL_ASSOC);
+		$profile_name = $memberData['username'];
+		$profile_email = $memberData['email'];
+		$profile_signup = $memberData['signup'];
+	}
+?>
 <!DOCTYPE html>
 <html>
   <head>
@@ -10,7 +36,7 @@
     <link href="css/profile.css" rel="stylesheet" />
 	<script src="js/jquery-1.11.1.min.js"></script>
 	<script src="js/bootstrap.js"></script>
-    <title>RedZone Rush - Team</title>
+    <title>RedZone Rush - <?php echo $username;?></title>
   </head>
   <body>
     <div class="container-fluid">
@@ -20,7 +46,7 @@
             <img class="logo" src="./logo-small.png" />
           </a>
         </div>
-        <div class="col-md-10">
+        <div class="col-md-8">
           <div class="nav">
             <ul class="nav nav-pills navbar-left">
               <li class="active">
@@ -58,8 +84,11 @@
             <h3>Profile Links</h3></div>
             <div class="nav">
               <ul class="nav nav-pills nav-stacked navbar-left">
-                <li>
-                  <a href="#">Edit Profile</a>
+                <li class="active">
+                  <a href="profile.php">View Profile</a>
+                </li>
+				<li>
+                  <a href="editprofile.php">Edit Profile</a>
                 </li>
                 <li>
                   <a href="#">Add/Remove Teams</a>
@@ -72,6 +101,9 @@
 			<h3>Your Friends</h3>
 			<p>No one :(</p>
           </div>
+		  <form class="form-horizontal" id="logout-form" action="logout.php" role="form">
+			<button type="submit" class="btn btn-default">Log out</button>
+		</form>
         </div>
         <div class="col-md-8">
 			<div class="main">
@@ -79,9 +111,19 @@
 					<div class="container">
 						<div class="row">
 							<div class="col-md-3">
-								<h3>Roosevelt</h3>
+								<h3><?php echo $profile_name; ?></h3>
 								<p class="premium">Premium Member <span class="glyphicon glyphicon-star"></span> </p>
-								<img src="profile.jpg">
+								<?php
+									$photo_result = mysqli_query($conn,"SELECT * FROM photos WHERE `member_id`='$profileID' and pri='yes'");
+									if(mysqli_num_rows($photo_result) == 0) {
+										//no prof pic uploaded
+										echo "<img src=\"profile.jpg\">";
+									} else {
+										$photoData = mysqli_fetch_array($photo_result, MYSQL_ASSOC);
+										$imagepath = "./uploads/".$photoData['filename'];
+										echo "<img src=\"$imagepath\">";
+									}
+								?>
 							</div>
 							<div class="col-md-3">
 								<div class="middle-col">
@@ -97,7 +139,7 @@
 							<div class="col-md-3">
 								<div class="third-col">
 									<h4>Owner Info</h4>
-									<p>Member since: 6/20/2014
+									<p>Member since: <?php echo $profile_signup;?>
 									<p>Total Record: 38-0</p>
 									<p>Championships: 2</p>
 									<p>Last activity: 6/30/2014</p>

@@ -1,4 +1,5 @@
 <?php
+date_default_timezone_set('America/New)_York');
 //retrieve our data from POST
 $username = $_POST['username'];
 $password1 = $_POST['password1'];
@@ -34,8 +35,9 @@ if (mysqli_num_rows($checkUser) > 0) {
 	echo "There is already an account with that email address.";
 	$result = "sameemail";
 } else {
-	$query = "INSERT INTO member ( username, password, email, salt )
-			VALUES ( '$username', '$password', '$email', '$salt' );";
+	$signupdate = date("m")."/".date("d")."/".date("y");
+	$query = "INSERT INTO member ( username, password, email, salt, signup, premium )
+			VALUES ( '$username', '$password', '$email', '$salt', '$signupdate','n' );";
 	mysqli_query($conn, $query);
 	$result = "success";
 

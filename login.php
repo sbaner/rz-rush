@@ -1,11 +1,13 @@
 <?php
+session_start();
+
 $username = $_POST['username'];
 $password = $_POST['password'];
  
 $conn = mysqli_connect('mysql7.000webhost.com', 'a6436541_rzr', 'rzr_3541', 'a6436541_login');
  
 $username = mysqli_real_escape_string($conn, $username);
-$query = "SELECT password, salt
+$query = "SELECT *
         FROM member
         WHERE username = '$username';";
  
@@ -22,7 +24,11 @@ $hash = hash('sha256', $userData['salt'] . hash('sha256', $password) );
 if($hash != $userData['password']) // Incorrect password. So, redirect to login_form again.
 {
     header('Location: index.php?result=fail');
-}else{ // Redirect to home page after successful login.
-	header('Location: profile.html');
+}else{ // successful login.
+	$_SESSION['userID'] = $userData['id'];
+	$_SESSION['username'] = $userData['username'];
+	$_SESSION['email'] = $userData['email'];
+	
+	header('Location: profile.php');
 }
 ?>

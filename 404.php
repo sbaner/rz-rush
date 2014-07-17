@@ -16,7 +16,7 @@
     <div class="container-fluid">
       <div class="row">
         <div class="col-md-2">
-          <a href="../index.html">
+          <a href="../index.php">
             <img class="logo" src="../logo-small.png" />
           </a>
         </div>
@@ -24,10 +24,7 @@
           <div class="nav">
             <ul class="nav nav-pills navbar-left">
               <li>
-                <a href="../index.html">Home</a>
-              </li>
-              <li class="active">
-                <a href="#">Sign Up</a>
+                <a href="../index.php">Home</a>
               </li>
               <li>
                 <a href="#">Help</a>
@@ -40,17 +37,7 @@
         
         <div class="col-md-offset-3 col-md-6">
           <div class="main">
-		  <?php
-		  $result = $_GET["result"];
-		  
-		  if ($result=="sameuser") {
-			echo "<p>A user with that name already exists. Please <a href=\"register.php\">try again</a>.</p>";
-		  } else if ($result=="sameemail") {
-			echo "<p>An account with that email already exists. <a href=\"#\">Forgot your password?</a></p>";
-		  } else if ($result=="success") {
-			echo "<h3>Success!</h3> <p>Your account has been created. Please check your email for a confirmation email.";
-		  }
-		  ?>
+		<h3>Page not found</h3>
           </div>
         </div>
       </div>

@@ -22,22 +22,27 @@
 			if (email!='' && username!='' && password!='') {
 				if (email.indexOf("@") > 0) {
 					if (password == confirmPassword) {
-						if (checkbox.checked) {
-						$("#divCheckPasswordMatch").php("");
-							button.disabled = false;
+						if (password.length > 5) { 
+							if (checkbox.checked) {
+								$("#divCheckPasswordMatch").html("");
+									button.disabled = false;
+							} else {
+								button.disabled = true;
+							}
 						} else {
+							$("#divCheckPasswordMatch").html("Password too short.");
 							button.disabled = true;
 						}
 					} else {
-						$("#divCheckPasswordMatch").php("Passwords do not match.");
+						$("#divCheckPasswordMatch").html("Passwords do not match.");
 						button.disabled = true;
 					}
 				} else {
-					$("#divCheckPasswordMatch").php("Invalid email.");
+					$("#divCheckPasswordMatch").html("Invalid email.");
 					button.disabled = true;
 				}
 			} else {
-				$("#divCheckPasswordMatch").php("Some fields are empty.");
+				$("#divCheckPasswordMatch").html("Some fields are empty.");
 				button.disabled = true;
 			}
 		}

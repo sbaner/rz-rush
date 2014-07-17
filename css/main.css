@@ -107,6 +107,12 @@ body {
 	font-family:"Open Sans", sans-serif;
 	background-color:#EEE;
 }
+#login-button {
+	margin-bottom:15px;
+}
+#logout-form {
+	margin-top:15px;
+}
 @media not handheld and (orientation:portrait) {
 	.jumbotron {
 		height:650px;

@@ -1,3 +1,9 @@
+<?php
+session_start();
+if(isset($_SESSION['userID'])) {
+	header('Location: profile.php');
+} 	
+?>
 <!DOCTYPE html>
 <html>
   <head>
@@ -10,6 +16,7 @@
 	<script src="js/jquery-1.11.1.min.js"></script>
 	<script src="js/bootstrap.js"></script>
     <title>RedZone Rush - Home</title>
+	
   </head>
   <body>
     <div class="container-fluid">
@@ -24,9 +31,6 @@
             <ul class="nav nav-pills navbar-left">
               <li class="active">
                 <a href="#">Home</a>
-              </li>
-			  <li>
-                <a href="league.php">League</a>
               </li>
               <li>
                 <a href="register.php">Sign Up</a>
@@ -47,13 +51,13 @@
                 <br />
                 <input type="password" class="form-control" name="password" placeholder="Password" />
                 <br />
-                <button type="submit" class="btn btn-default">Login</button>
+                <button type="submit" id="login-button" class="btn btn-default">Login</button>
               </div>
             </form> 
 			<?php
 			$result = $_GET["result"];
 			if ($result=="fail") {
-				echo "Wrong username or password. Try again or <a href=\"login/register.php\">sign up</a>";
+				echo "Wrong username or password. Try again or <a href=\"login/register.php\">sign up</a>.";
 			} 
 			?>
           </div> 

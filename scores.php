@@ -1,3 +1,13 @@
+<?php
+	session_start();
+	if(isset($_SESSION['userID'])) {
+		$userID = $_SESSION['userID'];
+		$username = $_SESSION['username'];
+		$email = $_SESSION['email'];
+	} else {
+		header('Location: index.php');
+	}	
+?>
 <!DOCTYPE html>
 <html>
   <head>
