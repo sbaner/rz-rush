@@ -86,7 +86,7 @@
                 </div>
               </div>
 			  <div class="form-group">
-                <label for="injuries" class="col-sm-2 control-label">Salary Cap</label>
+                <label for="injuries" class="col-sm-2 control-label">Injuries</label>
                 <div class="col-sm-10">
 				<select class="form-control" id="injuries" name="injuries">
 					<option>On</option>

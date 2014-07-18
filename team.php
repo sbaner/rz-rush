@@ -7,6 +7,42 @@
 	} else {
 		header('Location: index.php');
 	}	
+	if (!empty($_GET['teamid'])) {
+		$teamid = $_GET['teamid'];
+	} else {
+		header('Location: 404.php');
+	}
+	$own_team = false;
+	$conn = mysqli_connect('mysql7.000webhost.com', 'a6436541_rzr', 'rzr_3541', 'a6436541_login');
+	$own_team_result = mysqli_query($conn,"SELECT * FROM team WHERE `owner`='$userID'");
+	$team_result = mysqli_query($conn,"SELECT * FROM `team` WHERE id=$teamid");
+	
+	if(mysqli_num_rows($team_result) == 0) {
+		//no such team
+		header('Location: 404.php');
+	} else {
+		//get team info
+		$teamData = mysqli_fetch_array($team_result, MYSQL_ASSOC);
+		$leagueid = $teamData['league'];
+		$location = $teamData['location'];
+		$teamname = $teamData['teamname'];
+		$owner = $teamData['owner'];
+		$season_win = $teamData['season_win'];
+		$season_loss = $teamData['season_loss'];
+		$season_tie = $teamData['season_tie'];
+		$championships = $teamData['championships'];
+		$logopath = "uploads/logos/".$teamData['logofile'];
+		$owndate = $teamData['owndate'];
+		
+		$member_result = mysqli_query($conn,"SELECT * FROM `member` WHERE id=$owner");
+		$memberData = mysqli_fetch_array($member_result, MYSQL_ASSOC);
+		$ownername = $memberData['username'];
+		
+		if ($owner == $userID) {
+			$own_team = true;
+		}
+		
+	}
 ?>
 <!DOCTYPE html>
 <html>
@@ -36,18 +72,60 @@
               <li>
                 <a href="profile.php">Profile</a>
               </li>
-              <li class="dropdown">
-                <a class="dropdown-toggle" data-toggle="dropdown" href="#">League <span class="caret"></span></a>
-					<ul class="dropdown-menu" role="menu">
-						<li role="presentation"><a role="menuitem" tabindex="-1" href="league.php">League 1</a></li>
-						<li role="presentation" class="divider"></li>
-						<li role="presentation"><a role="menuitem" tabindex="-1" href="league.php">League 2</a></li>
-					</ul>
-              </li>
-              <li class="active">
-                <a href="team.php">Team</a>
-              </li>
-              
+              <?php
+			  $teamidArray = array();
+			  $locationArray = array();
+			  $teamnameArray = array();
+			  $leagueArray = array();
+				if(mysqli_num_rows($own_team_result) == 0) {
+				} else if (mysqli_num_rows($own_team_result) == 1) {
+					$own_teamData = mysqli_fetch_array($own_team_result, MYSQL_ASSOC);
+					array_push($teamidArray, $own_teamData['id']);
+					array_push($locationArray, $own_teamData['location']);
+					array_push($teamnameArray, $own_teamData['teamname']);
+					array_push($leagueArray, $own_teamData['league']);
+					echo "<li><a href=\"league.php?leagueid=".$leagueArray[0]."\">League</a></li>";
+				} else if (mysqli_num_rows($own_team_result) > 1) {
+					echo "<li class=\"dropdown\">
+							<a class=\"dropdown-toggle\" data-toggle=\"dropdown\" href=\"#\">League <span class=\"caret\"></span></a>
+								<ul class=\"dropdown-menu\" role=\"menu\">";
+					for ($i=1; $i < mysqli_num_rows($own_team_result); $i++) {
+						$k = $i - 1;
+						$own_teamData = mysqli_fetch_array($own_team_result, MYSQL_ASSOC);
+						array_push($teamidArray, $own_teamData['id']);
+						array_push($locationArray, $own_teamData['location']);
+						array_push($teamnameArray, $own_teamData['teamname']);
+						array_push($leagueArray, $own_teamData['league']);
+						echo "<li role=\"presentation\"><a role=\"menuitem\" tabindex=\"-1\" href=\"league.php?leagueid=".$teamidArray[$k]."\">League ".$leagueArray[$k]."</a></li>
+						<li role=\"presentation\" class=\"divider\"></li>";
+					}
+					$own_teamData = mysqli_fetch_array($own_team_result, MYSQL_ASSOC);
+					array_push($teamidArray, $own_teamData['id']);
+					array_push($locationArray, $own_teamData['location']);
+					array_push($teamnameArray, $own_teamData['teamname']);
+					array_push($leagueArray, $own_teamData['league']);
+					
+					echo "<li role=\"presentation\"><a role=\"menuitem\" tabindex=\"-1\" href=\"league.php?leagueid=".$leagueArray[count($leagueArray)-1]."\">League ".$leagueArray[count($leagueArray)-1]."</a></li>";
+					echo "</ul></li>";
+				}
+			if(mysqli_num_rows($own_team_result) == 0) { 
+					//person doesn't own a team
+					echo "<li><a href=\"teamselect.php\">Get a Team</a></li>";
+				} else if (mysqli_num_rows($own_team_result) == 1) {
+					echo "<li class=\"active\"><a href=\"team.php?teamid=".$teamidArray[0]."\">Team</a></li>";
+				} else if (mysqli_num_rows($own_team_result) > 1) {
+					echo "<li class=\"active dropdown\">
+							<a class=\"dropdown-toggle\" data-toggle=\"dropdown\" href=\"#\">Team <span class=\"caret\"></span></a>
+								<ul class=\"dropdown-menu\" role=\"menu\">";
+					for ($i=1; $i < mysqli_num_rows($own_team_result); $i++) {
+						$k = $i - 1;
+						echo "<li role=\"presentation\"><a role=\"menuitem\" tabindex=\"-1\" href=\"team.php?teamid=".$teamidArray[$k]."\">".$locationArray[$k]." ".$teamnameArray[$k]."</a></li>
+						<li role=\"presentation\" class=\"divider\"></li>";
+					}
+					echo "<li role=\"presentation\"><a role=\"menuitem\" tabindex=\"-1\" href=\"team.php?teamid=".$teamidArray[count($teamidArray)-1]."\">".$locationArray[count($locationArray)-1]." ".$teamnameArray[count($teamnameArray)-1]."</a></li>";
+					echo "</ul></li>";
+				}
+			  ?>
               <li>
                 <a href="#">Help</a>
               </li>
@@ -60,23 +138,23 @@
           <div class="side-bar">
             <div class="team-card">
             <h3>My team</h3>
-            <a href="team.php">
+            <a href="#">
               <img src="nfl-logos/19.png" />
             </a> 
-            <a href="team.php">
+            <a href="#">
               <p>New York Giants</p>
             </a>
 			<p>Week 1</p>
             <p>Next game: @<a href="#">DAL</a></p>
-			<p><a href="league.php">League X</a></p>
+			<p><a href="league.php?leagueid=<?php echo $leagueid."\">League ".$leagueid;?></a></p>
             <h3>Team Links</h3></div>
             <div class="nav">
               <ul class="nav nav-pills nav-stacked navbar-left">
                 <li class="active">
-                  <a href="team.php">Roster</a>
+                  <a href="team.php?teamid=<?php echo $teamid;?>">Roster</a>
                 </li>
                 <li>
-                  <a href="scores.php">Scores &amp; Schedule</a>
+                  <a href="scores.php?leagueid=<?php echo $leagueid;?>">Scores &amp; Schedule</a>
                 </li><li>
                   <a href="#">Depth Chart</a>
                 </li>
@@ -99,13 +177,19 @@
 				<div class="container">
 					<div class="row">
 						<div class="col-md-3">
-								<h3>New York Giants</h3>
-								<img src="nfl-logos/19.png">
+								<h3><?php echo $location." ".$teamname;?></h3>
+								<img src="<?php echo $logopath;?>">
 						</div>
 						<div class="col-md-3 col-md-offset-1">
 							<div class="middle-col">
-								<p>Owned by <a href="profile.php">Roosevelt</a> since: 6/20/14</p>
-								<p>Championships: 1</p>
+							<?php
+							if ($owner!=0) {
+								echo "<p>Owned by <a href=\"profile.php".$owner."\">".$ownername."</a> since: ".$owndate."</p>";
+							} else {
+								echo "<p>CPU Team</p>"; 
+							}							
+							?>
+								<p>Championships: <?php echo $championships;?></p>
 							</div>
 						</div>
 					</div>

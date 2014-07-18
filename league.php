@@ -15,6 +15,7 @@
 	}
 	$conn = mysqli_connect('mysql7.000webhost.com', 'a6436541_rzr', 'rzr_3541', 'a6436541_login');
 	$league_result = mysqli_query($conn,"SELECT * FROM `league` WHERE id=$leagueid");
+	$own_team_result = mysqli_query($conn,"SELECT * FROM team WHERE `owner`='$userID'");
 	if(mysqli_num_rows($league_result) == 0) {
 		//no such league
 		header('Location: 404.php');
@@ -26,6 +27,7 @@
 		$salarycap = $leagueData['salarycap'];
 		$injuries = $leagueData['injuries'];
 		$users = $leagueData['users'];
+		$year = $leagueData['year'];
 	}
 	
 ?>
@@ -57,17 +59,60 @@
               <li>
                 <a href="profile.php">Profile</a>
               </li>
-              <li class="active dropdown">
-                <a class="dropdown-toggle" data-toggle="dropdown" href="#">League <span class="caret"></span></a>
-					<ul class="dropdown-menu" role="menu">
-						<li role="presentation"><a role="menuitem" tabindex="-1" href="league.php">League 1</a></li>
-						<li role="presentation" class="divider"></li>
-						<li role="presentation"><a role="menuitem" tabindex="-1" href="league.php">League 2</a></li>
-					</ul>
-              </li>
-              <li>
-                <a href="team.php">Team</a>
-              </li>
+              <?php
+			  $teamidArray = array();
+			  $locationArray = array();
+			  $teamnameArray = array();
+			  $leagueArray = array();
+				if(mysqli_num_rows($own_team_result) == 0) {
+				} else if (mysqli_num_rows($own_team_result) == 1) {
+					$own_teamData = mysqli_fetch_array($own_team_result, MYSQL_ASSOC);
+					array_push($teamidArray, $own_teamData['id']);
+					array_push($locationArray, $own_teamData['location']);
+					array_push($teamnameArray, $own_teamData['teamname']);
+					array_push($leagueArray, $own_teamData['league']);
+					echo "<li class=\"active\"><a href=\"league.php?leagueid=".$leagueArray[0]."\">League</a></li>";
+				} else if (mysqli_num_rows($own_team_result) > 1) {
+					echo "<li class=\"active dropdown\">
+							<a class=\"dropdown-toggle\" data-toggle=\"dropdown\" href=\"#\">League <span class=\"caret\"></span></a>
+								<ul class=\"dropdown-menu\" role=\"menu\">";
+					for ($i=1; $i < mysqli_num_rows($own_team_result); $i++) {
+						$k = $i - 1;
+						$own_teamData = mysqli_fetch_array($own_team_result, MYSQL_ASSOC);
+						array_push($teamidArray, $own_teamData['id']);
+						array_push($locationArray, $own_teamData['location']);
+						array_push($teamnameArray, $own_teamData['teamname']);
+						array_push($leagueArray, $own_teamData['league']);
+						echo "<li role=\"presentation\"><a role=\"menuitem\" tabindex=\"-1\" href=\"league.php?leagueid=".$teamidArray[$k]."\">League ".$leagueArray[$k]."</a></li>
+						<li role=\"presentation\" class=\"divider\"></li>";
+					}
+					$own_teamData = mysqli_fetch_array($own_team_result, MYSQL_ASSOC);
+					array_push($teamidArray, $own_teamData['id']);
+					array_push($locationArray, $own_teamData['location']);
+					array_push($teamnameArray, $own_teamData['teamname']);
+					array_push($leagueArray, $own_teamData['league']);
+					
+					echo "<li role=\"presentation\"><a role=\"menuitem\" tabindex=\"-1\" href=\"league.php?leagueid=".$leagueArray[count($leagueArray)-1]."\">League ".$leagueArray[count($leagueArray)-1]."</a></li>";
+					echo "</ul></li>";
+				}
+			if(mysqli_num_rows($own_team_result) == 0) { 
+					//person doesn't own a team
+					echo "<li><a href=\"teamselect.php\">Get a Team</a></li>";
+				} else if (mysqli_num_rows($own_team_result) == 1) {
+					echo "<li><a href=\"team.php?teamid=".$teamidArray[0]."\">Team</a></li>";
+				} else if (mysqli_num_rows($own_team_result) > 1) {
+					echo "<li class=\"dropdown\">
+							<a class=\"dropdown-toggle\" data-toggle=\"dropdown\" href=\"#\">Team <span class=\"caret\"></span></a>
+								<ul class=\"dropdown-menu\" role=\"menu\">";
+					for ($i=1; $i < mysqli_num_rows($own_team_result); $i++) {
+						$k = $i - 1;
+						echo "<li role=\"presentation\"><a role=\"menuitem\" tabindex=\"-1\" href=\"team.php?teamid=".$teamidArray[$k]."\">".$locationArray[$k]." ".$teamnameArray[$k]."</a></li>
+						<li role=\"presentation\" class=\"divider\"></li>";
+					}
+					echo "<li role=\"presentation\"><a role=\"menuitem\" tabindex=\"-1\" href=\"team.php?teamid=".$teamidArray[count($teamidArray)-1]."\">".$locationArray[count($locationArray)-1]." ".$teamnameArray[count($teamnameArray)-1]."</a></li>";
+					echo "</ul></li>";
+				}
+			  ?>
               <li>
                 <a href="#">Help</a>
               </li>
@@ -88,25 +133,28 @@
             </a>
 			<p>Week 1</p>
             <p>Next game: @<a href="#">DAL</a></p>
-			<p><a href="league.php">League X</a></p>
+			<p><a href="league.php?leagueid=<?php echo $leagueid;?>">League X</a></p>
 			
             <h3>League Links</h3></div>
             <div class="nav">
               <ul class="nav nav-pills nav-stacked navbar-left">
-                <li class="active">
-                  <a href="league.php">Standings</a>
+			  <?php
+			  echo
+                "<li class=\"active\">
+                  <a href=\"league.php?leagueid=".$leagueid."\">Standings</a>
                 </li>
                 <li>
-                  <a href="scores.php">Scores &amp; Schedule</a>
+                  <a href=\"scores.php?leagueid=".$leagueid."\">Scores &amp; Schedule</a>
                 </li>
                 <li>
-                  <a href="#">Free Agents</a>
+                  <a href=\"#\">Free Agents</a>
                 </li>
                 <li>
-                  <a href="leaguealmanac.php">Almanac</a>
+                  <a href=\"leaguealmanac.php?leagueid=".$leagueid."\">Almanac</a>
                 </li><li>
-                  <a href="#">Message Board</a>
-                </li>
+                  <a href=\"#\">Message Board</a>
+                </li>";
+				?>
               </ul>
             </div>
           </div>
@@ -114,7 +162,7 @@
         <div class="col-md-8">
           <div class="main">
             <h3><?php echo $leaguename;?></h3>
-            <p>2014 Standings, regular season</p>
+            <p><?php echo $year." ";?>Standings, regular season</p>
             <div class="panel panel-secondary">
               <!-- Default panel contents -->
               <div class="panel-heading">AFC East</div>
@@ -138,9 +186,11 @@
                 </thead>
                 <tbody>
                   <?php
-				  $result = mysqli_query($conn, "SELECT * FROM `team` WHERE `league`={$leagueid} AND `division`='afc_east' ORDER BY season_win,division_win,conf_win,points_for DESC");
+				  $division = "afc_east";
+				  $result = mysqli_query($conn, "SELECT * FROM `team` WHERE `league`={$leagueid} AND `division`='$division' ORDER BY season_win,season_tie,division_win,conf_win,points_for DESC");
 				  for ($i = 1; $i < 5; $i++) {
 					$teamData = mysqli_fetch_array($result, MYSQL_ASSOC);
+					$teamid = $teamData['id'];
 					$location = $teamData['location'];
 					$teamname = $teamData['teamname'];
 					$season_win = $teamData['season_win'];
@@ -161,10 +211,10 @@
 					
 					echo "<tr>
                     <td>
-                      <a href=\"team.php\"><img src=\"".$logopath."\" height=\"40px\" /></a>
+                      <a href=\"team.php?teamid=".$teamid."\"><img src=\"".$logopath."\" height=\"40px\" /></a>
 					  
                     </td>
-                    <td><a href=\"team.php\">".$location."
+                    <td><a href=\"team.php?teamid=".$teamid."\">".$location."
                     <br />".$teamname."</a></td>
                     <td>".$season_win."</td>
                     <td>".$season_loss."</td>
@@ -205,9 +255,11 @@
                 </thead>
                 <tbody>
                   <?php
-				  $result = mysqli_query($conn, "SELECT * FROM `team` WHERE `league`={$leagueid} AND `division`='afc_north' ORDER BY season_win,division_win,conf_win,points_for DESC");
+				  $division = "afc_north";
+				  $result = mysqli_query($conn, "SELECT * FROM `team` WHERE `league`={$leagueid} AND `division`='$division' ORDER BY season_win,season_tie,division_win,conf_win,points_for DESC");
 				  for ($i = 1; $i < 5; $i++) {
 					$teamData = mysqli_fetch_array($result, MYSQL_ASSOC);
+					$teamid = $teamData['id'];
 					$location = $teamData['location'];
 					$teamname = $teamData['teamname'];
 					$season_win = $teamData['season_win'];
@@ -224,12 +276,14 @@
 					$conf_loss = $teamData['conf_loss'];
 					$points_for = $teamData['points_for'];
 					$points_against = $teamData['points_against'];
+					$logopath = "uploads/logos/".$teamData['logofile'];
 					
 					echo "<tr>
                     <td>
-                      <a href=\"team.php\"><img src=\"".$logopath."\" height=\"40px\" /></a>
+                      <a href=\"team.php?teamid=".$teamid."\"><img src=\"".$logopath."\" height=\"40px\" /></a>
+					  
                     </td>
-                    <td><a href=\"team.php\">".$location."
+                    <td><a href=\"team.php?teamid=".$teamid."\">".$location."
                     <br />".$teamname."</a></td>
                     <td>".$season_win."</td>
                     <td>".$season_loss."</td>
@@ -270,9 +324,11 @@
                 </thead>
                 <tbody>
                   <?php
-				  $result = mysqli_query($conn, "SELECT * FROM `team` WHERE `league`={$leagueid} AND `division`='afc_south' ORDER BY season_win,division_win,conf_win,points_for DESC");
+				  $division = "afc_south";
+				  $result = mysqli_query($conn, "SELECT * FROM `team` WHERE `league`={$leagueid} AND `division`='$division' ORDER BY season_win,season_tie,division_win,conf_win,points_for DESC");
 				  for ($i = 1; $i < 5; $i++) {
 					$teamData = mysqli_fetch_array($result, MYSQL_ASSOC);
+					$teamid = $teamData['id'];
 					$location = $teamData['location'];
 					$teamname = $teamData['teamname'];
 					$season_win = $teamData['season_win'];
@@ -289,12 +345,14 @@
 					$conf_loss = $teamData['conf_loss'];
 					$points_for = $teamData['points_for'];
 					$points_against = $teamData['points_against'];
+					$logopath = "uploads/logos/".$teamData['logofile'];
 					
 					echo "<tr>
                     <td>
-                      <a href=\"team.php\"><img src=\"".$logopath."\" height=\"40px\" /></a>
+                      <a href=\"team.php?teamid=".$teamid."\"><img src=\"".$logopath."\" height=\"40px\" /></a>
+					  
                     </td>
-                    <td><a href=\"team.php\">".$location."
+                    <td><a href=\"team.php?teamid=".$teamid."\">".$location."
                     <br />".$teamname."</a></td>
                     <td>".$season_win."</td>
                     <td>".$season_loss."</td>
@@ -335,9 +393,11 @@
                 </thead>
                 <tbody>
                   <?php
-				  $result = mysqli_query($conn, "SELECT * FROM `team` WHERE `league`={$leagueid} AND `division`='afc_west' ORDER BY season_win,division_win,conf_win,points_for DESC");
+				  $division = "afc_west";
+				  $result = mysqli_query($conn, "SELECT * FROM `team` WHERE `league`={$leagueid} AND `division`='$division' ORDER BY season_win,season_tie,division_win,conf_win,points_for DESC");
 				  for ($i = 1; $i < 5; $i++) {
 					$teamData = mysqli_fetch_array($result, MYSQL_ASSOC);
+					$teamid = $teamData['id'];
 					$location = $teamData['location'];
 					$teamname = $teamData['teamname'];
 					$season_win = $teamData['season_win'];
@@ -354,12 +414,14 @@
 					$conf_loss = $teamData['conf_loss'];
 					$points_for = $teamData['points_for'];
 					$points_against = $teamData['points_against'];
+					$logopath = "uploads/logos/".$teamData['logofile'];
 					
 					echo "<tr>
                     <td>
-                      <a href=\"team.php\"><img src=\"".$logopath."\" height=\"40px\" /></a>
+                      <a href=\"team.php?teamid=".$teamid."\"><img src=\"".$logopath."\" height=\"40px\" /></a>
+					  
                     </td>
-                    <td><a href=\"team.php\">".$location."
+                    <td><a href=\"team.php?teamid=".$teamid."\">".$location."
                     <br />".$teamname."</a></td>
                     <td>".$season_win."</td>
                     <td>".$season_loss."</td>
@@ -401,9 +463,11 @@
                 </thead>
                 <tbody>
                   <?php
-				  $result = mysqli_query($conn, "SELECT * FROM `team` WHERE `league`={$leagueid} AND `division`='nfc_east' ORDER BY season_win,division_win,conf_win,points_for DESC");
+				  $division = "nfc_east";
+				  $result = mysqli_query($conn, "SELECT * FROM `team` WHERE `league`={$leagueid} AND `division`='$division' ORDER BY season_win,season_tie,division_win,conf_win,points_for DESC");
 				  for ($i = 1; $i < 5; $i++) {
 					$teamData = mysqli_fetch_array($result, MYSQL_ASSOC);
+					$teamid = $teamData['id'];
 					$location = $teamData['location'];
 					$teamname = $teamData['teamname'];
 					$season_win = $teamData['season_win'];
@@ -420,12 +484,14 @@
 					$conf_loss = $teamData['conf_loss'];
 					$points_for = $teamData['points_for'];
 					$points_against = $teamData['points_against'];
+					$logopath = "uploads/logos/".$teamData['logofile'];
 					
 					echo "<tr>
                     <td>
-                      <a href=\"team.php\"><img src=\"".$logopath."\" height=\"40px\" /></a>
+                      <a href=\"team.php?teamid=".$teamid."\"><img src=\"".$logopath."\" height=\"40px\" /></a>
+					  
                     </td>
-                    <td><a href=\"team.php\">".$location."
+                    <td><a href=\"team.php?teamid=".$teamid."\">".$location."
                     <br />".$teamname."</a></td>
                     <td>".$season_win."</td>
                     <td>".$season_loss."</td>
@@ -466,9 +532,11 @@
                 </thead>
                 <tbody>
                   <?php
-				  $result = mysqli_query($conn, "SELECT * FROM `team` WHERE `league`={$leagueid} AND `division`='nfc_north' ORDER BY season_win,division_win,conf_win,points_for DESC");
+				  $division = "nfc_north";
+				  $result = mysqli_query($conn, "SELECT * FROM `team` WHERE `league`={$leagueid} AND `division`='$division' ORDER BY season_win,season_tie,division_win,conf_win,points_for DESC");
 				  for ($i = 1; $i < 5; $i++) {
 					$teamData = mysqli_fetch_array($result, MYSQL_ASSOC);
+					$teamid = $teamData['id'];
 					$location = $teamData['location'];
 					$teamname = $teamData['teamname'];
 					$season_win = $teamData['season_win'];
@@ -485,12 +553,14 @@
 					$conf_loss = $teamData['conf_loss'];
 					$points_for = $teamData['points_for'];
 					$points_against = $teamData['points_against'];
+					$logopath = "uploads/logos/".$teamData['logofile'];
 					
 					echo "<tr>
                     <td>
-                      <a href=\"team.php\"><img src=\"".$logopath."\" height=\"40px\" /></a>
+                      <a href=\"team.php?teamid=".$teamid."\"><img src=\"".$logopath."\" height=\"40px\" /></a>
+					  
                     </td>
-                    <td><a href=\"team.php\">".$location."
+                    <td><a href=\"team.php?teamid=".$teamid."\">".$location."
                     <br />".$teamname."</a></td>
                     <td>".$season_win."</td>
                     <td>".$season_loss."</td>
@@ -531,9 +601,11 @@
                 </thead>
                 <tbody>
                   <?php
-				  $result = mysqli_query($conn, "SELECT * FROM `team` WHERE `league`={$leagueid} AND `division`='nfc_south' ORDER BY season_win,division_win,conf_win,points_for DESC");
+				  $division = "nfc_south";
+				  $result = mysqli_query($conn, "SELECT * FROM `team` WHERE `league`={$leagueid} AND `division`='$division' ORDER BY season_win,season_tie,division_win,conf_win,points_for DESC");
 				  for ($i = 1; $i < 5; $i++) {
 					$teamData = mysqli_fetch_array($result, MYSQL_ASSOC);
+					$teamid = $teamData['id'];
 					$location = $teamData['location'];
 					$teamname = $teamData['teamname'];
 					$season_win = $teamData['season_win'];
@@ -550,12 +622,14 @@
 					$conf_loss = $teamData['conf_loss'];
 					$points_for = $teamData['points_for'];
 					$points_against = $teamData['points_against'];
+					$logopath = "uploads/logos/".$teamData['logofile'];
 					
 					echo "<tr>
                     <td>
-                      <a href=\"team.php\"><img src=\"".$logopath."\" height=\"40px\" /></a>
+                      <a href=\"team.php?teamid=".$teamid."\"><img src=\"".$logopath."\" height=\"40px\" /></a>
+					  
                     </td>
-                    <td><a href=\"team.php\">".$location."
+                    <td><a href=\"team.php?teamid=".$teamid."\">".$location."
                     <br />".$teamname."</a></td>
                     <td>".$season_win."</td>
                     <td>".$season_loss."</td>
@@ -596,9 +670,11 @@
                 </thead>
                 <tbody>
                   <?php
-				  $result = mysqli_query($conn, "SELECT * FROM `team` WHERE `league`={$leagueid} AND `division`='nfc_west' ORDER BY season_win,division_win,conf_win,points_for DESC");
+				  $division = "nfc_west";
+				  $result = mysqli_query($conn, "SELECT * FROM `team` WHERE `league`={$leagueid} AND `division`='$division' ORDER BY season_win,season_tie,division_win,conf_win,points_for DESC");
 				  for ($i = 1; $i < 5; $i++) {
 					$teamData = mysqli_fetch_array($result, MYSQL_ASSOC);
+					$teamid = $teamData['id'];
 					$location = $teamData['location'];
 					$teamname = $teamData['teamname'];
 					$season_win = $teamData['season_win'];
@@ -615,12 +691,14 @@
 					$conf_loss = $teamData['conf_loss'];
 					$points_for = $teamData['points_for'];
 					$points_against = $teamData['points_against'];
+					$logopath = "uploads/logos/".$teamData['logofile'];
 					
 					echo "<tr>
                     <td>
-                      <a href=\"team.php\"><img src=\"".$logopath."\" height=\"40px\" /></a>
+                      <a href=\"team.php?teamid=".$teamid."\"><img src=\"".$logopath."\" height=\"40px\" /></a>
+					  
                     </td>
-                    <td><a href=\"team.php\">".$location."
+                    <td><a href=\"team.php?teamid=".$teamid."\">".$location."
                     <br />".$teamname."</a></td>
                     <td>".$season_win."</td>
                     <td>".$season_loss."</td>

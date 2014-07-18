@@ -7,6 +7,53 @@
 	} else {
 		header('Location: index.php');
 	}
+	//Retrieve POST data
+	$newemail = $_POST['newemail'];
+	$oldpassword = $_POST['oldpassword'];
+	$newpassword = $_POST['password1'];
+	$udt_message = "";
+	
+	$conn = mysqli_connect('mysql7.000webhost.com', 'a6436541_rzr', 'rzr_3541', 'a6436541_login');
+	
+	function createSalt()
+		{
+			$text = md5(uniqid(rand(), true));
+			return substr($text, 0, 3);
+		}
+	
+	//Update email
+	if ($newemail != "") {
+		$email_result = mysqli_query($conn,"UPDATE member SET email='$newemail' WHERE id=$userID");
+		
+		if (mysqli_affected_rows($conn) == 1) {
+			$udt_message =  "Email successfully updated";
+		} else {
+			$udt_message = "Something went wrong while updating email.";
+		}
+	}
+
+	//Update password
+	if ($newpassword != "") {
+		$pass_result = mysqli_query($conn,"SELECT * FROM member WHERE id=$userID");
+		$userData = mysqli_fetch_array($pass_result, MYSQL_ASSOC);
+		$oldhash = hash('sha256', $userData['salt'] . hash('sha256', $oldpassword));
+		
+		if($oldhash != $userData['password']) {
+			//Incorrect password
+			$udt_message = $udt_message."<br>Password was incorrect";
+		} else {
+			$newhash = hash('sha256', $newpassword);
+			$salt = createSalt();
+			$newpassword = hash('sha256', $salt . $newhash);
+			
+			$update_pass = mysqli_query($conn,"UPDATE member SET password='$newpassword',salt='$salt' WHERE id=$userID");
+			if (mysqli_affected_rows($conn) == 1) {
+				$udt_message = $udt_message."<br>Password successfully updated";
+			} else {
+				$udt_messsage = $udt_message."<br>Something went wrong while updating email";
+			}
+		}
+	}
 ?>
 <!DOCTYPE html>
 <html>
@@ -20,6 +67,54 @@
     <link href="../css/register.css" rel="stylesheet" />
     <script src="../js/jquery-1.11.1.min.js"></script>
     <script src="../js/bootstrap.js"></script>
+	<script>
+		function checkForm() {
+			var newemail = $("#newemail").val()
+			var password = $("#password1").val();
+			var confirmPassword = $("#password2").val();
+			var button = document.getElementById('signup-button');
+			var emailOk = false;
+			var passwordOk = false;
+			
+			if (newemail.length == 0) {
+				emailOk = true;
+			} else if (newemail.indexOf("@") > 0) {
+				emailOk = true;
+			} else {
+				emailOk = false;
+				$("#formcheck").html("Invalid email.");
+			}
+			
+			if (password == confirmPassword) {
+				if (password.length > 5) {
+					passwordOk = true;
+				} else if (password.length == 0) {
+					passwordOk = true;
+				} else {
+					passwordOk = false;
+					$("#formcheck").html("New password must be at least 6 characters.");
+				}
+			} else {
+				passwordOk = false;
+				$("#formcheck").html("New passwords do not match.");
+			}
+			
+			if (passwordOk && emailOk) {
+				button.disabled = false;
+				$("#formcheck").html("");
+			} else {
+				button.disabled = true;
+			}
+		
+		}
+		
+		$(document).ready(function () {
+		   $("#newemail").keyup(checkForm);
+		   $("#oldpassword").keyup(checkForm);
+		   $("#password1").keyup(checkForm);
+		   $("#password2").keyup(checkForm);
+		});
+		</script>
     <title>RedZone Rush - Edit Profile</title>
   </head>
   <body>
@@ -92,17 +187,17 @@
         <div class="col-md-offset-1 col-md-6">
           <div class="main">
 		  <h3>Edit Profile</h3>
-            <form class="form-horizontal" method="POST" id="edit-profile" action="updateinfo.php" role="form">
-              <div class="form-group">
-                <label for="email" class="col-sm-2 control-label">New Email</label>
+            <form class="form-horizontal" method="POST" id="edit-profile" action="editprofile.php" role="form">
+			  <div class="form-group">
+                <label for="newemail" class="col-sm-2 control-label">New Email</label>
                 <div class="col-sm-10">
-                  <input type="email" class="form-control" id="email" name="email" placeholder="New Email"/>
+                  <input type="email" class="form-control" id="newemail" name="newemail" placeholder="New Email"/>
                 </div>
               </div>
 			  <div class="form-group">
-                <label for="email2" class="col-sm-2 control-label">Confirm Email</label>
+                <label for="oldpassword" class="col-sm-2 control-label">Current Password</label>
                 <div class="col-sm-10">
-                  <input type="email" class="form-control" id="email2" name="email2" placeholder="Confirm Email"/>
+                  <input type="password" class="form-control" id="oldpassword" name="oldpassword" placeholder="Password"/>
                 </div>
               </div>
               <div class="form-group">
@@ -119,9 +214,10 @@
               </div>
               <div class="form-group">
                 <div class="col-sm-offset-2 col-sm-10">
-                  <button type="submit" class="btn btn-default" id="signup-button">Update Info</button>
+                  <button type="submit" class="btn btn-default" id="signup-button" disabled>Update Info</button>
                 </div>
               </div>
+			  <div id="formcheck"><?php echo $udt_message;?></div>
             </form>
 			<h4><b>Update Profile Picture</b></h4>
 			<?php if(!empty($message)) { echo "<p>{$message}</p>";}?>

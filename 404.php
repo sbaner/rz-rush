@@ -10,7 +10,7 @@
     <link href="../css/register.css" rel="stylesheet" />
     <script src="../js/jquery-1.11.1.min.js"></script>
     <script src="../js/bootstrap.js"></script>
-    <title>RedZone Rush - Sign Up</title>
+    <title>RedZone Rush - Page Not Found</title>
   </head>
   <body>
     <div class="container-fluid">

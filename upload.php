@@ -16,6 +16,16 @@ UPLOAD_ERR_NO_TMP_DIR => "No temporary directory.",
 UPLOAD_ERR_CANT_WRITE => "Can't write to disk.",
 UPLOAD_ERR_EXTENSION  => "File upload stopped by extension.",
 );
+
+function findexts ($filename) 
+	{
+		$filename = strtolower($filename) ; 
+		$exts = split("[/\\.]", $filename) ; 
+		$n = count($exts)-1; 
+		$exts = $exts[$n]; 
+		return $exts; 
+	} 
+	
 if (isset($_POST['submit'])){
  
 	 $tmp_file = $_FILES['upload_file']['tmp_name'];
@@ -26,6 +36,11 @@ if (isset($_POST['submit'])){
 	 $member_id = $_SESSION['member_id'];
  
 	if ($imgtype == "image/jpeg" || $imgtype == "image/png") {
+  
+		$ext = findexts ($_FILES['upload_file']['name']); 
+		$ran = rand();
+		$ran2 = $ran.".";
+		$target_file = $ran2.$ext;
  
 	if (move_uploaded_file($tmp_file,$upload_dir."/".$target_file)){
 			$conn = mysqli_connect('mysql7.000webhost.com', 'a6436541_rzr', 'rzr_3541', 'a6436541_login');

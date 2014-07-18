@@ -15,6 +15,10 @@
 	
 	$conn = mysqli_connect('mysql7.000webhost.com', 'a6436541_rzr', 'rzr_3541', 'a6436541_login');
 	$member_result = mysqli_query($conn,"SELECT * FROM member WHERE `id`='$profileID'");
+	$own_team_result = mysqli_query($conn,"SELECT * FROM team WHERE `owner`='$userID'");
+	$photo_result = mysqli_query($conn,"SELECT * FROM photos WHERE `member_id`='$profileID' and pri='yes'");
+	$profile_team_result = mysqli_query($conn,"SELECT * FROM `team` WHERE owner='$profileID'");
+	
 	if(mysqli_num_rows($member_result) == 0) { //user not found
 		header('Location: 404.php');
 	} else {
@@ -22,6 +26,8 @@
 		$profile_name = $memberData['username'];
 		$profile_email = $memberData['email'];
 		$profile_signup = $memberData['signup'];
+		$profile_premium = $memberData['premium'];
+		$last_login = $memberData['last_login'];
 	}
 ?>
 <!DOCTYPE html>
@@ -52,18 +58,60 @@
               <li class="active">
                 <a href="profile.php">Profile</a>
               </li>
-              <li class="dropdown">
-                <a class="dropdown-toggle" data-toggle="dropdown" href="#">League <span class="caret"></span></a>
-					<ul class="dropdown-menu" role="menu">
-						<li role="presentation"><a role="menuitem" tabindex="-1" href="league.php">League 1</a></li>
-						<li role="presentation" class="divider"></li>
-						<li role="presentation"><a role="menuitem" tabindex="-1" href="league.php">League 2</a></li>
-					</ul>
-              </li>
-              <li>
-                <a href="team.php">Team</a>
-              </li>
-              
+              <?php
+			  $teamidArray = array();
+			  $locationArray = array();
+			  $teamnameArray = array();
+			  $leagueArray = array();
+				if(mysqli_num_rows($own_team_result) == 0) {
+				} else if (mysqli_num_rows($own_team_result) == 1) {
+					$own_teamData = mysqli_fetch_array($own_team_result, MYSQL_ASSOC);
+					array_push($teamidArray, $own_teamData['id']);
+					array_push($locationArray, $own_teamData['location']);
+					array_push($teamnameArray, $own_teamData['teamname']);
+					array_push($leagueArray, $own_teamData['league']);
+					echo "<li><a href=\"league.php?leagueid=".$leagueArray[0]."\">League</a></li>";
+				} else if (mysqli_num_rows($own_team_result) > 1) {
+					echo "<li class=\"dropdown\">
+							<a class=\"dropdown-toggle\" data-toggle=\"dropdown\" href=\"#\">League <span class=\"caret\"></span></a>
+								<ul class=\"dropdown-menu\" role=\"menu\">";
+					for ($i=1; $i < mysqli_num_rows($own_team_result); $i++) {
+						$k = $i - 1;
+						$own_teamData = mysqli_fetch_array($own_team_result, MYSQL_ASSOC);
+						array_push($teamidArray, $own_teamData['id']);
+						array_push($locationArray, $own_teamData['location']);
+						array_push($teamnameArray, $own_teamData['teamname']);
+						array_push($leagueArray, $own_teamData['league']);
+						echo "<li role=\"presentation\"><a role=\"menuitem\" tabindex=\"-1\" href=\"league.php?leagueid=".$teamidArray[$k]."\">League ".$leagueArray[$k]."</a></li>
+						<li role=\"presentation\" class=\"divider\"></li>";
+					}
+					$own_teamData = mysqli_fetch_array($own_team_result, MYSQL_ASSOC);
+					array_push($teamidArray, $own_teamData['id']);
+					array_push($locationArray, $own_teamData['location']);
+					array_push($teamnameArray, $own_teamData['teamname']);
+					array_push($leagueArray, $own_teamData['league']);
+					
+					echo "<li role=\"presentation\"><a role=\"menuitem\" tabindex=\"-1\" href=\"league.php?leagueid=".$leagueArray[count($leagueArray)-1]."\">League ".$leagueArray[count($leagueArray)-1]."</a></li>";
+					echo "</ul></li>";
+				}
+			if(mysqli_num_rows($own_team_result) == 0) { 
+					//person doesn't own a team
+					echo "<li><a href=\"teamselect.php\">Get a Team</a></li>";
+				} else if (mysqli_num_rows($own_team_result) == 1) {
+					echo "<li><a href=\"team.php?teamid=".$teamidArray[0]."\">Team</a></li>";
+				} else if (mysqli_num_rows($own_team_result) > 1) {
+					echo "<li class=\"dropdown\">
+							<a class=\"dropdown-toggle\" data-toggle=\"dropdown\" href=\"#\">Team <span class=\"caret\"></span></a>
+								<ul class=\"dropdown-menu\" role=\"menu\">";
+					for ($i=1; $i < mysqli_num_rows($own_team_result); $i++) {
+						$k = $i - 1;
+						echo "<li role=\"presentation\"><a role=\"menuitem\" tabindex=\"-1\" href=\"team.php?teamid=".$teamidArray[$k]."\">".$locationArray[$k]." ".$teamnameArray[$k]."</a></li>
+						<li role=\"presentation\" class=\"divider\"></li>";
+					}
+					echo "<li role=\"presentation\"><a role=\"menuitem\" tabindex=\"-1\" href=\"team.php?teamid=".$teamidArray[count($teamidArray)-1]."\">".$locationArray[count($locationArray)-1]." ".$teamnameArray[count($teamnameArray)-1]."</a></li>";
+					echo "</ul></li>";
+				}
+			  ?>
               <li>
                 <a href="#">Help</a>
               </li>
@@ -114,7 +162,6 @@
 								<h3><?php echo $profile_name; ?></h3>
 								<p class="premium">Premium Member <span class="glyphicon glyphicon-star"></span> </p>
 								<?php
-									$photo_result = mysqli_query($conn,"SELECT * FROM photos WHERE `member_id`='$profileID' and pri='yes'");
 									if(mysqli_num_rows($photo_result) == 0) {
 										//no prof pic uploaded
 										echo "<img src=\"profile.jpg\">";
@@ -128,12 +175,17 @@
 							<div class="col-md-3">
 								<div class="middle-col">
 									<h4>Teams</h4>
-									<p><a href="team.php">
-										New York Giants
-										</a><br>(League 1)</p><p>
-										<a href="team.php">
-										New York Empire
-										</a><br>(League 2)</p>
+									<?php 
+									for ($i=0; $i<mysqli_num_rows($profile_team_result); $i++) {
+										$profile_teamData = mysqli_fetch_array($profile_team_result, MYSQL_ASSOC);
+										$profile_teamid = $profile_teamData['id'];
+										$profile_location = $profile_teamData['location'];
+										$profile_teamname = $profile_teamData['teamname'];
+										$profile_league = $profile_teamData['league'];
+										
+										echo "<p><a href=\"team.php?teamid=".$profile_teamid."\">".$profile_location." ".$profile_teamname."</a><br>(League ".$profile_league.")</p>";
+									}
+									?>
 								</div>
 							</div>
 							<div class="col-md-3">
@@ -142,7 +194,7 @@
 									<p>Member since: <?php echo $profile_signup;?>
 									<p>Total Record: 38-0</p>
 									<p>Championships: 2</p>
-									<p>Last activity: 6/30/2014</p>
+									<p>Last activity: <?php echo $last_login;?></p>
 								</div>
 							</div>
 							<div class="col-md-3">

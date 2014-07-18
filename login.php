@@ -1,5 +1,6 @@
 <?php
 session_start();
+date_default_timezone_set('America/New_York');
 
 $username = $_POST['username'];
 $password = $_POST['password'];
@@ -28,6 +29,9 @@ if($hash != $userData['password']) // Incorrect password. So, redirect to login_
 	$_SESSION['userID'] = $userData['id'];
 	$_SESSION['username'] = $userData['username'];
 	$_SESSION['email'] = $userData['email'];
+	
+	$date = date("m")."/".date("d")."/".date("y");
+	mysqli_query($conn, "UPDATE member SET last_login='$date' WHERE username = '$username'");
 	
 	header('Location: profile.php');
 }

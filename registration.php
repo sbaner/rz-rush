@@ -1,5 +1,5 @@
 <?php
-date_default_timezone_set('America/New)_York');
+date_default_timezone_set('America/New_York');
 //retrieve our data from POST
 $username = $_POST['username'];
 $password1 = $_POST['password1'];
@@ -36,11 +36,13 @@ if (mysqli_num_rows($checkUser) > 0) {
 	$result = "sameemail";
 } else {
 	$signupdate = date("m")."/".date("d")."/".date("y");
-	$query = "INSERT INTO member ( username, password, email, salt, signup, premium )
-			VALUES ( '$username', '$password', '$email', '$salt', '$signupdate','n' );";
+	$query = "INSERT INTO member ( username, password, email, salt, signup, premium, last_login )
+			VALUES ( '$username', '$password', '$email', '$salt', '$signupdate', 'n', '$signupdate' );";
 	mysqli_query($conn, $query);
+	$userid = mysqli_insert_id($conn);
+	$friend_query = "INSERT INTO friends (friend_one, friend_two, status) VALUES ($userid, $userid, '2');";
+	mysqli_query($conn, $friend_query);
 	$result = "success";
-
 }
 
 mysqli_close($conn);

@@ -22,9 +22,9 @@
 			if (email!='' && username!='' && password!='') {
 				if (email.indexOf("@") > 0) {
 					if (password == confirmPassword) {
-						if (password.length > 5) { 
+						if (password.length > 5) {
+							$("#divCheckPasswordMatch").html("");
 							if (checkbox.checked) {
-								$("#divCheckPasswordMatch").html("");
 									button.disabled = false;
 							} else {
 								button.disabled = true;
@@ -46,10 +46,13 @@
 				button.disabled = true;
 			}
 		}
-
 		
-
-	</script>
+		$(document).ready(function () {
+		   $("#email").keyup(checkForm);
+		   $("#password1").keyup(checkForm);
+		   $("#password2").keyup(checkForm);
+		});
+		</script>
     <title>RedZone Rush - Sign Up</title>
   </head>
   <body>
@@ -85,25 +88,25 @@
               <div class="form-group">
                 <label for="email" class="col-sm-2 control-label">Email</label>
                 <div class="col-sm-10">
-                  <input type="email" class="form-control" id="email" name="email" placeholder="Email" onChange="checkForm();"/>
+                  <input type="email" class="form-control" id="email" name="email" placeholder="Email""/>
                 </div>
               </div>
 			  <div class="form-group">
                 <label for="username" class="col-sm-2 control-label">Username</label>
                 <div class="col-sm-10">
-                  <input type="text" class="form-control" id="username" name="username" placeholder="Username" onChange="checkForm();">
+                  <input type="text" class="form-control" id="username" name="username" placeholder="Username">
                 </div>
               </div>
               <div class="form-group">
                 <label for="password1" class="col-sm-2 control-label">Password</label>
                 <div class="col-sm-10">
-                  <input type="password" class="form-control" id="password1" name="password1" placeholder="Password" onChange="checkForm();"/>
+                  <input type="password" class="form-control" id="password1" name="password1" placeholder="Password"/>
                 </div>
               </div>
 			  <div class="form-group">
                 <label for="password2" class="col-sm-2 control-label">Confirm Password</label>
                 <div class="col-sm-10">
-                  <input type="password" class="form-control" id="password2" name="password2" placeholder="Password" onChange="checkForm();"/>
+                  <input type="password" class="form-control" id="password2" name="password2" placeholder="Password"/>
                 </div>
               </div>
               <div class="form-group">

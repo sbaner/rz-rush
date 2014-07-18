@@ -7,6 +7,11 @@
 	} else {
 		header('Location: index.php');
 	}	
+if (!empty($_GET['leagueid'])) {
+		$leagueid = $_GET['leagueid'];
+	} else {
+		header('Location: 404.php');
+	}
 ?>
 <!DOCTYPE html>
 <html>
@@ -72,26 +77,28 @@
             <p>Next game: @
             <a href="#">DAL</a></p>
             <p>
-              <a href="league.php">League X</a>
+              <a href="league.php?leagueid=<?php echo $leagueid;?>">League X</a>
             </p>
             <h3>League Links</h3></div>
             <div class="nav">
               <ul class="nav nav-pills nav-stacked navbar-left">
-                <li>
-                  <a href="league.php">Standings</a>
+                <?php
+			  echo
+                "<li>
+                  <a href=\"league.php?leagueid=".$leagueid."\">Standings</a>
                 </li>
                 <li>
-                  <a href="scores.php">Scores &amp; Schedule</a>
+                  <a href=\"scores.php?leagueid=".$leagueid."\">Scores &amp; Schedule</a>
                 </li>
                 <li>
-                  <a href="#">Free Agents</a>
+                  <a href=\"#\">Free Agents</a>
                 </li>
-                <li class="active">
-                  <a href="leaguealmanac.php">Almanac</a>
-                </li>
-                <li>
-                  <a href="#">Message Board</a>
-                </li>
+                <li class=\"active\">
+                  <a href=\"leaguealmanac.php?leagueid=".$leagueid."\">Almanac</a>
+                </li><li>
+                  <a href=\"#\">Message Board</a>
+                </li>";
+				?>
               </ul>
             </div>
           </div>
