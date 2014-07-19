@@ -172,10 +172,10 @@
                   <tr>
                     <th width="5%"></th>
                     <th width="15%"></th>
+					<th width="8%">Owner</th>
                     <th width="8%">W</th>
                     <th width="8%">L</th>
                     <th width="8%">T</th>
-                    <th width="8%">PCT</th>
                     <th width="8%">GB</th>
                     <th width="8%">PF</th>
                     <th width="8%" >PA</th>
@@ -191,6 +191,7 @@
 				  for ($i = 1; $i < 5; $i++) {
 					$teamData = mysqli_fetch_array($result, MYSQL_ASSOC);
 					$teamid = $teamData['id'];
+					$teamowner = $teamData['owner'];
 					$location = $teamData['location'];
 					$teamname = $teamData['teamname'];
 					$season_win = $teamData['season_win'];
@@ -209,6 +210,10 @@
 					$points_against = $teamData['points_against'];
 					$logopath = "uploads/logos/".$teamData['logofile'];
 					
+					$owner_result = mysqli_query($conn, "SELECT * from member WHERE id='$teamowner'");
+					$memberData = mysqli_fetch_array($owner_result, MYSQL_ASSOC);
+					$ownername = $memberData['username'];
+					
 					echo "<tr>
                     <td>
                       <a href=\"team.php?teamid=".$teamid."\"><img src=\"".$logopath."\" height=\"40px\" /></a>
@@ -216,10 +221,10 @@
                     </td>
                     <td><a href=\"team.php?teamid=".$teamid."\">".$location."
                     <br />".$teamname."</a></td>
+					<td>".$ownername."</td>
                     <td>".$season_win."</td>
                     <td>".$season_loss."</td>
                     <td>".$season_tie."</td>
-                    <td>".$pct."</td>
                     <td>0</td>
                     <td >".$points_for."</td>
                     <td >".$points_against."</td>
@@ -443,7 +448,6 @@
             <!-- Default panel contents -->
             <div class="panel-heading">NFC East</div>
             <!-- Table --><div class="table-responsive">
-            ...
             <table class="table">
                 <thead>
                   <tr>
@@ -512,7 +516,7 @@
             <!-- Default panel contents -->
             <div class="panel-heading">NFC North</div>
             <!-- Table --><div class="table-responsive">
-            ...
+            
             <table class="table">
                 <thead>
                   <tr>
@@ -581,7 +585,7 @@
             <!-- Default panel contents -->
             <div class="panel-heading">NFC South</div>
             <!-- Table --><div class="table-responsive">
-            ...
+            
             <table class="table">
                 <thead>
                   <tr>
@@ -650,7 +654,7 @@
             <!-- Default panel contents -->
             <div class="panel-heading">NFC West</div>
             <!-- Table --><div class="table-responsive">
-            ...
+            
             <table class="table">
                 <thead>
                   <tr>

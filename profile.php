@@ -150,7 +150,7 @@
 			<p>No one :(</p>
           </div>
 		  <form class="form-horizontal" id="logout-form" action="logout.php" role="form">
-			<button type="submit" class="btn btn-default">Log out</button>
+			<button type="submit" class="btn btn-primary">Log out</button>
 		</form>
         </div>
         <div class="col-md-8">
@@ -201,10 +201,10 @@
 								<div class="last-col">
 									<div class="container">
 										<div class="row">
-											<button type="button" class="btn btn-default"><span class="glyphicon glyphicon-envelope"></span> Message</button>
+											<button type="button" class="btn btn-primary"><span class="glyphicon glyphicon-envelope"></span> Message</button>
 										</div>
 										<div class="row">
-											<button type="button" class="btn btn-default"><span class="glyphicon glyphicon-plus"></span> Add Friend</button>
+											<button type="button" class="btn btn-primary"><span class="glyphicon glyphicon-plus"></span> Add Friend</button>
 										</div>
 									</div>
 								</div>

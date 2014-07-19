@@ -7,54 +7,39 @@
 	} else {
 		header('Location: index.php');
 	}
-	//Retrieve POST data
-	$newemail = $_POST['newemail'];
-	$oldpassword = $_POST['oldpassword'];
-	$newpassword = $_POST['password1'];
-	$udt_message = "";
-	
+	if (!empty($_GET['teamid'])) {
+		$teamid = $_GET['teamid'];
+	} else {
+		header('Location: 404.php');
+	}
+	//Verify user owns team
 	$conn = mysqli_connect('mysql7.000webhost.com', 'a6436541_rzr', 'rzr_3541', 'a6436541_login');
+	$team_result = mysqli_query($conn,"SELECT * FROM `team` WHERE id=$teamid");
+	
+	$teamData = mysqli_fetch_array($team_result, MYSQL_ASSOC);
+	$owner = $teamData['owner'];
+	if ($owner == $userID) {
+			$own_team = true;
+	} else {
+		header('Location: profile.php');
+		die();
+	}
+	
 	$own_team_result = mysqli_query($conn,"SELECT * FROM team WHERE `owner`='$userID'");
 	
-	function createSalt()
-		{
-			$text = md5(uniqid(rand(), true));
-			return substr($text, 0, 3);
-		}
+	//Retrieve POST data and update
+	if(isset($_POST['delete-button'])) {
+		mysqli_query($conn,"UPDATE team SET owner=0,total_win=0,total_loss=0,championships=0,total_tie=0,logofile='helmet.png',owndate='' WHERE id=$teamid");
+		header('Location: team.php?teamid='.$teamid);
+	} else if(isset($_POST['location'])) {
+		$newlocation = $_POST['location'];
+		$newname = $_POST['teamname'];
+		mysqli_query($conn,"UPDATE team SET location='$newlocation',teamname='$newname' WHERE id=$teamid");
+		
+		header('Location: team.php?teamid='.$teamid);
+	}
 	
-	//Update email
-	if ($newemail != "") {
-		$email_result = mysqli_query($conn,"UPDATE member SET email='$newemail' WHERE id=$userID");
-		
-		if (mysqli_affected_rows($conn) == 1) {
-			$udt_message =  "Email successfully updated";
-		} else {
-			$udt_message = "Something went wrong while updating email.";
-		}
-	}
-
-	//Update password
-	if ($newpassword != "") {
-		$pass_result = mysqli_query($conn,"SELECT * FROM member WHERE id=$userID");
-		$userData = mysqli_fetch_array($pass_result, MYSQL_ASSOC);
-		$oldhash = hash('sha256', $userData['salt'] . hash('sha256', $oldpassword));
-		
-		if($oldhash != $userData['password']) {
-			//Incorrect password
-			$udt_message = $udt_message."<br>Password was incorrect";
-		} else {
-			$newhash = hash('sha256', $newpassword);
-			$salt = createSalt();
-			$newpassword = hash('sha256', $salt . $newhash);
-			
-			$update_pass = mysqli_query($conn,"UPDATE member SET password='$newpassword',salt='$salt' WHERE id=$userID");
-			if (mysqli_affected_rows($conn) == 1) {
-				$udt_message = $udt_message."<br>Password successfully updated";
-			} else {
-				$udt_messsage = $udt_message."<br>Something went wrong while updating email";
-			}
-		}
-	}
+	
 ?>
 <!DOCTYPE html>
 <html>
@@ -70,53 +55,22 @@
     <script src="../js/bootstrap.js"></script>
 	<script>
 		function checkForm() {
-			var newemail = $("#newemail").val()
-			var password = $("#password1").val();
-			var confirmPassword = $("#password2").val();
+			var location = $("#location").val()
+			var teamname = $("#teamname").val();
 			var button = document.getElementById('signup-button');
-			var emailOk = false;
-			var passwordOk = false;
 			
-			if (newemail.length == 0) {
-				emailOk = true;
-			} else if (newemail.indexOf("@") > 0) {
-				emailOk = true;
-			} else {
-				emailOk = false;
-				$("#formcheck").html("Invalid email.");
-			}
-			
-			if (password == confirmPassword) {
-				if (password.length > 5) {
-					passwordOk = true;
-				} else if (password.length == 0) {
-					passwordOk = true;
-				} else {
-					passwordOk = false;
-					$("#formcheck").html("New password must be at least 6 characters.");
-				}
-			} else {
-				passwordOk = false;
-				$("#formcheck").html("New passwords do not match.");
-			}
-			
-			if (passwordOk && emailOk) {
+			if (location.length > 0 && teamname.length > 0) {
 				button.disabled = false;
-				$("#formcheck").html("");
 			} else {
 				button.disabled = true;
 			}
-		
 		}
-		
 		$(document).ready(function () {
-		   $("#newemail").keyup(checkForm);
-		   $("#oldpassword").keyup(checkForm);
-		   $("#password1").keyup(checkForm);
-		   $("#password2").keyup(checkForm);
+		   $("#location").keyup(checkForm);
+		   $("#teamname").keyup(checkForm);
 		});
 		</script>
-    <title>RedZone Rush - Edit Profile</title>
+    <title>RedZone Rush - Edit Team</title>
   </head>
   <body>
     <div class="container-fluid">
@@ -129,7 +83,7 @@
         <div class="col-md-10">
           <div class="nav">
             <ul class="nav nav-pills navbar-left">
-              <li class="active">
+              <li>
                 <a href="profile.php">Profile</a>
               </li>
               <?php
@@ -172,9 +126,9 @@
 					//person doesn't own a team
 					echo "<li><a href=\"teamselect.php\">Get a Team</a></li>";
 				} else if (mysqli_num_rows($own_team_result) == 1) {
-					echo "<li><a href=\"team.php?teamid=".$teamidArray[0]."\">Team</a></li>";
+					echo "<li class=\"active\"><a href=\"team.php?teamid=".$teamidArray[0]."\">Team</a></li>";
 				} else if (mysqli_num_rows($own_team_result) > 1) {
-					echo "<li class=\"dropdown\">
+					echo "<li class=\"active dropdown\">
 							<a class=\"dropdown-toggle\" data-toggle=\"dropdown\" href=\"#\">Team <span class=\"caret\"></span></a>
 								<ul class=\"dropdown-menu\" role=\"menu\">";
 					for ($i=1; $i < mysqli_num_rows($own_team_result); $i++) {
@@ -197,31 +151,44 @@
         <div class="col-md-2">
           <div class="side-bar">
             <div class="team-card">
-            <h3>My teams</h3>
-            <p><a href="team.php">
-              New York Giants
-            </a><br>(League 1)</p><p><a href="team.php">
-              New York Empire
-            </a><br>(League 2)</p>
-            <h3>Profile Links</h3></div>
+            <h3>My team</h3>
+            <a href="#">
+              <img src="nfl-logos/19.png" />
+            </a> 
+            <a href="#">
+              <p>New York Giants</p>
+            </a>
+			<p>Week 1</p>
+            <p>Next game: @<a href="#">DAL</a></p>
+			<p><a href="league.php?leagueid=<?php echo $leagueid."\">League ".$leagueid;?></a></p>
+            <h3>Team Links</h3></div>
             <div class="nav">
               <ul class="nav nav-pills nav-stacked navbar-left">
-                <li>
-                  <a href="profile.php">View Profile</a>
-                </li>
 				<li class="active">
-                  <a href="editprofile.php">Edit Profile</a>
+					<a href="teamedit.php?teamid=<?php echo $teamid;?>">Edit Team</a>
+				</li>
+                <li>
+                  <a href="team.php?teamid=<?php echo $teamid;?>">Roster</a>
+                </li>
+				<li>
+                  <a href="league.php?leagueid=<?php echo $leagueid;?>">Standings</a>
                 </li>
                 <li>
-                  <a href="#">Add/Remove Teams</a>
+                  <a href="scores.php?leagueid=<?php echo $leagueid;?>">Scores &amp; Schedule</a>
+                </li><li>
+                  <a href="#">Depth Chart</a>
                 </li>
                 <li>
-                  <a href="#">Premium</a>
+                  <a href="#">Playbooks</a>
+                </li>
+                <li>
+                  <a href="#">Stats</a>
+                </li>
+                <li>
+                  <a href="#">Injuries</a>
                 </li>
               </ul>
             </div>
-			<h3>Your Friends</h3>
-			<p>No one :(</p>
           </div>
 		  <form class="form-horizontal" id="logout-form" action="logout.php" role="form">
 			<button type="submit" class="btn btn-primary">Log out</button>
@@ -229,46 +196,34 @@
         </div>
         <div class="col-md-offset-1 col-md-6">
           <div class="main">
-		  <h3>Edit Profile</h3>
-            <form class="form-horizontal" method="POST" id="edit-profile" action="editprofile.php" role="form">
-			  <div class="form-group">
-                <label for="newemail" class="col-sm-2 control-label">New Email</label>
-                <div class="col-sm-10">
-                  <input type="email" class="form-control" id="newemail" name="newemail" placeholder="New Email"/>
-                </div>
-              </div>
-			  <div class="form-group">
-                <label for="oldpassword" class="col-sm-2 control-label">Current Password</label>
-                <div class="col-sm-10">
-                  <input type="password" class="form-control" id="oldpassword" name="oldpassword" placeholder="Password"/>
-                </div>
-              </div>
+		  <h3>Edit Team</h3>
+            <form class="form-horizontal" method="POST" id="edit-team" action="teamedit.php?teamid=<?php echo $teamid;?>" role="form">
               <div class="form-group">
-                <label for="password1" class="col-sm-2 control-label">New Password</label>
+                <label for="location" class="col-sm-2 control-label">Location</label>
                 <div class="col-sm-10">
-                  <input type="password" class="form-control" id="password1" name="password1" placeholder="Password"/>
+                  <input type="text" class="form-control" id="location" name="location" placeholder="Location (Ex: New York)"/>
                 </div>
               </div>
 			  <div class="form-group">
-                <label for="password2" class="col-sm-2 control-label">Confirm Password</label>
+                <label for="teamname" class="col-sm-2 control-label">Team Name</label>
                 <div class="col-sm-10">
-                  <input type="password" class="form-control" id="password2" name="password2" placeholder="Password"/>
+                  <input type="text" class="form-control" id="teamname" name="teamname" placeholder="Team Name (Ex: Giants)"/>
                 </div>
               </div>
               <div class="form-group">
                 <div class="col-sm-offset-2 col-sm-10">
                   <button type="submit" class="btn btn-primary" id="signup-button" disabled>Update Info</button>
+                  <button type="submit" class="btn btn-danger" id="delete-button" name="delete-button" onclick="return confirm('Really delete this team? All historical data will be lost and you will no longer control this team.');">Delete Team</button>
                 </div>
               </div>
-			  <div id="formcheck"><?php echo $udt_message;?></div>
             </form>
-			<h4><b>Update Profile Picture</b></h4>
+			<h4><b>Update Team Logo</b></h4>
 			<?php if(!empty($message)) { echo "<p>{$message}</p>";}?>
 			<form action="upload.php" id="profile-pic-form" enctype="multipart/form-data" method="POST">
 				
 				<input type="hidden" name="MAX_FILE_SIZE" value="5000000">
 				<input type="file" id="upload_file" name="upload_file">
-                <button type="submit" name="submit" class="btn btn-primary" id="signup-button">Upload</button>
+                <button type="submit" name="submit" class="btn btn-primary" id="upload-button">Upload</button>
 				<span class="help-block">Image requirements: JPG or PNG, less than 5MB.</span>
 			</form>
           </div>

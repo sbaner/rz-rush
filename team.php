@@ -13,6 +13,7 @@
 		header('Location: 404.php');
 	}
 	$own_team = false;
+	$canclaim = false;
 	$conn = mysqli_connect('mysql7.000webhost.com', 'a6436541_rzr', 'rzr_3541', 'a6436541_login');
 	$own_team_result = mysqli_query($conn,"SELECT * FROM team WHERE `owner`='$userID'");
 	$team_result = mysqli_query($conn,"SELECT * FROM `team` WHERE id=$teamid");
@@ -42,7 +43,14 @@
 			$own_team = true;
 		}
 		
+		$leaguecheck_result = mysqli_query($conn,"SELECT * FROM `team` WHERE league=$leagueid AND owner=$userID");
+		if(mysqli_num_rows($leaguecheck_result) == 0) {
+			//No other teams in the same league owned
+			$canclaim = true;
+		}
 	}
+	
+	//Process team actions
 ?>
 <!DOCTYPE html>
 <html>
@@ -150,8 +158,18 @@
             <h3>Team Links</h3></div>
             <div class="nav">
               <ul class="nav nav-pills nav-stacked navbar-left">
+			  <?php
+			  if($own_team){
+				echo "<li>
+					<a href=\"teamedit.php?teamid=".$teamid."\">Edit Team</a>
+				</li>";
+				}
+			  ?>
                 <li class="active">
                   <a href="team.php?teamid=<?php echo $teamid;?>">Roster</a>
+                </li>
+				<li>
+                  <a href="league.php?leagueid=<?php echo $leagueid;?>">Standings</a>
                 </li>
                 <li>
                   <a href="scores.php?leagueid=<?php echo $leagueid;?>">Scores &amp; Schedule</a>
@@ -177,19 +195,22 @@
 				<div class="container">
 					<div class="row">
 						<div class="col-md-3">
-								<h3><?php echo $location." ".$teamname;?></h3>
+								<h3 id="teamname"><?php echo $location." ".$teamname;?></h3>
 								<img src="<?php echo $logopath;?>">
 						</div>
 						<div class="col-md-3 col-md-offset-1">
 							<div class="middle-col">
 							<?php
+							echo "<h3>".$season_win." - ".$season_loss."</h3>";
 							if ($owner!=0) {
-								echo "<p>Owned by <a href=\"profile.php".$owner."\">".$ownername."</a> since: ".$owndate."</p>";
+								echo "<p>Owned by <a href=\"profile.php?profileid=".$owner."\">".$ownername."</a> since: ".$owndate."</p><p>Championships: ".$championships."</p>";
 							} else {
-								echo "<p>CPU Team</p>"; 
+								echo "<p>CPU Team</p>";
+								if($canclaim) {
+									echo "<p><a href=\"claimteam.php?teamid=".$teamid."\"><b>Claim team</b></a></p>";
+								}
 							}							
 							?>
-								<p>Championships: <?php echo $championships;?></p>
 							</div>
 						</div>
 					</div>
@@ -201,9 +222,12 @@
 			 <div class="container">
 			 <div class="row">
 			 <div class="col-md-9">
+			 <form name="inactive" action="team.php?teamid=<?php echo $teamid;?>" method="POST" role="form">
 			 <div class="panel panel-primary">
             <!-- Default panel contents -->
-            <div class="panel-heading">Roster</div>
+            <div class="panel-heading">Active Players</div>
+			<button type="submit" name="cut" class="btn btn-danger" onclick="return confirm('Cut the selected players?');">Cut</button>
+			<button type="submit" name="inactivate" class="btn btn-info">Inactivate</button>
             <!-- Table -->
 			<div class="table-responsive">
             <table class="table">
@@ -212,9 +236,9 @@
                     <th width="10%">Pos</th>
                     <th width="20%">Name</th>
 					<th width="20%">Status</th>
-                    <th width="15%">Exp</th>
+                    <th width="20%">Exp</th>
                     <th width="20%">Salary</th>
-					<th width="15%"></th>
+					<th width="10%"></th>
                   </tr>
                 </thead>
                 <tbody>
@@ -224,32 +248,80 @@
 					<td class="healthy">Healthy</td>
                     <td>1</td>
                     <td>$125,345,345</td>
-					<td><button type="button" class="btn btn-default">Extend/Restructure Contract</button></td>
-                  </tr><tr class="injured">
-                    <td>QB</td>
-                    <td><a href="player.php">Bob Jones</a></td>
-					<td class="healthy">Torn ACL</td>
-                    <td>1</td>
-                    <td>$125,345,345</td>
-					<td><button type="button" class="btn btn-default">Extend/Restructure Contract</button></td>
-                  </tr><tr>
-                    <td>QB</td>
-                    <td><a href="player.php">Bob Jones</a></td>
-					<td class="healthy">Healthy</td>
-                    <td>1</td>
-                    <td>$125,345,345</td>
-					<td><button type="button" class="btn btn-default">Extend/Restructure Contract</button></td>
-                  </tr><tr>
-                    <td>QB</td>
-                    <td><a href="player.php">Bob Jones</a></td>
-					<td class="healthy">Healthy</td>
-                    <td>1</td>
-                    <td>$125,345,345</td>
-					<td><button type="button" class="btn btn-default">Extend/Restructure Contract</button></td>
+					<td>
+					  <input type="checkbox" name="playercheck[]" id="playercheck" value="playerid">
+					</td>
                   </tr>
-                  
                 </tbody>
-              </table></div></div></div></div></div>
+              </table></div></div>
+			  </form>
+			  <form name="inactive" action="team.php?teamid=<?php echo $teamid;?>" method="POST" role="form">
+			<div class="panel panel-info">
+            <!-- Default panel contents -->
+            <div class="panel-heading">Inactive Players</div>
+			<button type="submit" name="cut" class="btn btn-danger" onclick="return confirm('Cut the selected players?');">Cut</button>
+			<button type="submit" name="cut" class="btn btn-success">Activate</button>
+            <!-- Table -->
+			<div class="table-responsive">
+            <table class="table">
+                <thead>
+                  <tr>
+                    <th width="10%">Pos</th>
+                    <th width="20%">Name</th>
+					<th width="20%">Status</th>
+                    <th width="20%">Exp</th>
+                    <th width="20%">Salary</th>
+					<th width="10%"></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>QB</td>
+                    <td><a href="player.php">Bob Jones</a></td>
+					<td class="healthy">Healthy</td>
+                    <td>1</td>
+                    <td>$125,345,345</td>
+					<td>
+						<input type="checkbox" name="playercheck[]" id="playercheck" value="playerid">
+					</td>
+                  </tr>
+                </tbody>
+              </table></div></div>
+			  </form>
+			  <form name="inactive" action="team.php?teamid=<?php echo $teamid;?>" method="POST" role="form">
+			  <div class="panel panel-danger">
+            <!-- Default panel contents -->
+            <div class="panel-heading">Injured Reserve</div>
+			<button type="submit" name="cut" class="btn btn-danger" onclick="return confirm('Cut the selected players?');">Cut</button>
+            <!-- Table -->
+			<div class="table-responsive">
+            <table class="table">
+                <thead>
+                  <tr>
+                    <th width="10%">Pos</th>
+                    <th width="20%">Name</th>
+					<th width="20%">Status</th>
+                    <th width="20%">Exp</th>
+                    <th width="20%">Salary</th>
+					<th width="10%"></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>QB</td>
+                    <td><a href="player.php">Bob Jones</a></td>
+					<td class="healthy">Healthy</td>
+                    <td>1</td>
+                    <td>$125,345,345</td>
+					<td>
+						<input type="checkbox" name="playercheck[]" id="playercheck" value="playerid">
+					</td>
+                  </tr>
+                </tbody>
+              </table></div></div>
+			  
+			  </form>
+			  </div></div></div>
 			  
           </div>
         </div>

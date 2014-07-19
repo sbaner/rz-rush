@@ -119,7 +119,7 @@
               </div>
               <div class="form-group">
                 <div class="col-sm-offset-2 col-sm-10">
-                  <button type="submit" class="btn btn-default" id="signup-button" disabled>Sign Up</button>
+                  <button type="submit" class="btn btn-primary" id="signup-button" disabled>Sign Up</button>
                 </div>
               </div><p>Please note: creating multiple accounts is prohibited, and cheaters will be banned.</p>
 			  <div id="divCheckPasswordMatch"></div>

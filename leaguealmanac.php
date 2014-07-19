@@ -12,6 +12,8 @@ if (!empty($_GET['leagueid'])) {
 	} else {
 		header('Location: 404.php');
 	}
+	$conn = mysqli_connect('mysql7.000webhost.com', 'a6436541_rzr', 'rzr_3541', 'a6436541_login');
+	$own_team_result = mysqli_query($conn,"SELECT * FROM team WHERE `owner`='$userID'");
 ?>
 <!DOCTYPE html>
 <html>
@@ -38,23 +40,63 @@ if (!empty($_GET['leagueid'])) {
         <div class="col-md-10">
           <div class="nav">
             <ul class="nav nav-pills navbar-left">
-              <li>
+			  <li>
                 <a href="profile.php">Profile</a>
               </li>
-              <li class="dropdown">
-                <a class="dropdown-toggle" data-toggle="dropdown" href="#">League <span class="caret"></span></a>
-                <ul class="dropdown-menu" role="menu">
-                  <li role="presentation">
-                    <a role="menuitem" tabindex="-1" href="league.php">League 1</a>
-                  </li>
-                  <li role="presentation">
-                    <a role="menuitem" tabindex="-1" href="league.php">League 2</a>
-                  </li>
-                </ul>
-              </li>
-              <li>
-                <a href="team.php">Team</a>
-              </li>
+              <?php
+			  $teamidArray = array();
+			  $locationArray = array();
+			  $teamnameArray = array();
+			  $leagueArray = array();
+				if(mysqli_num_rows($own_team_result) == 0) {
+				} else if (mysqli_num_rows($own_team_result) == 1) {
+					$own_teamData = mysqli_fetch_array($own_team_result, MYSQL_ASSOC);
+					array_push($teamidArray, $own_teamData['id']);
+					array_push($locationArray, $own_teamData['location']);
+					array_push($teamnameArray, $own_teamData['teamname']);
+					array_push($leagueArray, $own_teamData['league']);
+					echo "<li><a href=\"league.php?leagueid=".$leagueArray[0]."\">League</a></li>";
+				} else if (mysqli_num_rows($own_team_result) > 1) {
+					echo "<li class=\"dropdown\">
+							<a class=\"dropdown-toggle\" data-toggle=\"dropdown\" href=\"#\">League <span class=\"caret\"></span></a>
+								<ul class=\"dropdown-menu\" role=\"menu\">";
+					for ($i=1; $i < mysqli_num_rows($own_team_result); $i++) {
+						$k = $i - 1;
+						$own_teamData = mysqli_fetch_array($own_team_result, MYSQL_ASSOC);
+						array_push($teamidArray, $own_teamData['id']);
+						array_push($locationArray, $own_teamData['location']);
+						array_push($teamnameArray, $own_teamData['teamname']);
+						array_push($leagueArray, $own_teamData['league']);
+						echo "<li role=\"presentation\"><a role=\"menuitem\" tabindex=\"-1\" href=\"league.php?leagueid=".$teamidArray[$k]."\">League ".$leagueArray[$k]."</a></li>
+						<li role=\"presentation\" class=\"divider\"></li>";
+					}
+					$own_teamData = mysqli_fetch_array($own_team_result, MYSQL_ASSOC);
+					array_push($teamidArray, $own_teamData['id']);
+					array_push($locationArray, $own_teamData['location']);
+					array_push($teamnameArray, $own_teamData['teamname']);
+					array_push($leagueArray, $own_teamData['league']);
+					
+					echo "<li role=\"presentation\"><a role=\"menuitem\" tabindex=\"-1\" href=\"league.php?leagueid=".$leagueArray[count($leagueArray)-1]."\">League ".$leagueArray[count($leagueArray)-1]."</a></li>";
+					echo "</ul></li>";
+				}
+			if(mysqli_num_rows($own_team_result) == 0) { 
+					//person doesn't own a team
+					echo "<li><a href=\"teamselect.php\">Get a Team</a></li>";
+				} else if (mysqli_num_rows($own_team_result) == 1) {
+					echo "<li><a href=\"team.php?teamid=".$teamidArray[0]."\">Team</a></li>";
+				} else if (mysqli_num_rows($own_team_result) > 1) {
+					echo "<li class=\"dropdown\">
+							<a class=\"dropdown-toggle\" data-toggle=\"dropdown\" href=\"#\">Team <span class=\"caret\"></span></a>
+								<ul class=\"dropdown-menu\" role=\"menu\">";
+					for ($i=1; $i < mysqli_num_rows($own_team_result); $i++) {
+						$k = $i - 1;
+						echo "<li role=\"presentation\"><a role=\"menuitem\" tabindex=\"-1\" href=\"team.php?teamid=".$teamidArray[$k]."\">".$locationArray[$k]." ".$teamnameArray[$k]."</a></li>
+						<li role=\"presentation\" class=\"divider\"></li>";
+					}
+					echo "<li role=\"presentation\"><a role=\"menuitem\" tabindex=\"-1\" href=\"team.php?teamid=".$teamidArray[count($teamidArray)-1]."\">".$locationArray[count($locationArray)-1]." ".$teamnameArray[count($teamnameArray)-1]."</a></li>";
+					echo "</ul></li>";
+				}
+			  ?>
               <li>
                 <a href="#">Help</a>
               </li>
