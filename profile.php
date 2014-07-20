@@ -19,7 +19,7 @@
 		$own_profile = true;
 	}
 	
-	$conn = mysqli_connect('mysql7.000webhost.com', 'a6436541_rzr', 'rzr_3541', 'a6436541_login');
+	$conn = mysqli_connect('localhost', 'rzrushco_admin', 'rzr_3541', 'rzrushco_main');
 	$member_result = mysqli_query($conn,"SELECT * FROM member WHERE `id`='$profileID'");
 	$own_team_result = mysqli_query($conn,"SELECT * FROM team WHERE `owner`='$userID'");
 	$photo_result = mysqli_query($conn,"SELECT * FROM photos WHERE `member_id`='$profileID' and pri='yes'");
@@ -34,6 +34,7 @@
 		$profile_signup = $memberData['signup'];
 		$profile_premium = $memberData['premium'];
 		$last_login = $memberData['last_login'];
+		$profileid = $memberData['id'];
 	}
 ?>
 <!DOCTYPE html>
@@ -46,6 +47,7 @@
     <link href="css/bootstrap.css" rel="stylesheet" />
     <link href="css/main.css" rel="stylesheet" />
     <link href="css/profile.css" rel="stylesheet" />
+	<link rel="shortcut icon" href="favicon.ico" />
 	<script src="js/jquery-1.11.1.min.js"></script>
 	<script src="js/bootstrap.js"></script>
     <title>RedZone Rush - <?php echo $username;?></title>
@@ -147,8 +149,58 @@
             </div>";
 			}
 			?>
-			<h3>Friends</h3>
-			<p>No one :(</p>
+			<?php
+			$myfriends_result = mysqli_query($conn,"SELECT * FROM `friends` WHERE friend_one=$profileid AND status='1' OR friend_two=$profileid AND status='1'");
+			$numfriends = mysqli_num_rows($myfriends_result);
+			echo "<h3>Friends (".$numfriends.")</h3><div class=\"friendslist\">";
+			if (mysqli_num_rows($myfriends_result) == 0) {
+			echo "<p>No one :(</p>";
+			} else {
+				for ($i; $i < mysqli_num_rows($myfriends_result); $i++) {
+					$friendData = mysqli_fetch_array($myfriends_result);
+					$friend_one = $friendData['friend_one'];
+					$friend_two = $friendData['friend_two'];
+					if($friend_one == $profileid) {
+						$friendname_result = mysqli_query($conn,"SELECT username FROM `member` WHERE id=$friend_two");
+						$friendnameData = mysqli_fetch_array($friendname_result);
+						$friendname = $friendnameData['username'];
+						echo "<p><a href=\"profile.php?profileid=".$friend_two."\">".$friendname."</a></p>";
+					} else if ($friend_two == $profileid) {
+						$friendname_result = mysqli_query($conn,"SELECT username FROM `member` WHERE id=$friend_one");
+						$friendnameData = mysqli_fetch_array($friendname_result);
+						$friendname = $friendnameData['username'];
+						echo "<p><a href=\"profile.php?profileid=".$friend_one."\">".$friendname."</a></p>";
+					}
+				}
+			}
+			echo "</div>";
+			//Check for requests
+			if ($own_profile) {
+				$myrequests_result = mysqli_query($conn,"SELECT * FROM `friends` WHERE friend_two=$userID AND status='0'");
+				if (mysqli_num_rows($myrequests_result) > 0) {
+					echo "<h4>Friend Requests</h4>";
+					for ($i = 0; $i < mysqli_num_rows($myrequests_result); $i++) {
+						$requestData = mysqli_fetch_array($myrequests_result, MYSQL_ASSOC);
+						$requester = $requestData['friend_one'];
+						$requestname_result = mysqli_query($conn, "SELECT username FROM `member` WHERE id=$requester");
+						$requestnameData = mysqli_fetch_array($requestname_result, MYSQL_ASSOC);
+						$requestername = $requestnameData['username'];
+						echo "<form method=\"POST\" id=\"confirm\" action=\"addfriend.php?friendid=".$requester."\" role=\"form\">
+							<div class=\"row\">
+							  <div class=\"col-md-5\">".$requestername."
+							  </div>
+							  <div class=\"col-md-3\">
+								<button type=\"submit\" name=\"confirm\" class=\"btn btn-primary btn-xs\">Confirm</button>
+							  </div>
+							  <div class=\"col-md-3\">
+								<button type=\"submit\" name=\"deny\" class=\"btn btn-primary btn-xs\">Deny</button>
+							  </div>
+							 </div>
+						</form>";
+					}
+				}
+			}
+			?>
           </div>
 		  <form class="form-horizontal" id="logout-form" action="logout.php" role="form">
 			<button type="submit" class="btn btn-primary">Log out</button>
@@ -199,12 +251,36 @@
 							</div>
 							<div class="col-md-3">
 								<div class="last-col">
-										<div class="row">
-											<button type="button" class="btn btn-primary"><span class="glyphicon glyphicon-envelope"></span> Message</button>
-										</div>
-										<div class="row">
-											<button type="button" class="btn btn-primary"><span class="glyphicon glyphicon-plus"></span> Add Friend</button>
-										</div>
+									<?php 
+									$friendrequest_query = "SELECT * FROM `friends` WHERE friend_one=$userID AND friend_two=$profileid AND status='0'";
+									$isfriend_query = "SELECT * FROM `friends` WHERE friend_one=$userID AND friend_two=$profileid AND status='1'";
+									$friendrequest_result = mysqli_query($conn,$friendrequest_query);
+									$isfriend_result = mysqli_query($conn,$isfriend_query);
+									if (!$own_profile) {
+										echo "<div class=\"row\">
+												<button type=\"button\" class=\"btn btn-primary\"><span class=\"glyphicon glyphicon-envelope\"></span> Message</button>
+											</div>";
+										if (mysqli_num_rows($friendrequest_result) == 1) {
+											//Friend request sent
+											echo "<div class=\"row\">
+												<button type=\"button\" class=\"btn btn-primary\" name=\"sendrequest\" id=\"sendrequest\" disabled><span class=\"glyphicon glyphicon-ok\"></span> Friend Request Sent</button>
+											</div>";
+										} else if (mysqli_num_rows($isfriend_result) == 1) {
+											//Is friend
+											echo "<div class=\"row\">
+												<form method=\"POST\" id=\"addfriend\" action=\"addfriend.php?friendid=".$memberData['id']."\" role=\"form\">
+													<button type=\"submit\" class=\"btn btn-primary\" name=\"removefriend\" id=\"removefriend\"><span class=\"glyphicon glyphicon-remove\"></span> Remove Friend</button>
+												</form>
+											</div>";
+										} else {
+											echo "<div class=\"row\">
+													<form method=\"POST\" id=\"addfriend\" action=\"addfriend.php?friendid=".$memberData['id']."\" role=\"form\">
+														<button type=\"submit\" class=\"btn btn-primary\"  id=\"sendrequest\"><span class=\"glyphicon glyphicon-plus\"></span> Add Friend</button>
+													</form>
+												</div>";
+											}
+									}
+									?>
 								</div>
 							</div>
 						</div>

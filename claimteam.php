@@ -18,7 +18,7 @@
 	$teamunowned = false;
 	$canclaim = false;
 	$teamlimit = false;
-	$conn = mysqli_connect('mysql7.000webhost.com', 'a6436541_rzr', 'rzr_3541', 'a6436541_login');
+	$conn = mysqli_connect('localhost', 'rzrushco_admin', 'rzr_3541', 'rzrushco_main');
 	$team_result = mysqli_query($conn,"SELECT * FROM `team` WHERE id=$teamid");
 	if(mysqli_num_rows($team_result) == 0) {
 		//no such team

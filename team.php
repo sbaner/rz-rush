@@ -14,7 +14,7 @@
 	}
 	$own_team = false;
 	$canclaim = false;
-	$conn = mysqli_connect('mysql7.000webhost.com', 'a6436541_rzr', 'rzr_3541', 'a6436541_login');
+	$conn = mysqli_connect('localhost', 'rzrushco_admin', 'rzr_3541', 'rzrushco_main');
 	$own_team_result = mysqli_query($conn,"SELECT * FROM team WHERE `owner`='$userID'");
 	$team_result = mysqli_query($conn,"SELECT * FROM `team` WHERE id=$teamid");
 	
@@ -64,6 +64,7 @@
     <link href="css/bootstrap.css" rel="stylesheet" />
     <link href="css/main.css" rel="stylesheet" />
     <link href="css/team.css" rel="stylesheet" />
+	<link rel="shortcut icon" href="favicon.ico" />
 	<script src="js/jquery-1.11.1.min.js"></script>
 	<script src="js/bootstrap.js"></script>
     <title>RedZone Rush - Team</title>
@@ -143,18 +144,7 @@
       <div class="row" id="content">
         <div class="col-md-2">
           <div class="side-bar">
-            <div class="team-card">
-            <h3>My team</h3>
-            <a href="#">
-              <img src="nfl-logos/19.png" />
-            </a> 
-            <a href="#">
-              <p>New York Giants</p>
-            </a>
-			<p>Week 1</p>
-            <p>Next game: @<a href="#">DAL</a></p>
-			<p><a href="league.php?leagueid=<?php echo $leagueid."\">League ".$leagueid;?></a></p>
-            <h3>Team Links</h3></div>
+            <h3>Team Links</h3>
             <div class="nav">
               <ul class="nav nav-pills nav-stacked navbar-left">
 			  <?php

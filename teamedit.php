@@ -13,7 +13,7 @@
 		header('Location: 404.php');
 	}
 	//Verify user owns team
-	$conn = mysqli_connect('mysql7.000webhost.com', 'a6436541_rzr', 'rzr_3541', 'a6436541_login');
+	$conn = mysqli_connect('localhost', 'rzrushco_admin', 'rzr_3541', 'rzrushco_main');
 	$team_result = mysqli_query($conn,"SELECT * FROM `team` WHERE id=$teamid");
 	
 	$teamData = mysqli_fetch_array($team_result, MYSQL_ASSOC);
@@ -51,6 +51,7 @@
     <link href="../css/bootstrap.css" rel="stylesheet" />
     <link href="../css/main.css" rel="stylesheet" />
     <link href="../css/register.css" rel="stylesheet" />
+	<link rel="shortcut icon" href="favicon.ico" />
     <script src="../js/jquery-1.11.1.min.js"></script>
     <script src="../js/bootstrap.js"></script>
 	<script>

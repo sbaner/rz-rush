@@ -43,7 +43,7 @@
 			die();
 		}
 		$year = date("Y");
-		$conn = mysqli_connect('mysql7.000webhost.com', 'a6436541_rzr', 'rzr_3541', 'a6436541_login');
+		$conn = mysqli_connect('localhost', 'rzrushco_admin', 'rzr_3541', 'rzrushco_main');
 		mysqli_query($conn,"INSERT INTO `league`(`leaguename`, `frequency`, `salarycap`, `injuries`,`users`,`year`) 
 				VALUES ('{$leaguename}', '{$freq}', '{$salary}', '{$injury}',0,'{$year}')");
 		if (mysqli_affected_rows($conn) == 1) {

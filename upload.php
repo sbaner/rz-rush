@@ -43,24 +43,15 @@ if (isset($_POST['submit'])){
 		$target_file = $ran2.$ext;
  
 	if (move_uploaded_file($tmp_file,$upload_dir."/".$target_file)){
-			$conn = mysqli_connect('mysql7.000webhost.com', 'a6436541_rzr', 'rzr_3541', 'a6436541_login');
+			$conn = mysqli_connect('localhost', 'rzrushco_admin', 'rzr_3541', 'rzrushco_main');
 			mysqli_query($conn,"UPDATE `photos` SET `pri`='no' WHERE   member_id ='{$userID}'");
 			mysqli_query($conn,"INSERT INTO `photos`(`filename`, `type`, `size`, `member_id`,`pri`) 
 				VALUES ('{$target_file}', '{$imgtype}', '{$imgsize}', '{$userID}','yes' )");
  
 			if (mysqli_affected_rows($conn) == 1) {
- 
-				echo "<script type=\"text/javascript\">
-							alert(\"Profile picture changed.\");
-						</script>";
-						
- 
 			} else{
-				echo "<script type=\"text/javascript\">
-							alert(\"Upload failed!\");
-						</script>";
 			}
- 
+			header('Location: profile.php');
 			//echo "File uploaded Succesfully";
  
 		} else {
@@ -70,17 +61,20 @@ if (isset($_POST['submit'])){
 							alert(\".{$message}.\");
  
 						</script>";
+			header('Location: profile.php');
 		}
  
 		} else {
 		echo "<script type=\"text/javascript\">
 							alert(\"Invalid image format. JPG or PNG only, please.\");
 						</script>";
+		
+		header('Location: editprofile.php');
  
  
 		}
 		
+		
 		header('Location: profile.php');
- 
 }
 ?>

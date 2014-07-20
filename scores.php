@@ -13,7 +13,7 @@ if (!empty($_GET['leagueid'])) {
 		header('Location: 404.php');
 	}
 	
-	$conn = mysqli_connect('mysql7.000webhost.com', 'a6436541_rzr', 'rzr_3541', 'a6436541_login');
+	$conn = mysqli_connect('localhost', 'rzrushco_admin', 'rzr_3541', 'rzrushco_main');
 	$own_team_result = mysqli_query($conn,"SELECT * FROM team WHERE `owner`='$userID'");
 	
 ?>
@@ -27,6 +27,7 @@ if (!empty($_GET['leagueid'])) {
     <link href="css/bootstrap.css" rel="stylesheet" />
     <link href="css/main.css" rel="stylesheet" />
     <link href="css/scores.css" rel="stylesheet" />
+	<link rel="shortcut icon" href="favicon.ico" />
     <script src="js/jquery-1.11.1.min.js"></script>
     <script src="js/bootstrap.js"></script>
 	<script>document.write('<style>.hidden-score { display: none; }</style>');</script>

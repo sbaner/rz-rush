@@ -13,9 +13,10 @@ if(isset($_SESSION['userID'])) {
 	<link href='http://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
     <link href="css/bootstrap.css" rel="stylesheet" />
     <link href="css/main.css" rel="stylesheet" />
+	<link rel="shortcut icon" href="favicon.ico" />
 	<script src="js/jquery-1.11.1.min.js"></script>
 	<script src="js/bootstrap.js"></script>
-    <title>RedZone Rush - Home</title>
+    <title>RedZone Rush</title>
 	
   </head>
   <body>

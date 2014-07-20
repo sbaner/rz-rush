@@ -96,10 +96,6 @@ input {
 	font-size:12px;
 }
 
-.breadcrumb {
-	margin-top:10px;
-}
-
 /* Sortable tables */
 table.sortable thead {
     background-color:#eee;

@@ -5,7 +5,7 @@ date_default_timezone_set('America/New_York');
 $username = $_POST['username'];
 $password = $_POST['password'];
  
-$conn = mysqli_connect('mysql7.000webhost.com', 'a6436541_rzr', 'rzr_3541', 'a6436541_login');
+$conn = mysqli_connect('localhost', 'rzrushco_admin', 'rzr_3541', 'rzrushco_main');
  
 $username = mysqli_real_escape_string($conn, $username);
 $query = "SELECT *

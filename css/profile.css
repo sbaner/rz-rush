@@ -31,6 +31,11 @@
 	margin-left:15px;
 }
 
+.friendslist {
+	max-height:200px;
+	overflow-y:auto;
+}
+
 .middle-col {
 	color:#DDD;
 	padding-top:60px;
@@ -61,7 +66,7 @@
 	padding-top:100px;
 }
 
-.last-col .container .row {
+.last-col .row {
 	padding-bottom:15px;
 }
 
