@@ -38,7 +38,6 @@
 }
 
 .side-bar {
-	margin-top:30px;
 	padding-top:1px;
 	padding-left:10px;
 	padding-bottom:5px;
@@ -97,10 +96,37 @@ input {
 	font-size:12px;
 }
 
+.breadcrumb {
+	margin-top:10px;
+}
 
+/* Sortable tables */
+table.sortable thead {
+    background-color:#eee;
+    color:#666666;
+    font-weight: bold;
+    cursor: default;
+}
+table.sortable th:not(.sorttable_sorted):not(.sorttable_sorted_reverse):not(.sorttable_nosort):after { 
+    content: " \25B4\25BE" 
+}
 body {
-	font-family:"Open Sans", sans-serif;
+	font-family:"Open Sans",sans-serif;
+	background-color: #356aa0;
+	min-height: 100vh;
+}
+
+#top {
+	background-color:#FFF;
+	padding-bottom:10px;
+}
+#content {
 	background-color:#EEE;
+	padding:1%;
+	margin-top:2%;
+	margin-bottom:2%;
+	margin-left:2%;
+	margin-right:2%;
 }
 #login-button {
 	margin-bottom:15px;
@@ -108,6 +134,7 @@ body {
 #logout-form {
 	margin-top:15px;
 }
+
 @media not handheld and (orientation:portrait) {
 	.jumbotron {
 		height:650px;

@@ -57,7 +57,7 @@
   </head>
   <body>
     <div class="container-fluid">
-      <div class="row">
+      <div class="row" id="top">
         <div class="col-md-2">
           <a href="../index.php">
             <img class="logo" src="../logo-small.png" />
@@ -79,7 +79,7 @@
           </div>
         </div>
       </div>
-      <div class="row">
+      <div class="row" id="content">
         
         <div class="col-md-offset-3 col-md-6">
           <div class="main">

@@ -20,7 +20,7 @@ if(isset($_SESSION['userID'])) {
   </head>
   <body>
     <div class="container-fluid">
-      <div class="row">
+      <div class="row" id="top">
         <div class="col-md-2">
           <a href="./index.php">
             <img class="logo" src="./logo-small.png" />
@@ -42,7 +42,7 @@ if(isset($_SESSION['userID'])) {
           </div>
         </div>
       </div>
-      <div class="row">
+      <div class="row" id="content">
         <div class="col-md-2">
           <div class="login-bar">
             <form class="navbar-form navbar-left" id="login-form" name="login-form" method="post" action="login.php" role="login">
@@ -115,14 +115,14 @@ if(isset($_SESSION['userID'])) {
 			  </a>
             </div>
           </div>
-        </div>
-      </div>
-      <div class="row">
+		  <div class="row">
         <div class="col-md-2 col-md-offset-10">
           <div class="credit">
             <p>Image courtesy 
             <a href="http://commons.wikimedia.org/wiki/User:Bgag">Bernard Gagnon</a>, modified in accordance with <a href="http://creativecommons.org/licenses/by-sa/3.0/legalcode">CC BY-SA 3.0</a></p>
           </div>
+        </div>
+      </div>
         </div>
       </div>
     </div>

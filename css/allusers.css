@@ -1,0 +1,13 @@
+.main {
+	margin-top:50px;
+	background-color:#DDD;
+	color:#333;
+	padding:20px;
+}
+
+.main h3 {
+	padding-bottom:5px;
+	border-bottom-style:solid;
+	border-bottom-width:1px;
+	border-bottom-color:#AAA;
+}

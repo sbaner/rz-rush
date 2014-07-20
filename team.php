@@ -49,6 +49,8 @@
 			$canclaim = true;
 		}
 	}
+	$league_result = mysqli_query($conn,"SELECT * FROM `league` WHERE id=$leagueid");
+	$leagueData = mysqli_fetch_array($league_result, MYSQL_ASSOC);
 	
 	//Process team actions
 ?>
@@ -68,7 +70,7 @@
   </head>
   <body>
     <div class="container-fluid">
-      <div class="row">
+      <div class="row" id="top">
         <div class="col-md-2">
           <a href="./index.php">
             <img class="logo" src="./logo-small.png" />
@@ -85,6 +87,9 @@
 			  $locationArray = array();
 			  $teamnameArray = array();
 			  $leagueArray = array();
+			  
+			  //Still gets league data, though league link was removed
+			  
 				if(mysqli_num_rows($own_team_result) == 0) {
 				} else if (mysqli_num_rows($own_team_result) == 1) {
 					$own_teamData = mysqli_fetch_array($own_team_result, MYSQL_ASSOC);
@@ -92,11 +97,7 @@
 					array_push($locationArray, $own_teamData['location']);
 					array_push($teamnameArray, $own_teamData['teamname']);
 					array_push($leagueArray, $own_teamData['league']);
-					echo "<li><a href=\"league.php?leagueid=".$leagueArray[0]."\">League</a></li>";
 				} else if (mysqli_num_rows($own_team_result) > 1) {
-					echo "<li class=\"dropdown\">
-							<a class=\"dropdown-toggle\" data-toggle=\"dropdown\" href=\"#\">League <span class=\"caret\"></span></a>
-								<ul class=\"dropdown-menu\" role=\"menu\">";
 					for ($i=1; $i < mysqli_num_rows($own_team_result); $i++) {
 						$k = $i - 1;
 						$own_teamData = mysqli_fetch_array($own_team_result, MYSQL_ASSOC);
@@ -104,17 +105,12 @@
 						array_push($locationArray, $own_teamData['location']);
 						array_push($teamnameArray, $own_teamData['teamname']);
 						array_push($leagueArray, $own_teamData['league']);
-						echo "<li role=\"presentation\"><a role=\"menuitem\" tabindex=\"-1\" href=\"league.php?leagueid=".$teamidArray[$k]."\">League ".$leagueArray[$k]."</a></li>
-						<li role=\"presentation\" class=\"divider\"></li>";
 					}
 					$own_teamData = mysqli_fetch_array($own_team_result, MYSQL_ASSOC);
 					array_push($teamidArray, $own_teamData['id']);
 					array_push($locationArray, $own_teamData['location']);
 					array_push($teamnameArray, $own_teamData['teamname']);
 					array_push($leagueArray, $own_teamData['league']);
-					
-					echo "<li role=\"presentation\"><a role=\"menuitem\" tabindex=\"-1\" href=\"league.php?leagueid=".$leagueArray[count($leagueArray)-1]."\">League ".$leagueArray[count($leagueArray)-1]."</a></li>";
-					echo "</ul></li>";
 				}
 			if(mysqli_num_rows($own_team_result) == 0) { 
 					//person doesn't own a team
@@ -134,6 +130,9 @@
 					echo "</ul></li>";
 				}
 			  ?>
+			  <li>
+				<a href="allusers.php">Users</a>
+			  </li>
               <li>
                 <a href="#">Help</a>
               </li>
@@ -141,7 +140,7 @@
           </div>
         </div>
       </div>
-      <div class="row">
+      <div class="row" id="content">
         <div class="col-md-2">
           <div class="side-bar">
             <div class="team-card">
@@ -182,14 +181,19 @@
                 <li>
                   <a href="#">Stats</a>
                 </li>
-                <li>
-                  <a href="#">Injuries</a>
-                </li>
               </ul>
             </div>
           </div>
         </div>
         <div class="col-md-8">
+		<ol class="breadcrumb">
+		<?php
+		$leaguename = $leagueData['leaguename'];
+		echo "
+		  <li><a href=\"league.php?leagueid=".$leagueid."\">".$leaguename."</a></li>
+		  <li class=\"active\">".$location." ".$teamname."</li>";
+		?>
+		</ol>
           <div class="main">
 			<div class="team-header">
 				<div class="container">
@@ -222,12 +226,20 @@
 			 <div class="container">
 			 <div class="row">
 			 <div class="col-md-9">
-			 <form name="inactive" action="team.php?teamid=<?php echo $teamid;?>" method="POST" role="form">
+			 <?php
+			 if($own_team) {
+			 echo "<form name=\"active\" action=\"team.php?teamid=<?php echo $teamid;?>\" method=\"POST\" role=\"form\">";
+			 }
+			 ?>
 			 <div class="panel panel-primary">
             <!-- Default panel contents -->
             <div class="panel-heading">Active Players</div>
-			<button type="submit" name="cut" class="btn btn-danger" onclick="return confirm('Cut the selected players?');">Cut</button>
-			<button type="submit" name="inactivate" class="btn btn-info">Inactivate</button>
+			<?php
+			 if($own_team) {
+			echo "<button type=\"submit\" name=\"cut\" class=\"btn btn-danger\" onclick=\"return confirm('Cut the selected players?');\">Cut</button>
+			<button type=\"submit\" name=\"inactivate\" class=\"btn btn-info\">Inactivate</button>";
+			}
+			?>
             <!-- Table -->
 			<div class="table-responsive">
             <table class="table">
@@ -249,18 +261,30 @@
                     <td>1</td>
                     <td>$125,345,345</td>
 					<td>
-					  <input type="checkbox" name="playercheck[]" id="playercheck" value="playerid">
+					  <?php
+						if($own_team) {
+						echo "<input type=\"checkbox\" name=\"playercheck[]\" id=\"playercheck\" value=\"playerid\">";
+						}
+						?>
 					</td>
                   </tr>
                 </tbody>
               </table></div></div>
-			  </form>
-			  <form name="inactive" action="team.php?teamid=<?php echo $teamid;?>" method="POST" role="form">
+			  <?php
+			 if($own_team) {
+			 echo "</form>
+			  <form name=\"inactive\" action=\"team.php?teamid=<?php echo $teamid;?>\" method=\"POST\" role=\"form\">";
+			  }
+			  ?>
 			<div class="panel panel-info">
             <!-- Default panel contents -->
             <div class="panel-heading">Inactive Players</div>
-			<button type="submit" name="cut" class="btn btn-danger" onclick="return confirm('Cut the selected players?');">Cut</button>
-			<button type="submit" name="cut" class="btn btn-success">Activate</button>
+			<?php
+			 if($own_team) {
+			echo "<button type=\"submit\" name=\"cut\" class=\"btn btn-danger\" onclick=\"return confirm('Cut the selected players?');\">Cut</button>
+			<button type=\"submit\" name=\"cut\" class=\"btn btn-success\">Activate</button>";
+			}
+			?>
             <!-- Table -->
 			<div class="table-responsive">
             <table class="table">
@@ -282,17 +306,29 @@
                     <td>1</td>
                     <td>$125,345,345</td>
 					<td>
-						<input type="checkbox" name="playercheck[]" id="playercheck" value="playerid">
+						<?php
+						if($own_team) {
+						echo "<input type=\"checkbox\" name=\"playercheck[]\" id=\"playercheck\" value=\"playerid\">";
+						}
+						?>
 					</td>
                   </tr>
                 </tbody>
               </table></div></div>
-			  </form>
-			  <form name="inactive" action="team.php?teamid=<?php echo $teamid;?>" method="POST" role="form">
+			  <?php
+			 if($own_team) {
+			  echo "</form>
+			  <form name=\"injured\" action=\"team.php?teamid=<?php echo $teamid;?>\" method=\"POST\" role=\"form\">";
+			  }
+			  ?>
 			  <div class="panel panel-danger">
             <!-- Default panel contents -->
             <div class="panel-heading">Injured Reserve</div>
-			<button type="submit" name="cut" class="btn btn-danger" onclick="return confirm('Cut the selected players?');">Cut</button>
+			<?php
+			 if($own_team) {
+			echo "<button type=\"submit\" name=\"cut\" class=\"btn btn-danger\" onclick=\"return confirm('Cut the selected players?');\">Cut</button>";
+			}
+			?>
             <!-- Table -->
 			<div class="table-responsive">
             <table class="table">
@@ -314,13 +350,21 @@
                     <td>1</td>
                     <td>$125,345,345</td>
 					<td>
-						<input type="checkbox" name="playercheck[]" id="playercheck" value="playerid">
+						<?php
+						if($own_team) {
+						echo "<input type=\"checkbox\" name=\"playercheck[]\" id=\"playercheck\" value=\"playerid\">";
+						}
+						?>
 					</td>
                   </tr>
                 </tbody>
               </table></div></div>
 			  
-			  </form>
+			  <?php
+			 if($own_team) {
+			 echo "</form>";
+			 }
+			 ?>
 			  </div></div></div>
 			  
           </div>

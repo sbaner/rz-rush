@@ -10,8 +10,8 @@
 	
 	$conn = mysqli_connect('mysql7.000webhost.com', 'a6436541_rzr', 'rzr_3541', 'a6436541_login');
 	$own_team_result = mysqli_query($conn,"SELECT * FROM team WHERE `owner`='$userID'");
-	$leagues_result = mysqli_query($conn,"SELECT * FROM `league`");
-	$num_leagues = mysqli_num_rows($leagues_result);
+	$members_result = mysqli_query($conn,"SELECT id,username,signup,last_login FROM `member`");
+	$num_members = mysqli_num_rows($members_result);
 ?>
 <!DOCTYPE html>
 <html>
@@ -20,11 +20,12 @@
     content="HTML Tidy for HTML5 (experimental) for Windows https://github.com/w3c/tidy-html5/tree/c63cc39" />
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
     <link href='http://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css' />
-    <link href="../css/bootstrap.css" rel="stylesheet" />
-    <link href="../css/main.css" rel="stylesheet" />
-    <link href="../css/register.css" rel="stylesheet" />
-    <script src="../js/jquery-1.11.1.min.js"></script>
-    <script src="../js/bootstrap.js"></script>
+    <link href="css/bootstrap.css" rel="stylesheet" />
+    <link href="css/main.css" rel="stylesheet" />
+    <link href="css/allusers.css" rel="stylesheet" />
+    <script src="js/jquery-1.11.1.min.js"></script>
+    <script src="js/bootstrap.js"></script>
+	<script src="js/sorttable.js"></script>
     <title>RedZone Rush - Join a League</title>
   </head>
   <body>
@@ -41,7 +42,7 @@
               <li>
                 <a href="profile.php">Profile</a>
               </li>
-              <?php
+             <?php
 			  $teamidArray = array();
 			  $locationArray = array();
 			  $teamnameArray = array();
@@ -89,7 +90,7 @@
 					echo "</ul></li>";
 				}
 			  ?>
-			  <li>
+			  <li class="active">
 				<a href="allusers.php">Users</a>
 			  </li>
               <li>
@@ -102,46 +103,33 @@
       <div class="row" id="content">
         <div class="col-md-offset-3 col-md-6">
           <div class="main">
-		  <h3>Join a league</h3>
+		  <h3>All Users</h3>
 		  <div class="table-responsive">
-		  <table class="table">
+		  <table class="table sortable">
                 <thead>
                   <tr>
-                    <th width="20%">League</th>
-                    <th width="20%">Frequency</th>
-                    <th width="20%">Salary Cap</th>
-                    <th width="20%">Injuries</th>
-                    <th width="20%">Users</th>
+                    <th width="20%">User</th>
+                    <th class="sorttable_nosort" width="40%">Teams</th>
+                    <th width="20%">Member Since</th>
+                    <th width="20%">Last Activity</th>
                   </tr>
 				 </thead>
 				 <tbody>
 				 <?php
-				  for ($i=0; $i<$num_leagues; $i++) {
+				  for ($i=0; $i<$num_members; $i++) {
 				  echo "<tr>";
-					$leagueData = mysqli_fetch_array($leagues_result, MYSQL_ASSOC);
-					$leagueid = $leagueData['id'];
-					echo "<td><a href=\"league.php?leagueid=".$leagueData['id']."\">".$leagueData['leaguename']."</a></td><td>";
-					if ($leagueData['frequency']=="ed") {
-						echo "Every day</td><td>";
-					} else if ($leagueData['frequency']=="eod") {
-						echo "Every other day</td><td>";
-					} else if ($leagueData['frequency']=="smw") {
-						echo "Saturday/Monday/Wednesday</td><td>";
+					$memberData = mysqli_fetch_array($members_result, MYSQL_ASSOC);
+					$memberid = $memberData['id'];
+					$team_result = mysqli_query($conn,"SELECT id,location,teamname FROM team where owner=$memberid");
+					echo "<td><a href=\"profile.php?profileid=".$memberData['id']."\">".$memberData['username']."</a></td>";
+					echo "<td>";
+					for ($j = 0; $j<mysqli_num_rows($team_result); $j++) {
+						$teamData = mysqli_fetch_array($team_result, MYSQL_ASSOC);
+						echo "<a href=\"team.php?teamid=".$teamData['id']."\">".$teamData['location']." ".$teamData['teamname']."</a><br>";
 					}
-					if ($leagueData['salarycap']=="y") {
-						echo "On</td><td>";
-					} else if ($leagueData['salarycap']=="n") {
-						echo "Off</td><td>";
-					} 
-					if ($leagueData['injuries']=="y") {
-						echo "On</td><td>";
-					} else if ($leagueData['injuries']=="n") {
-						echo "Off</td><td>";
-					}
-					$leagueusers_result = mysqli_query($conn,"SELECT * FROM `team` WHERE league=$leagueid AND owner!=0");
-					$users = mysqli_num_rows($leagueusers_result);
-					echo "Users: ".$users."/32</td>";
-					echo "</tr>";
+					echo "</td>";
+					echo "<td>".$memberData['signup']."</td>";
+					echo "<td>".$memberData['last_login']."</td>";
 				  }
 				  ?>
 				 </tbody>

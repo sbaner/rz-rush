@@ -38,6 +38,10 @@
 	color:white;
 }
 
+#showbutton {
+	float:right;
+}
+
 .all-results {
 	padding:10px;
 	margin-top:10px;
