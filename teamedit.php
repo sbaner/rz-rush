@@ -24,7 +24,9 @@
 		header('Location: profile.php');
 		die();
 	}
-	
+	$logopath = "uploads/logos/".$teamData['logofile'];
+	$location = $teamData['location'];
+	$teamname = $teamData['teamname'];
 	$own_team_result = mysqli_query($conn,"SELECT * FROM team WHERE `owner`='$userID'");
 	
 	//Retrieve POST data and update
@@ -32,8 +34,9 @@
 		mysqli_query($conn,"UPDATE team SET owner=0,total_win=0,total_loss=0,championships=0,total_tie=0,logofile='helmet.png',owndate='' WHERE id=$teamid");
 		header('Location: team.php?teamid='.$teamid);
 	} else if(isset($_POST['location'])) {
-		$newlocation = $_POST['location'];
-		$newname = $_POST['teamname'];
+		$newlocation = mysqli_real_escape_string($conn,$_POST['location']);
+		$newname = mysqli_real_escape_string($conn,$_POST['teamname']);
+		
 		mysqli_query($conn,"UPDATE team SET location='$newlocation',teamname='$newname' WHERE id=$teamid");
 		
 		header('Location: team.php?teamid='.$teamid);
@@ -150,11 +153,11 @@
           <div class="side-bar">
             <div class="team-card">
             <h3>My team</h3>
-            <a href="#">
-              <img src="nfl-logos/19.png" />
+            <a href="team.php?teamid=<?php echo $teamid; ?>">
+              <?php echo "<img src=\"".$logopath."\" height=150px/>"; ?>
             </a> 
             <a href="#">
-              <p>New York Giants</p>
+              <p><?php echo $location." ".$teamname;?></p>
             </a>
 			<p>Week 1</p>
             <p>Next game: @<a href="#">DAL</a></p>
@@ -214,11 +217,11 @@
             </form>
 			<h4><b>Update Team Logo</b></h4>
 			<?php if(!empty($message)) { echo "<p>{$message}</p>";}?>
-			<form action="upload.php" id="profile-pic-form" enctype="multipart/form-data" method="POST">
+			<form action="upload.php?teamid=<?php echo $teamid;?>" id="profile-pic-form" enctype="multipart/form-data" method="POST">
 				
 				<input type="hidden" name="MAX_FILE_SIZE" value="5000000">
 				<input type="file" id="upload_file" name="upload_file">
-                <button type="submit" name="submit" class="btn btn-primary" id="upload-button">Upload</button>
+                <button type="submit" name="changelogo" class="btn btn-primary" id="upload-button">Upload</button>
 				<span class="help-block">Image requirements: JPG or PNG, less than 5MB.</span>
 			</form>
           </div>

@@ -121,16 +121,31 @@
         <div class="col-md-2">
           <div class="side-bar">
             <div class="team-card">
-            <h3>My team</h3>
-            <a href="team.php">
-              <img src="nfl-logos/19.png" />
+            
+			<?php 
+			$myteam_result = mysqli_query($conn,"SELECT id,division,location,teamname,season_win,season_loss,season_tie,logofile FROM `team` WHERE league=$leagueid AND owner=$userID");
+			if (mysqli_num_rows($myteam_result) != 0) {
+			$myteamData = mysqli_fetch_array($myteam_result, MYSQL_ASSOC);
+			$myteamid = $myteamData['id'];
+			$mydivision = $myteamData['division'];
+			$myteamname = $myteamData['location']." ".$myteamData['teamname'];
+			if ($myteamData['season_tie']==0) {
+				$myteamrecord = $myteamData['season_win']."-".$myteamData['season_loss'];
+			} else {
+				$myteamrecord = $myteamData['season_win']."-".$myteamData['season_loss']."-".$myteamData['season_tie'];
+			}
+			$myteam_logopath = "uploads/logos/".$myteamData['logofile'];
+			echo "<h3>My team</h3><a href=\"team.php?teamid=".$myteamid."\">
+              <img src=\"".$myteam_logopath."\" width=\"200\"/>
             </a> 
-            <a href="team.php">
-              <p>New York Giants</p>
-            </a>
-			<p>Week 1</p>
-            <p>Next game: @<a href="#">DAL</a></p>
-			<p><a href="league.php?leagueid=<?php echo $leagueid;?>">League X</a></p>
+            <b><a href=\"team.php?teamid=".$myteamid."\">
+              <p>".$myteamname."</p>
+            </a><p>".$myteamrecord."</p></b>";
+			echo "<p>Week 1</p>
+            <p>Next game: @<a href=\"#\">DAL</a></p>";	
+			}
+			?>
+            
 			
             <h3>League Links</h3></div>
             <div class="nav">

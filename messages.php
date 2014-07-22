@@ -7,35 +7,16 @@
 	} else {
 		header('Location: index.php');
 	}
-	if (!empty($_GET['profileid'])) {
-	  $profileID = $_GET['profileid'];
-	  if ($profileID == $userID) {
-		$own_profile = true;
-	  } else {
-		$own_profile = false;
-	  }
-	} else {
-		$profileID = $userID;
-		$own_profile = true;
-	}
+	
 	
 	$conn = mysqli_connect('localhost', 'rzrushco_admin', 'rzr_3541', 'rzrushco_main');
-	$member_result = mysqli_query($conn,"SELECT * FROM member WHERE `id`='$profileID'");
 	$own_team_result = mysqli_query($conn,"SELECT * FROM team WHERE `owner`='$userID'");
-	$photo_result = mysqli_query($conn,"SELECT * FROM photos WHERE `member_id`='$profileID' and pri='yes'");
-	$profile_team_result = mysqli_query($conn,"SELECT * FROM `team` WHERE owner='$profileID'");
 	
-	if(mysqli_num_rows($member_result) == 0) { //user not found
-		header('Location: 404.php');
-	} else {
-		$memberData = mysqli_fetch_array($member_result, MYSQL_ASSOC);
-		$profile_name = $memberData['username'];
-		$profile_email = $memberData['email'];
-		$profile_signup = $memberData['signup'];
-		$profile_premium = $memberData['premium'];
-		$last_login = $memberData['last_login'];
-		$profileid = $memberData['id'];
+	if(isset($_POST['delete'])) {
+		$messageid = $_POST['messageid'];
+		mysqli_query($conn,"DELETE FROM messages WHERE id=$messageid");
 	}
+	
 ?>
 <!DOCTYPE html>
 <html>
@@ -46,11 +27,11 @@
     <link href='http://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css' />
     <link href="css/bootstrap.css" rel="stylesheet" />
     <link href="css/main.css" rel="stylesheet" />
-    <link href="css/profile.css" rel="stylesheet" />
+    <link href="css/messages.css" rel="stylesheet" />
 	<link rel="shortcut icon" href="favicon.ico" />
 	<script src="js/jquery-1.11.1.min.js"></script>
 	<script src="js/bootstrap.js"></script>
-    <title>RedZone Rush - <?php echo $username;?></title>
+    <title>RedZone Rush - Messages</title>
   </head>
   <body>
     <div class="container-fluid">
@@ -63,8 +44,7 @@
         <div class="col-md-8">
           <div class="nav">
             <ul class="nav nav-pills navbar-left">
-              <li
-			  <?php if($own_profile){echo " class=\"active\"";}?>>
+              <li class="active">
                 <a href="profile.php">Profile</a>
               </li>
               <?php
@@ -129,20 +109,21 @@
         <div class="col-md-2">
           <div class="side-bar">
             <?php 
-			if ($own_profile) {
+			
 			echo "<h3>Profile Links</h3>
             <div class=\"nav\">
               <ul class=\"nav nav-pills nav-stacked navbar-left\">
-				<li>
+				<li class=\"active\">
 				<a href=\"messages.php\">Messages ";
-			$newmessage_result = mysqli_query($conn,"SELECT * FROM messages WHERE `read`='0' AND `to`=$userID");
+			$newmessage_result = mysqli_query($conn,"SELECT * FROM messages WHERE `read`='0' AND `to`=$userID ORDER BY timestamp DESC");
+			$oldmessage_result = mysqli_query($conn,"SELECT * FROM messages WHERE `read`='1' AND `to`=$userID ORDER BY timestamp DESC");
 			if (mysqli_num_rows($newmessage_result) != 0) {
 				$num_unread = mysqli_num_rows($newmessage_result);
 				echo "<span class=\"badge\">".$num_unread."</span>";
 			}
 			echo "</a>
 				</li>
-                <li class=\"active\">
+                <li>
                   <a href=\"profile.php\">View Profile</a>
                 </li>
 				<li>
@@ -153,10 +134,10 @@
                 </li>
               </ul>
             </div>";
-			}
+			
 			?>
 			<?php
-			$myfriends_result = mysqli_query($conn,"SELECT * FROM `friends` WHERE friend_one=$profileid AND status='1' OR friend_two=$profileid AND status='1'");
+			$myfriends_result = mysqli_query($conn,"SELECT * FROM `friends` WHERE friend_one=$userID AND status='1' OR friend_two=$userID AND status='1'");
 			$numfriends = mysqli_num_rows($myfriends_result);
 			echo "<h3>Friends (".$numfriends.")</h3><div class=\"friendslist\">";
 			if (mysqli_num_rows($myfriends_result) == 0) {
@@ -166,12 +147,12 @@
 					$friendData = mysqli_fetch_array($myfriends_result);
 					$friend_one = $friendData['friend_one'];
 					$friend_two = $friendData['friend_two'];
-					if($friend_one == $profileid) {
+					if($friend_one == $userID) {
 						$friendname_result = mysqli_query($conn,"SELECT username FROM `member` WHERE id=$friend_two");
 						$friendnameData = mysqli_fetch_array($friendname_result);
 						$friendname = $friendnameData['username'];
 						echo "<p><a href=\"profile.php?profileid=".$friend_two."\">".$friendname."</a></p>";
-					} else if ($friend_two == $profileid) {
+					} else if ($friend_two == $userID) {
 						$friendname_result = mysqli_query($conn,"SELECT username FROM `member` WHERE id=$friend_one");
 						$friendnameData = mysqli_fetch_array($friendname_result);
 						$friendname = $friendnameData['username'];
@@ -181,8 +162,7 @@
 			}
 			echo "</div>";
 			//Check for requests
-			if ($own_profile) {
-				$myrequests_result = mysqli_query($conn,"SELECT * FROM `friends` WHERE friend_two=$userID AND status='0'");
+			$myrequests_result = mysqli_query($conn,"SELECT * FROM `friends` WHERE friend_two=$userID AND status='0'");
 				if (mysqli_num_rows($myrequests_result) > 0) {
 					echo "<h4>Friend Requests</h4>";
 					for ($i = 0; $i < mysqli_num_rows($myrequests_result); $i++) {
@@ -205,109 +185,134 @@
 						</form>";
 					}
 				}
-			}
+			
 			?>
           </div>
 		  <form class="form-horizontal" id="logout-form" action="logout.php" role="form">
 			<button type="submit" class="btn btn-primary">Log out</button>
 		</form>
         </div>
-        <div class="col-md-8">
+        <div class="col-md-6 col-md-offset-1">
 			<div class="main">
-				<div class="profile-card">
-						<div class="row">
-							<div class="col-md-3">
-								<h3><?php echo $profile_name; ?></h3>
-								<?php if ($profile_premium == "y") { echo
-								"<p class=\"premium\">Premium Member <span class=\"glyphicon glyphicon-star\"></span> </p>"; }
-								else {
-								echo "<div class=\"premiumplaceholder\"></div>";}
-								?>
-								<?php
-									if(mysqli_num_rows($photo_result) == 0) {
-										//no prof pic uploaded
-										echo "<img src=\"profile.jpg\">";
-									} else {
-										$photoData = mysqli_fetch_array($photo_result, MYSQL_ASSOC);
-										$imagepath = "./uploads/".$photoData['filename'];
-										echo "<img src=\"$imagepath\">";
-									}
-								?>
-							</div>
-							<div class="col-md-3">
-								<div class="middle-col">
-									<h4>Teams</h4>
-									<?php 
-									$profile_total_wins = 0;
-									$profile_total_loss = 0;
-									$profile_total_ties = 0;
-									$profile_championships = 0;
-									for ($i=0; $i<mysqli_num_rows($profile_team_result); $i++) {
-										$profile_teamData = mysqli_fetch_array($profile_team_result, MYSQL_ASSOC);
-										$profile_teamid = $profile_teamData['id'];
-										$profile_location = $profile_teamData['location'];
-										$profile_teamname = $profile_teamData['teamname'];
-										$profile_league = $profile_teamData['league'];
-										$profile_total_wins = $profile_total_wins + $profile_teamData['total_win'];
-										$profile_total_loss = $profile_total_loss + $profile_teamData['total_loss'];
-										$profile_total_ties = $profile_total_ties + $profile_teamData['total_tie'];
-										$profile_championships = $profile_championships + $profile_teamData['championships'];
-										echo "<p><a href=\"team.php?teamid=".$profile_teamid."\">".$profile_location." ".$profile_teamname."</a><br>(League ".$profile_league.")</p>";
-									}
-									?>
+				<h3>Messages</h3>
+				<?php
+				if (mysqli_num_rows($newmessage_result) != 0) {
+					for ($i=0;$i<mysqli_num_rows($newmessage_result);$i++) {
+						$messageData = mysqli_fetch_array($newmessage_result);
+						$messageid = $messageData['id'];
+						$sender = $messageData['from'];
+						$subject = $messageData['subject'];
+						$message = $messageData['message'];
+						$timestamp = $messageData['timestamp'];
+						
+						$sender_result = mysqli_query($conn,"SELECT username FROM member WHERE id=$sender");
+						$senderData = mysqli_fetch_array($sender_result);
+						$sender_name = $senderData['username'];
+						
+						$photo_result = mysqli_query($conn,"SELECT filename FROM photos WHERE member_id=$sender AND pri='yes'");
+						$photoData = mysqli_fetch_array($photo_result);
+						if ($photoData['filename'] != "") {
+							$imagepath = "./uploads/".$photoData['filename'];
+						} else {
+							$imagepath="profile.jpg";
+						}
+						
+						echo "<div class=\"container\">
+					<div class=\"row\">
+						<div class=\"col-md-5\">
+							<div class=\"well newmessage\">
+								<div class=\"row\" id=\"sender\">
+									<div class=\"col-md-3\">
+										<img src=\"".$imagepath."\" height=\"50\">
+										<strong>".$sender_name."</strong>
+									</div>
+									<div class=\"col-md-8\">
+									<strong><a href=\"profile.php?profileid=".$sender."\">".$sender_name."</a></strong>
+									Time sent: ".$timestamp."
+									</div>
 								</div>
-							</div>
-							<div class="col-md-3">
-								<div class="third-col">
-									<h4>Owner Info</h4>
-									<p>Member since: <?php echo $profile_signup;?>
-									<p>Total Record: <?php echo $profile_total_wins."-".$profile_total_loss;
-									if ($profile_total_ties > 0) {
-										echo "-".$profile_total_ties;
-									}?></p>
-									<p>Championships: <?php echo $profile_championships;?></p>
-									<p>Last activity: <?php echo $last_login;?></p>
+								<div class=\"row\" id=\"message\">
+									<div class=\"col-md-8 col-md-offset-3\">
+									".$message."
+									</div>
 								</div>
-							</div>
-							<div class="col-md-3">
-								<div class="last-col">
-									<?php 
-									$friendrequest_query = "SELECT * FROM `friends` WHERE friend_one=$userID AND friend_two=$profileid AND status='0'";
-									$isfriend_query = "SELECT * FROM `friends` WHERE (friend_one=$userID AND friend_two=$profileid AND status='1') OR (friend_one=$profileid AND friend_two=$userID AND status='1')";
-									$friendrequest_result = mysqli_query($conn,$friendrequest_query);
-									$isfriend_result = mysqli_query($conn,$isfriend_query);
-									if (!$own_profile) {
-										echo "<div class=\"row\">
-											<form method=\"POST\" id=\"newmessage\" action=\"newmessage.php\" role=\"form\">
-												<input type=\"hidden\" name=\"recipient\" value=\"".$profile_name."\">
-												<button type=\"submit\" class=\"btn btn-primary\" name=\"newmessage\"><span class=\"glyphicon glyphicon-envelope\"></span> Message</button>
-											</form>
-											</div>";
-										if (mysqli_num_rows($friendrequest_result) == 1) {
-											//Friend request sent
-											echo "<div class=\"row\">
-												<button type=\"button\" class=\"btn btn-primary\" id=\"sendrequest\" disabled><span class=\"glyphicon glyphicon-ok\"></span> Friend Request Sent</button>
-											</div>";
-										} else if (mysqli_num_rows($isfriend_result) == 1) {
-											//Is friend
-											echo "<div class=\"row\">
-												<form method=\"POST\" id=\"addfriend\" action=\"addfriend.php?friendid=".$memberData['id']."\" role=\"form\">
-													<button type=\"submit\" class=\"btn btn-primary\" name=\"removefriend\" id=\"removefriend\" onclick=\"return confirm('Remove ".$profile_name." as a friend?');\"><span class=\"glyphicon glyphicon-remove\"></span> Remove Friend</button>
-												</form>
-											</div>";
-										} else {
-											echo "<div class=\"row\">
-													<form method=\"POST\" id=\"addfriend\" action=\"addfriend.php?friendid=".$memberData['id']."\" role=\"form\">
-														<button type=\"submit\" class=\"btn btn-primary\"  name=\"sendrequest\" id=\"sendrequest\"><span class=\"glyphicon glyphicon-plus\"></span> Add Friend</button>
-													</form>
-												</div>";
-											}
-									}
-									?>
+								<div class=\"row\">
+									<form method=\"POST\" action=\"messages.php\" role=\"form\">
+										<input type=\"hidden\" name=\"messageid\" value=\"".$messageid."\">
+										<button type=\"submit\" id=\"delete\" name=\"delete\" class=\"btn btn-primary\"><span class=\"glyphicon glyphicon-trash\"></span> Delete</button>
+									</form>
+									<form method=\"POST\" action=\"newmessage.php\" role=\"form\">
+										<input type=\"hidden\" name=\"convsubject\" value=\"".$subject."\">
+										<input type=\"hidden\" name=\"sender\" value=\"".$sender_name."\">
+										<button type=\"submit\" id=\"reply\" name=\"reply\" class=\"btn btn-primary\"><span class=\"glyphicon glyphicon-share-alt\"></span> Reply</button>
+									</form>
 								</div>
 							</div>
 						</div>
-				</div>
+					</div>
+				</div>";
+					}
+					mysqli_query($conn,"UPDATE messages SET `read`='1' WHERE id=$messageid");
+				}
+				for ($i=0;$i<mysqli_num_rows($oldmessage_result);$i++) {
+						$messageData = mysqli_fetch_array($oldmessage_result);
+						$messageid = $messageData['id'];
+						$sender = $messageData['from'];
+						$subject = $messageData['subject'];
+						$message = $messageData['message'];
+						$timestamp = $messageData['timestamp'];
+						
+						$sender_result = mysqli_query($conn,"SELECT username FROM member WHERE id=$sender");
+						$senderData = mysqli_fetch_array($sender_result);
+						$sender_name = $senderData['username'];
+						
+						$photo_result = mysqli_query($conn,"SELECT filename FROM photos WHERE member_id=$sender AND pri='yes'");
+						$photoData = mysqli_fetch_array($photo_result);
+						if ($photoData['filename'] != "") {
+							$imagepath = "./uploads/".$photoData['filename'];
+						} else {
+							$imagepath="profile.jpg";
+						}
+						
+						echo "<div class=\"container\">
+					<div class=\"row\">
+						<div class=\"col-md-5\">
+							<div class=\"well\">
+								<div class=\"row\" id=\"sender\">
+									<div class=\"col-md-3\">
+										<img src=\"".$imagepath."\" height=\"50\">
+										<strong><a href=\"profile.php?profileid=".$sender."\">".$sender_name."</a></strong>
+									</div>
+									<div class=\"col-md-8\">
+									<strong>".$subject."</strong><br>
+									Time sent: ".$timestamp."
+									</div>
+								</div>
+								<div class=\"row\" id=\"message\">
+									<div class=\"col-md-8 col-md-offset-3\">
+									".$message."
+									</div>
+								</div>
+								<div class=\"row\">
+									<form method=\"POST\" action=\"messages.php\" role=\"form\">
+										<input type=\"hidden\" name=\"messageid\" value=\"".$messageid."\">
+										<button type=\"submit\" id=\"delete\" name=\"delete\" class=\"btn btn-primary\"><span class=\"glyphicon glyphicon-trash\"></span> Delete</button>
+									</form>
+									<form method=\"POST\" action=\"newmessage.php\" role=\"form\">
+										<input type=\"hidden\" name=\"convsubject\" value=\"".$subject."\">
+										<input type=\"hidden\" name=\"sender\" value=\"".$sender_name."\">
+										<button type=\"submit\" id=\"reply\" name=\"reply\" class=\"btn btn-primary\"><span class=\"glyphicon glyphicon-share-alt\"></span> Reply</button>
+									</form>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>";
+					}
+				if (mysqli_num_rows($newmessage_result) == 0 && mysqli_num_rows($oldmessage_result) == 0) {
+					echo "You have no messages!";
+				}
+				?>
 			</div>
         </div>
       </div>

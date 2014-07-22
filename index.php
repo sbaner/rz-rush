@@ -56,10 +56,12 @@ if(isset($_SESSION['userID'])) {
               </div>
             </form> 
 			<?php
-			$result = $_GET["result"];
-			if ($result=="fail") {
-				echo "Wrong username or password. Try again or <a href=\"login/register.php\">sign up</a>.";
-			} 
+			if(isset($_GET["result"])) {
+				$result = $_GET["result"];
+				if ($result=="fail") {
+					echo "Wrong username or password. Try again or <a href=\"login/register.php\">sign up</a>.";
+				} 
+			}
 			?>
           </div> 
         </div>

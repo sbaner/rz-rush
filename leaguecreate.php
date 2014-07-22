@@ -1,4 +1,5 @@
 <?php
+	require 'includes/functions.php';
 	session_start();
 	if(isset($_SESSION['userID'])) {
 		$userID = $_SESSION['userID'];
@@ -69,9 +70,41 @@
 		echo "League ".$leagueid." created.<br>";
 		for ($i = 0; $i < 32; $i++) {
 			mysqli_query($conn,"INSERT INTO `team`(`league`, `division`, `location`, `teamname`,`season_win`,`season_loss`,`total_win`,`total_loss`,`championships`,`division_win`,`division_loss`,`conf_win`,`conf_loss`,`points_for`,`points_against`,`season_tie`,`total_tie`,`logofile`) VALUES ('{$leagueid}', '{$division[$i]}', '{$location[$i]}', '{$teamname[$i]}', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,'helmet.png')");
-			echo "Created ".$location[$i]." ".$teamname[$i].".<br>";
-			header('Location: league.php?leagueid='.$leagueid);
 		}
+		
+		
+		//Generate Players
+		//--Generate QBs
+		genplayers(128,$year,$leagueid,"QB");
+		//--Generate RBs
+		genplayers(192,$year,$leagueid,"RB");
+		//--Generate FBs
+		genplayers(64,$year,$leagueid,"FB");
+		//--Generate WRs
+		genplayers(256,$year,$leagueid,"WR");
+		//--Generate TEs
+		genplayers(128,$year,$leagueid,"TE");
+		//--Generate Gs
+		genplayers(192,$year,$leagueid,"G");
+		//--Generate Cs
+		genplayers(128,$year,$leagueid,"C");
+		//--Generate Ts
+		genplayers(192,$year,$leagueid,"T");
+		//--Generate DEs
+		genplayers(192,$year,$leagueid,"DE");
+		//--Generate DTs
+		genplayers(192,$year,$leagueid,"DT");
+		//--Generate LBs
+		genplayers(256,$year,$leagueid,"LB");
+		//--Generate CBs
+		genplayers(256,$year,$leagueid,"CB");
+		//--Generate Ss
+		genplayers(256,$year,$leagueid,"S");
+		//--Generate Ks
+		genplayers(64,$year,$leagueid,"K");
+		//--Generate Ps
+		genplayers(64,$year,$leagueid,"P");
+		echo "Created ".$location[$i]." ".$teamname[$i].".<br>";
 		
 	} else {
 		header('Location: profile.php');

@@ -1,3 +1,8 @@
+body, html { 
+    overflow-x: hidden; 
+    overflow-y: auto;
+}
+
 .jumbotron {
 	background-image:url('./background.jpg');
 	margin-bottom:0px;
@@ -38,10 +43,10 @@
 }
 
 .side-bar {
-	padding-top:1px;
-	padding-left:10px;
-	padding-bottom:5px;
-	background-color:#DDD;
+	padding-top: 1px;
+	padding-left: 10px;
+	padding-bottom: 5px;
+	background-color: #DDD;
 }
 
 .team-card img{
@@ -151,5 +156,26 @@ body {
 
 	.carousel-caption p {
 		font-size:10px;
+	}
+}
+
+@media screen and (max-width: 650px) {
+	#content {
+		margin-left:0px;
+		margin-right:0px;
+		padding-left:0px;
+		padding-right:0px;
+	}
+	.container-fluid {
+		padding-left:0px;
+		padding-right:0px;
+	}
+	
+	.side-bar {
+		margin-top:5px;
+	}
+	
+	.breadcrumb {
+		margin-top:10px;
 	}
 }

@@ -1,0 +1,44 @@
+.main {
+	background-color:#DDD;
+	color:#333;
+	padding:3%;
+}
+
+.main h3 {
+	padding-bottom:5px;
+	border-bottom-style:solid;
+	border-bottom-width:1px;
+	border-bottom-color:#AAA;
+}
+
+.newmessage{
+	background-color:#FFFBDB;
+}
+
+#sender {
+	margin-top:10px;
+	margin-bottom:10px;
+	padding-bottom:10px;
+	border-bottom-style:solid;
+	border-bottom-width:1px;
+	border-bottom-color:#DDD;
+}
+
+#message {
+	margin-bottom:10px;
+	padding-bottom:10px;
+}
+
+#reply {
+	float:right;
+	margin-right:10px;
+}
+
+#delete {
+	float:right;
+	margin-right:10px;
+}
+
+#sender img {
+	margin-bottom:5px;
+}

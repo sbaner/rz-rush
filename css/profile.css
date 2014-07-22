@@ -31,9 +31,17 @@
 	margin-left:15px;
 }
 
+.premiumplaceholder {
+	height:20px;
+}
+
 .friendslist {
-	max-height:200px;
+	max-height:100px;
 	overflow-y:auto;
+}
+
+#requestrow {
+	padding-bottom:5px;
 }
 
 .middle-col {

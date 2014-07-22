@@ -15,6 +15,33 @@ if (!empty($_GET['playerid'])) {
 	$conn = mysqli_connect('localhost', 'rzrushco_admin', 'rzr_3541', 'rzrushco_main');
 	$own_team_result = mysqli_query($conn,"SELECT * FROM team WHERE `owner`='$userID'");
 	
+	$player_result = mysqli_query($conn, "SELECT * FROM player WHERE id=$playerid");
+	$playerData = mysqli_fetch_array($player_result);
+	$player_league = $playerData['league'];
+	$player_team = $playerData['team'];
+	$player_name = $playerData['firstname']." ".$playerData['lastname'];
+	$player_position = $playerData['position'];
+	$overall_now = $playerData['overall_now'];
+	$player_height = $playerData['height'];
+	$player_weight = $playerData['weight'];
+	$draft_pos = $playerData['draft_pos'];
+	$draft_round = $playerData['draft_round'];
+	$start_year = $playerData['start_year'];
+	
+	$league_result = mysqli_query($conn,"SELECT id,leaguename,year FROM league WHERE id=$player_league");
+	$leagueData = mysqli_fetch_array($league_result);
+	//$leagueid = $leagueData['id'];
+	$leaguename = $leagueData['leaguename'];
+	$league_year = $leagueData['year'];
+	
+	$player_exp = $league_year - $start_year;
+	
+	if ($player_team != 0) {
+		$team_result = mysqli_query($conn, "SELECT id, location, teamname FROM team WHERE id=$player_team");
+		$teamData = mysqli_fetch_array($team_result);
+		$teamname = $teamData['location']." ".$teamData['teamname'];
+	}
+	
 ?>
 <!DOCTYPE html>
 <html>
@@ -107,32 +134,59 @@ if (!empty($_GET['playerid'])) {
         <div class="col-md-2">
           <div class="side-bar">
             <div class="team-card">
-            <h3>My team</h3>
-            <a href="team.php">
-              <img src="nfl-logos/19.png" />
+            <?php 
+			$myteam_result = mysqli_query($conn,"SELECT id,division,location,teamname,season_win,season_loss,season_tie,logofile FROM `team` WHERE league=$player_league AND owner=$userID");
+			if (mysqli_num_rows($myteam_result) != 0) {
+			$myteamData = mysqli_fetch_array($myteam_result, MYSQL_ASSOC);
+			$myteamid = $myteamData['id'];
+			$mydivision = $myteamData['division'];
+			$myteamname = $myteamData['location']." ".$myteamData['teamname'];
+			if ($myteamData['season_tie']==0) {
+				$myteamrecord = $myteamData['season_win']."-".$myteamData['season_loss'];
+			} else {
+				$myteamrecord = $myteamData['season_win']."-".$myteamData['season_loss']."-".$myteamData['season_tie'];
+			}
+			$myteam_logopath = "uploads/logos/".$myteamData['logofile'];
+			echo "<h3>My team</h3><a href=\"team.php?teamid=".$myteamid."\">
+              <img src=\"".$myteam_logopath."\" width=\"200\"/>
             </a> 
-            <a href="team.php">
-              <p>New York Giants</p>
-            </a>
-            <p>Week 1</p>
-            <p>Next game: @ 
-            <a href="#">DAL</a></p>
-            <p>
-              <a href="league.php">League X</a>
-            </p></div>
+            <b><a href=\"team.php?teamid=".$myteamid."\">
+              <p>".$myteamname."</p>
+            </a><p>".$myteamrecord."</p></b>";
+			echo "<p>Week 1</p>
+            <p>Next game: @<a href=\"#\">DAL</a></p>";	
+			}
+			?></div>
           </div>
         </div>
         <div class="col-md-8">
+		<ol class="breadcrumb">
+		<?php
+			echo "<li><a href=\"league.php?leagueid=".$player_league."\">".$leaguename."</a></li>";
+			if ($player_team != 0) {
+				echo "<li><a href=\"team.php?teamid=".$player_team."\">".$teamname."</a></li>";
+			} else {
+				echo "<li><a href=\"freeagents.php?leagueid=".$player_league."\">Free Agents</a></li>";
+			}
+			echo "<li class=\"active\">".$player_name."</li>";
+		?>
+		</ol>
           <div class="main">
             <div class="player-header">
               <div class="container">
                 <div class="row">
                   <div class="col-md-2">
                     <div class="first-col">
-                      <h3 class="name">Bob Jones</h3>
-                      <img src="face/face.jpg" />
-                      <h4 class="position">QB, 
-                      <a href="team.php">New York Giants</a></h4>
+                      <h3 class="name"><?php echo $player_name; ?></h3>
+                      <h4 class="position"><?php
+					  echo $player_position; 
+					  if ($player_team != 0) {
+						echo ", <a href=\"team.php?teamid=".$player_team."\">".$teamname."</a>";
+					  } else {
+						echo ", Free Agent";
+					  }
+					  echo "<p class=\"rating\">Rating: ".$overall_now."</p>";
+					  ?></h4>
                     </div>
                   </div>
                   <div class="col-md-3">
@@ -140,11 +194,16 @@ if (!empty($_GET['playerid'])) {
                       <h4>
                         <b>Player Info</b>
                       </h4>
-                      <p>Height: 6&#39; 3&quot;</p>
-                      <p>Weight: 210 lbs</p>
-                      <p>Drafted: Round 4, Pick 16, NYG</p>
-                      <p>Experience: 4th season</p>
-                      <p>Contract: 1 year, $125,345,345</p>
+                      <p>Height: <?php
+					  $inches = $player_height%12;
+					  $feet = ($player_height-$inches)/12;
+					  echo $feet."'".$inches."\"";
+					  ?>
+					  </p>
+                      <p>Weight: <?php echo $player_weight." lbs"; ?></p>
+                      <p>Drafted: <?php echo $start_year; ?></p>
+                      <p>Experience: <?php echo $player_exp; ?></p>
+                      <p>Contract: </p>
                     </div>
                   </div>
                   <div class="col-md-5">

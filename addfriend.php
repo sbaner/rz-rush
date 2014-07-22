@@ -1,5 +1,6 @@
 <?php
 	session_start();
+	error_reporting(E_ALL);
 	ob_start();
 	if(isset($_SESSION['userID'])) {
 		$userID = $_SESSION['userID'];
@@ -16,8 +17,9 @@
 	}
 	
 	$conn = mysqli_connect('localhost', 'rzrushco_admin', 'rzr_3541', 'rzrushco_main');
-	
+	echo "Connected to db. ";
 	if (isset($_POST['sendrequest'])) {
+		echo "Going to send request... ";
 		$friend_result = mysqli_query($conn,"INSERT INTO `friends` (friend_one, friend_two, status) VALUES ('$userID','$friendid','0')");
 		header('Location: profile.php?profileid='.$friendid);
 	}

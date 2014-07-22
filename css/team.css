@@ -47,22 +47,36 @@ table {
 	float:right;
 	margin-right:10px;
 	margin-top:5px;
+	margin-bottom:5px;
 }
 
 .btn-success{
 	float:right;
 	margin-right:10px;
 	margin-top:5px;
+	margin-bottom:5px;
 }
 
 .btn-info{
 	float:right;
 	margin-right:10px;
 	margin-top:5px;
+	margin-bottom:5px;
+}
+
+.btn-warning{
+	float:right;
+	margin-right:10px;
+	margin-top:5px;
+	margin-bottom:5px;
 }
 
 .injured {
 	background-color:#FFB0B0;
+}
+
+.last-col {
+	padding-top:100px;
 }
 
 #teamname {

@@ -1,5 +1,6 @@
 <?php	
 session_start();
+ob_start();
 	if(isset($_SESSION['userID'])) {
 		$userID = $_SESSION['userID'];
 		$username = $_SESSION['username'];
@@ -26,11 +27,16 @@ function findexts ($filename)
 		return $exts; 
 	} 
 	
-if (isset($_POST['submit'])){
+if (isset($_POST['changeprofpic']) || isset($_POST['changelogo'])){
  
 	 $tmp_file = $_FILES['upload_file']['tmp_name'];
 	 @$target_file = basename($_FILES['upload_file']['name']);
-	 $upload_dir = "uploads";
+	 
+	 if (isset($_POST['changeprofpic'])) {
+		$upload_dir = "uploads";
+	} else if (isset($_POST['changelogo'])) {
+		$upload_dir = "uploads/logos";
+	}
 	 $imgsize = $_FILES['upload_file']['size'];	
 	 $imgtype = $_FILES['upload_file']['type'];
 	 $member_id = $_SESSION['member_id'];
@@ -44,15 +50,31 @@ if (isset($_POST['submit'])){
  
 	if (move_uploaded_file($tmp_file,$upload_dir."/".$target_file)){
 			$conn = mysqli_connect('localhost', 'rzrushco_admin', 'rzr_3541', 'rzrushco_main');
-			mysqli_query($conn,"UPDATE `photos` SET `pri`='no' WHERE   member_id ='{$userID}'");
-			mysqli_query($conn,"INSERT INTO `photos`(`filename`, `type`, `size`, `member_id`,`pri`) 
-				VALUES ('{$target_file}', '{$imgtype}', '{$imgsize}', '{$userID}','yes' )");
- 
-			if (mysqli_affected_rows($conn) == 1) {
-			} else{
+			
+			if (isset($_POST['changeprofpic'])) {
+				mysqli_query($conn,"UPDATE `photos` SET `pri`='no' WHERE   member_id ='{$userID}'");
+				mysqli_query($conn,"INSERT INTO `photos`(`filename`, `type`, `size`, `member_id`,`pri`) 
+					VALUES ('{$target_file}', '{$imgtype}', '{$imgsize}', '{$userID}','yes' )");
+	 
+				if (mysqli_affected_rows($conn) == 1) {
+				} else{
+				}
+				header('Location: profile.php');
+				echo "File uploaded Succesfully";
+			} else if (isset($_POST['changelogo'])) {
+				if (isset($_GET['teamid'])) {
+					$teamid = $_GET['teamid'];
+					mysqli_query($conn,"UPDATE `team` SET `logofile`='$target_file' WHERE   id ='{$teamid}'");
+					if (mysqli_affected_rows($conn) == 1) {
+					} else{
+					}
+					header('Location: team.php?teamid='.$teamid);
+					//echo "File uploaded Succesfully";
+				} else {
+					header('Location: 404.php');
+				}
 			}
-			header('Location: profile.php');
-			//echo "File uploaded Succesfully";
+			
  
 		} else {
 			$error = $_FILES['upload_file']['error'];
@@ -73,8 +95,7 @@ if (isset($_POST['submit'])){
  
  
 		}
-		
-		
-		header('Location: profile.php');
 }
+
+ob_flush();
 ?>

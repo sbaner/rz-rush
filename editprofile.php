@@ -8,9 +8,15 @@
 		header('Location: index.php');
 	}
 	//Retrieve POST data
-	$newemail = $_POST['newemail'];
-	$oldpassword = $_POST['oldpassword'];
-	$newpassword = $_POST['password1'];
+	if (isset($_POST['newemail'])) {
+		$newemail = $_POST['newemail'];
+	}
+	if (isset($_POST['oldpassword'])) {
+		$oldpassword = $_POST['oldpassword'];
+	}
+	if (isset($_POST['password1'])) {
+		$newpassword = $_POST['password1'];
+	}
 	$udt_message = "";
 	
 	$conn = mysqli_connect('localhost', 'rzrushco_admin', 'rzr_3541', 'rzrushco_main');
@@ -204,9 +210,6 @@
                   <a href="editprofile.php">Edit Profile</a>
                 </li>
                 <li>
-                  <a href="#">Add/Remove Teams</a>
-                </li>
-                <li>
                   <a href="#">Premium</a>
                 </li>
               </ul>
@@ -259,7 +262,7 @@
 				
 				<input type="hidden" name="MAX_FILE_SIZE" value="5000000">
 				<input type="file" id="upload_file" name="upload_file">
-                <button type="submit" name="submit" class="btn btn-primary" id="signup-button">Upload</button>
+                <button type="submit" name="changeprofpic" class="btn btn-primary" id="signup-button">Upload</button>
 				<span class="help-block">Image requirements: JPG or PNG, less than 5MB.</span>
 			</form>
           </div>
