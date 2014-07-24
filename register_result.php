@@ -49,6 +49,11 @@
 			echo "<p>An account with that email already exists. <a href=\"#\">Forgot your password?</a></p>";
 		  } else if ($result=="success") {
 			echo "<h3>Success!</h3> <p>Your account has been created. Please check your email for a confirmation email.";
+		  } else if ($result=="sameip") {
+			echo "<p>An account has already been registered from this computer. Please do not create multiple accounts. If you think this is a mistake, <a href=\"#\">contact us</a>.</p>
+				<p>If you've forgotten your username or password, <a href=\"#\">click here</a>.</p>";
+		  } else {
+			echo "Something went wrong.";
 		  }
 		  ?>
           </div>

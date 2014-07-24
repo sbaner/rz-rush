@@ -1,4 +1,5 @@
 <?php
+	require_once('includes/getweek.php');
 	session_start();
 	if(isset($_SESSION['userID'])) {
 		$userID = $_SESSION['userID'];
@@ -136,13 +137,12 @@
 			}
 			$myteam_logopath = "uploads/logos/".$myteamData['logofile'];
 			echo "<h3>My team</h3><a href=\"team.php?teamid=".$myteamid."\">
-              <img src=\"".$myteam_logopath."\" width=\"200\"/>
+              <img src=\"".$myteam_logopath."\" width=\"150\"/>
             </a> 
             <b><a href=\"team.php?teamid=".$myteamid."\">
               <p>".$myteamname."</p>
             </a><p>".$myteamrecord."</p></b>";
-			echo "<p>Week 1</p>
-            <p>Next game: @<a href=\"#\">DAL</a></p>";	
+			echo "<p>".getWeek($leagueid)."</p>";	
 			}
 			?>
             
@@ -159,7 +159,7 @@
                   <a href=\"scores.php?leagueid=".$leagueid."\">Scores &amp; Schedule</a>
                 </li>
                 <li>
-                  <a href=\"#\">Free Agents</a>
+                  <a href=\"freeagents.php?leagueid=".$leagueid."\">Free Agents</a>
                 </li>
                 <li>
                   <a href=\"leaguealmanac.php?leagueid=".$leagueid."\">Almanac</a>

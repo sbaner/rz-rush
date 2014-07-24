@@ -1,5 +1,6 @@
 <?php
 	session_start();
+	require_once('includes/functions.php');
 	if(isset($_SESSION['userID'])) {
 		$userID = $_SESSION['userID'];
 		$username = $_SESSION['username'];
@@ -203,7 +204,6 @@ if (!empty($_GET['playerid'])) {
                       <p>Weight: <?php echo $player_weight." lbs"; ?></p>
                       <p>Drafted: <?php echo $start_year; ?></p>
                       <p>Experience: <?php echo $player_exp; ?></p>
-                      <p>Contract: </p>
                     </div>
                   </div>
                   <div class="col-md-5">
@@ -299,6 +299,93 @@ if (!empty($_GET['playerid'])) {
 				
               </div>
             </div>
+				<?php
+				
+				if ($player_team != 0) {
+					echo "<div class=\"panel-group contract\" id=\"accordion\">
+				  <div class=\"panel panel-default\">
+					<div class=\"panel-heading\">
+					  <h4 class=\"panel-title\">
+						<a data-toggle=\"collapse\" data-parent=\"#accordion\" href=\"#collapseOne\">
+						  Click to view contract information
+						</a>
+					  </h4>
+					</div>
+					<div id=\"collapseOne\" class=\"panel-collapse collapse\">
+					  <div class=\"panel-body\">";
+				echo "<div class=\"table-responsive\">
+				<table class=\"table\">
+					<thead>
+						<tr>
+							<th>Year</th>
+							<th>Bonus</th>
+							<th>Base Salary</th>
+							<th>Total Salary</th>
+							<th>Team Salaries</th>
+							<th>Team Cap</th>
+						</tr>
+					</thead>
+					<tbody>";
+					for ($i=0;$i<6;$i++) {
+						$salary_year = $league_year+$i;
+						$contract_result = mysqli_query($conn,"SELECT * FROM contract WHERE player=$playerid AND year=$salary_year");
+						$contractData = mysqli_fetch_array($contract_result);
+						$bonus = $contractData['bonus'];
+						$base = $contractData['base'];
+						$total = $bonus + $base;
+						
+						$total_result = mysqli_query($conn,"SELECT * FROM contract WHERE team=$player_team AND year=$salary_year");
+						$total_salary = 0;
+						while ($totalData = mysqli_fetch_array($total_result)) {
+							$total_salary = $total_salary + $totalData['bonus'] + $totalData['base'];
+						}
+						echo "<tr>
+						<td>".$salary_year."</td>
+						<td>$".number_format($bonus)."</td>
+						<td>$".number_format($base)."</td>
+						<td>$".number_format($total)."</td>
+						<td>$".number_format($total_salary)."</td>
+						<td>$130,000,000</td>
+						</tr>";
+					}
+					
+				echo "</tbody>
+				</table>
+				</div>
+				</div>
+				</div>
+				</div>
+				</div>";
+				} else {
+					$demand = fa_demand($player_position,$overall_now);
+					echo "<div class=\"well contract\">";
+					echo "<h4>Send Contract Offer</h4><p><i>Assistant GM says: \"The player's agent says he won't accept less than $"
+					.number_format($demand['salary'])." per year base salary and $"
+					.number_format($demand['bonus'])." per year guaranteed bonus.\"</i></p>";
+					echo "<form class=\"form-horizontal\" action=\"player.php\" method=\"POST\" role=\"form\">
+					<div class=\"row\">
+						<div class=\"col-md-5\">
+							<div class=\"form-group\">
+								<label for=\"base\" class=\"col-sm-5 control-label\">Base Salary: $</label>
+								<div class=\"col-sm-6\">
+								  <input type=\"number\" class=\"form-control\" id=\"base\" name=\"base\" value=\"".$demand['salary']."\" />
+								</div>
+							</div>
+						</div>
+						<div class=\"col-md-4\">
+							<div class=\"form-group\">
+								<label for=\"bonus\" class=\"col-sm-4 control-label\">Bonus: $</label>
+								<div class=\"col-sm-7\">
+								  <input type=\"number\" class=\"form-control\" id=\"bonus\" name=\"bonus\" value=\"".$demand['bonus']."\" />
+								</div>
+							</div>
+						</div>
+					</div>
+					</form>";
+					echo "</div>";
+				}
+				
+				?>
           </div>
         </div>
       </div>

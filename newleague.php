@@ -1,5 +1,5 @@
 <?php
-	require 'includes/functions.php';
+	require_once 'includes/functions.php';
 	session_start();
 	if(isset($_SESSION['userID'])) {
 		$userID = $_SESSION['userID'];
@@ -47,8 +47,8 @@
 			die();
 		}
 		$year = date("Y");
-		mysqli_query($conn,"INSERT INTO `league`(`leaguename`, `frequency`, `salarycap`, `injuries`,`year`) 
-				VALUES ('{$leaguename}', '{$freq}', '{$salary}', '{$injury}','{$year}')");
+		mysqli_query($conn,"INSERT INTO `league`(`leaguename`, `frequency`, `salarycap`, `injuries`,`year`,`calendar`) 
+				VALUES ('{$leaguename}', '{$freq}', '{$salary}', '{$injury}','{$year}'),1");
 		if (mysqli_affected_rows($conn) == 1) {
 			echo "League create success!";
 			$leagueid = mysqli_insert_id($conn);
@@ -73,7 +73,7 @@
 		for ($i = 0; $i < 32; $i++) {
 			mysqli_query($conn,"INSERT INTO `team`(`league`, `division`, `location`, `teamname`,`season_win`,`season_loss`,`total_win`,`total_loss`,`championships`,`division_win`,`division_loss`,`conf_win`,`conf_loss`,`points_for`,`points_against`,`season_tie`,`total_tie`,`logofile`) VALUES ('{$leagueid}', '{$division[$i]}', '{$location[$i]}', '{$teamname[$i]}', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,'helmet.png')");
 		}
-		
+		$last_team = mysqli_insert_id($conn);
 		//Generate Players
 		//--Generate QBs
 		genplayers(128,$year,$leagueid,"QB",true);
@@ -107,7 +107,7 @@
 		genplayers(64,$year,$leagueid,"P",true);
 		
 		//Creation Draft
-		$draftorder = range(1,32);
+		$draftorder = range($last_team-31,$last_team);
 		$draft_round = 1;
 		
 		//--Select QBs: 4 rounds
@@ -117,9 +117,11 @@
 			for ($i=1; $i<33; $i++) {
 				$playerData = mysqli_fetch_array($qb_result, MYSQL_ASSOC);
 				$playerid = $playerData['id'];
+				$rating = $playerData['overall_now'];
 				$teamid = $draftorder[$i-1];
 				$draft_pos = $i;
 				mysqli_query($conn,"UPDATE player SET team=$teamid,status='inactive',draft_round=$draft_round,draft_pos=$draft_pos,draft_team=$teamid WHERE id=$playerid");
+				create_salaries($playerid,$year,$teamid,"QB",$rating);
 			}
 			$draft_round++;
 		}
@@ -131,9 +133,11 @@
 			for ($i=1; $i<33; $i++) {
 				$playerData = mysqli_fetch_array($rb_result, MYSQL_ASSOC);
 				$playerid = $playerData['id'];
+				$rating = $playerData['overall_now'];
 				$teamid = $draftorder[$i-1];
 				$draft_pos = $i;
 				mysqli_query($conn,"UPDATE player SET team=$teamid,status='inactive',draft_round=$draft_round,draft_pos=$draft_pos,draft_team=$teamid WHERE id=$playerid");
+				create_salaries($playerid,$year,$teamid,"RB",$rating);
 			}
 			$draft_round++;
 		}
@@ -144,10 +148,12 @@
 			shuffle($draftorder);
 			for ($i=1; $i<33; $i++) {
 				$playerData = mysqli_fetch_array($fb_result, MYSQL_ASSOC);
+				$rating = $playerData['overall_now'];
 				$playerid = $playerData['id'];
 				$teamid = $draftorder[$i-1];
 				$draft_pos = $i;
 				mysqli_query($conn,"UPDATE player SET team=$teamid,status='inactive',draft_round=$draft_round,draft_pos=$draft_pos,draft_team=$teamid WHERE id=$playerid");
+				create_salaries($playerid,$year,$teamid,"FB",$rating);
 			}
 			$draft_round++;
 		}
@@ -159,9 +165,11 @@
 			for ($i=1; $i<33; $i++) {
 				$playerData = mysqli_fetch_array($wr_result, MYSQL_ASSOC);
 				$playerid = $playerData['id'];
+				$rating = $playerData['overall_now'];
 				$teamid = $draftorder[$i-1];
 				$draft_pos = $i;
 				mysqli_query($conn,"UPDATE player SET team=$teamid,status='inactive',draft_round=$draft_round,draft_pos=$draft_pos,draft_team=$teamid WHERE id=$playerid");
+				create_salaries($playerid,$year,$teamid,"WR",$rating);
 			}
 			$draft_round++;
 		}
@@ -172,9 +180,11 @@
 			for ($i=1; $i<33; $i++) {
 				$playerData = mysqli_fetch_array($te_result, MYSQL_ASSOC);
 				$playerid = $playerData['id'];
+				$rating = $playerData['overall_now'];
 				$teamid = $draftorder[$i-1];
 				$draft_pos = $i;
 				mysqli_query($conn,"UPDATE player SET team=$teamid,status='inactive',draft_round=$draft_round,draft_pos=$draft_pos,draft_team=$teamid WHERE id=$playerid");
+				create_salaries($playerid,$year,$teamid,"TE",$rating);
 			}
 			$draft_round++;
 		}
@@ -185,9 +195,11 @@
 			for ($i=1; $i<33; $i++) {
 				$playerData = mysqli_fetch_array($g_result, MYSQL_ASSOC);
 				$playerid = $playerData['id'];
+				$rating = $playerData['overall_now'];
 				$teamid = $draftorder[$i-1];
 				$draft_pos = $i;
 				mysqli_query($conn,"UPDATE player SET team=$teamid,status='inactive',draft_round=$draft_round,draft_pos=$draft_pos,draft_team=$teamid WHERE id=$playerid");
+				create_salaries($playerid,$year,$teamid,"G",$rating);
 			}
 			$draft_round++;
 		}
@@ -199,9 +211,11 @@
 			for ($i=1; $i<33; $i++) {
 				$playerData = mysqli_fetch_array($c_result, MYSQL_ASSOC);
 				$playerid = $playerData['id'];
+				$rating = $playerData['overall_now'];
 				$teamid = $draftorder[$i-1];
 				$draft_pos = $i;
 				mysqli_query($conn,"UPDATE player SET team=$teamid,status='inactive',draft_round=$draft_round,draft_pos=$draft_pos,draft_team=$teamid WHERE id=$playerid");
+				create_salaries($playerid,$year,$teamid,"C",$rating);
 			}
 			$draft_round++;
 		}
@@ -212,9 +226,11 @@
 			for ($i=1; $i<33; $i++) {
 				$playerData = mysqli_fetch_array($t_result, MYSQL_ASSOC);
 				$playerid = $playerData['id'];
+				$rating = $playerData['overall_now'];
 				$teamid = $draftorder[$i-1];
 				$draft_pos = $i;
 				mysqli_query($conn,"UPDATE player SET team=$teamid,status='inactive',draft_round=$draft_round,draft_pos=$draft_pos,draft_team=$teamid WHERE id=$playerid");
+				create_salaries($playerid,$year,$teamid,"T",$rating);
 			}
 			$draft_round++;
 		}
@@ -226,9 +242,11 @@
 			for ($i=1; $i<33; $i++) {
 				$playerData = mysqli_fetch_array($de_result, MYSQL_ASSOC);
 				$playerid = $playerData['id'];
+				$rating = $playerData['overall_now'];
 				$teamid = $draftorder[$i-1];
 				$draft_pos = $i;
 				mysqli_query($conn,"UPDATE player SET team=$teamid,status='inactive',draft_round=$draft_round,draft_pos=$draft_pos,draft_team=$teamid WHERE id=$playerid");
+				create_salaries($playerid,$year,$teamid,"DE",$rating);
 			}
 			$draft_round++;
 		}
@@ -240,9 +258,11 @@
 			for ($i=1; $i<33; $i++) {
 				$playerData = mysqli_fetch_array($dt_result, MYSQL_ASSOC);
 				$playerid = $playerData['id'];
+				$rating = $playerData['overall_now'];
 				$teamid = $draftorder[$i-1];
 				$draft_pos = $i;
 				mysqli_query($conn,"UPDATE player SET team=$teamid,status='inactive',draft_round=$draft_round,draft_pos=$draft_pos,draft_team=$teamid WHERE id=$playerid");
+				create_salaries($playerid,$year,$teamid,"DT",$rating);
 			}
 			$draft_round++;
 		}
@@ -254,9 +274,11 @@
 			for ($i=1; $i<33; $i++) {
 				$playerData = mysqli_fetch_array($lb_result, MYSQL_ASSOC);
 				$playerid = $playerData['id'];
+				$rating = $playerData['overall_now'];
 				$teamid = $draftorder[$i-1];
 				$draft_pos = $i;
 				mysqli_query($conn,"UPDATE player SET team=$teamid,status='inactive',draft_round=$draft_round,draft_pos=$draft_pos,draft_team=$teamid WHERE id=$playerid");
+				create_salaries($playerid,$year,$teamid,"LB",$rating);
 			}
 			$draft_round++;
 		}
@@ -268,9 +290,11 @@
 			for ($i=1; $i<33; $i++) {
 				$playerData = mysqli_fetch_array($cb_result, MYSQL_ASSOC);
 				$playerid = $playerData['id'];
+				$rating = $playerData['overall_now'];
 				$teamid = $draftorder[$i-1];
 				$draft_pos = $i;
 				mysqli_query($conn,"UPDATE player SET team=$teamid,status='inactive',draft_round=$draft_round,draft_pos=$draft_pos,draft_team=$teamid WHERE id=$playerid");
+				create_salaries($playerid,$year,$teamid,"CB",$rating);
 			}
 			$draft_round++;
 		}
@@ -281,9 +305,11 @@
 			for ($i=1; $i<33; $i++) {
 				$playerData = mysqli_fetch_array($s_result, MYSQL_ASSOC);
 				$playerid = $playerData['id'];
+				$rating = $playerData['overall_now'];
 				$teamid = $draftorder[$i-1];
 				$draft_pos = $i;
 				mysqli_query($conn,"UPDATE player SET team=$teamid,status='inactive',draft_round=$draft_round,draft_pos=$draft_pos,draft_team=$teamid WHERE id=$playerid");
+				create_salaries($playerid,$year,$teamid,"S",$rating);
 			}
 			$draft_round++;
 		}
@@ -294,9 +320,11 @@
 			for ($i=1; $i<33; $i++) {
 				$playerData = mysqli_fetch_array($k_result, MYSQL_ASSOC);
 				$playerid = $playerData['id'];
+				$rating = $playerData['overall_now'];
 				$teamid = $draftorder[$i-1];
 				$draft_pos = $i;
 				mysqli_query($conn,"UPDATE player SET team=$teamid,status='inactive',draft_round=$draft_round,draft_pos=$draft_pos,draft_team=$teamid WHERE id=$playerid");
+				create_salaries($playerid,$year,$teamid,"K",$rating);
 			}
 			$draft_round++;
 		}
@@ -307,9 +335,11 @@
 			for ($i=1; $i<33; $i++) {
 				$playerData = mysqli_fetch_array($p_result, MYSQL_ASSOC);
 				$playerid = $playerData['id'];
+				$rating = $playerData['overall_now'];
 				$teamid = $draftorder[$i-1];
 				$draft_pos = $i;
 				mysqli_query($conn,"UPDATE player SET team=$teamid,status='inactive',draft_round=$draft_round,draft_pos=$draft_pos,draft_team=$teamid WHERE id=$playerid");
+				create_salaries($playerid,$year,$teamid,"P",$rating);
 			}
 			$draft_round++;
 		}

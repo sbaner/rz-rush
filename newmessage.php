@@ -1,5 +1,6 @@
 <?php
 	session_start();
+	date_default_timezone_set('America/New_York');
 	if(isset($_SESSION['userID'])) {
 		$userID = $_SESSION['userID'];
 		$username = $_SESSION['username'];
@@ -23,16 +24,15 @@
 	
 	if(isset($_POST['send-message'])) {
 		$recipient = $_POST['to'];
-		$subject = $_POST['subject'];
-		$message = $_POST['message'];
+		$subject = mysqli_real_escape_string($conn,$_POST['subject']);
+		$message = mysqli_real_escape_string($conn,$_POST['message']);
 		$member_result = mysqli_query($conn,"SELECT id FROM member WHERE username='$recipient'");
 		$memberData = mysqli_fetch_array($member_result);
 		$recipientid = $memberData['id'];
-		echo "Recipient id: ".$recipientid."<br>";
-		$timestamp = date("c");
+		$timestamp = date("Y")."-".date("m")."-".date("d")." ".date("g").":".date("i")." ".date("A");
 		$send_result = mysqli_query($conn,"INSERT INTO messages (`to`,`from`,`subject`,`message`,`read`,`timestamp`) VALUES ($recipientid,$userID,'$subject','$message','0','$timestamp')");
 		if (mysqli_affected_rows($conn) == 1) {
-			echo "Message sent successfully.";
+			header('Location: messages.php');
 		} else {
 			echo "Error occurred.";
 		}

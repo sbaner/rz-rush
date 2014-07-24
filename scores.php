@@ -1,4 +1,5 @@
 <?php
+	require_once('includes/getweek.php');
 	session_start();
 	if(isset($_SESSION['userID'])) {
 		$userID = $_SESSION['userID'];
@@ -15,6 +16,8 @@ if (!empty($_GET['leagueid'])) {
 	
 	$conn = mysqli_connect('localhost', 'rzrushco_admin', 'rzr_3541', 'rzrushco_main');
 	$own_team_result = mysqli_query($conn,"SELECT * FROM team WHERE `owner`='$userID'");
+	
+	$fa_result = mysqli_query($conn,"SELECT * FROM player WHERE team=0 AND league=$leagueid");
 	
 ?>
 <!DOCTYPE html>
@@ -118,20 +121,29 @@ if (!empty($_GET['leagueid'])) {
         <div class="col-md-2">
           <div class="side-bar">
             <div class="team-card">
-            <h3>My team</h3>
-            <a href="team.php">
-              <img src="nfl-logos/19.png" />
+            <?php 
+			$myteam_result = mysqli_query($conn,"SELECT id,division,location,teamname,season_win,season_loss,season_tie,logofile FROM `team` WHERE league=$leagueid AND owner=$userID");
+			if (mysqli_num_rows($myteam_result) != 0) {
+			$myteamData = mysqli_fetch_array($myteam_result, MYSQL_ASSOC);
+			$myteamid = $myteamData['id'];
+			$mydivision = $myteamData['division'];
+			$myteamname = $myteamData['location']." ".$myteamData['teamname'];
+			if ($myteamData['season_tie']==0) {
+				$myteamrecord = $myteamData['season_win']."-".$myteamData['season_loss'];
+			} else {
+				$myteamrecord = $myteamData['season_win']."-".$myteamData['season_loss']."-".$myteamData['season_tie'];
+			}
+			$myteam_logopath = "uploads/logos/".$myteamData['logofile'];
+			echo "<h3>My team</h3><a href=\"team.php?teamid=".$myteamid."\">
+              <img src=\"".$myteam_logopath."\" width=\"150\"/>
             </a> 
-            <a href="team.php">
-              <p>New York Giants</p>
-            </a>
-            <p>Week 1</p>
-            <p>Next game: @ 
-            <a href="#">DAL</a></p>
-            <p>
-              <a href="league.php?leagueid=<?php echo $leagueid;?>">League X</a>
-            </p>
-            <h3>League Links</h3></div>
+            <b><a href=\"team.php?teamid=".$myteamid."\">
+              <p>".$myteamname."</p>
+            </a><p>".$myteamrecord."</p></b>";
+			echo "<p>".getWeek($leagueid)."</p>";
+			}
+			?></div>
+			<h3>League Links</h3>
             <div class="nav">
               <ul class="nav nav-pills nav-stacked navbar-left">
                 <?php
@@ -143,7 +155,7 @@ if (!empty($_GET['leagueid'])) {
                   <a href=\"scores.php?leagueid=".$leagueid."\">Scores &amp; Schedule</a>
                 </li>
                 <li>
-                  <a href=\"#\">Free Agents</a>
+                  <a href=\"freeagents.php?leagueid=".$leagueid."\">Free Agents</a>
                 </li>
                 <li>
                   <a href=\"leaguealmanac.php?leagueid=".$leagueid."\">Almanac</a>

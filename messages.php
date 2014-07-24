@@ -1,5 +1,6 @@
 <?php
 	session_start();
+	date_default_timezone_set('America/New_York');
 	if(isset($_SESSION['userID'])) {
 		$userID = $_SESSION['userID'];
 		$username = $_SESSION['username'];
@@ -12,10 +13,26 @@
 	$conn = mysqli_connect('localhost', 'rzrushco_admin', 'rzr_3541', 'rzrushco_main');
 	$own_team_result = mysqli_query($conn,"SELECT * FROM team WHERE `owner`='$userID'");
 	
-	if(isset($_POST['delete'])) {
+	if(isset($_POST['recdelete'])) {
 		$messageid = $_POST['messageid'];
-		mysqli_query($conn,"DELETE FROM messages WHERE id=$messageid");
+		mysqli_query($conn,"UPDATE messages SET rec_delete='1' WHERE id=$messageid");
+		$msg_result = mysqli_query($conn,"SELECT send_delete,rec_delete FROM messages WHERE id=$messageid");
+		$msgData = mysqli_fetch_array($msg_result);
+		if ($msgData['send_delete']=='1' && $msgData['rec_delete']=='1') {
+			mysqli_query($conn,"DELETE FROM messages WHERE id=$messageid");
+		}
 	}
+	
+	if(isset($_POST['sentdelete'])) {
+		$messageid = $_POST['messageid'];
+		mysqli_query($conn,"UPDATE messages SET send_delete='1' WHERE id=$messageid");
+		$msg_result = mysqli_query($conn,"SELECT send_delete,rec_delete FROM messages WHERE id=$messageid");
+		$msgData = mysqli_fetch_array($msg_result);
+		if ($msgData['send_delete']=='1' && $msgData['rec_delete']=='1') {
+			mysqli_query($conn,"DELETE FROM messages WHERE id=$messageid");
+		}
+	}
+	
 	
 ?>
 <!DOCTYPE html>
@@ -31,6 +48,13 @@
 	<link rel="shortcut icon" href="favicon.ico" />
 	<script src="js/jquery-1.11.1.min.js"></script>
 	<script src="js/bootstrap.js"></script>
+	<script>
+	$(function() {  
+		$('.newmessage').click(function(){
+			$(this).removeClass("newmessage");
+		  });
+		});
+</script>
     <title>RedZone Rush - Messages</title>
   </head>
   <body>
@@ -115,8 +139,9 @@
               <ul class=\"nav nav-pills nav-stacked navbar-left\">
 				<li class=\"active\">
 				<a href=\"messages.php\">Messages ";
-			$newmessage_result = mysqli_query($conn,"SELECT * FROM messages WHERE `read`='0' AND `to`=$userID ORDER BY timestamp DESC");
-			$oldmessage_result = mysqli_query($conn,"SELECT * FROM messages WHERE `read`='1' AND `to`=$userID ORDER BY timestamp DESC");
+			$newmessage_result = mysqli_query($conn,"SELECT * FROM messages WHERE `read`='0' AND `to`=$userID AND `rec_delete`='0' ORDER BY timestamp DESC");
+			$oldmessage_result = mysqli_query($conn,"SELECT * FROM messages WHERE `read`='1' AND `to`=$userID AND `rec_delete`='0' ORDER BY timestamp DESC");
+			$sentmessage_result = mysqli_query($conn,"SELECT * FROM messages WHERE `from`=$userID AND `send_delete`='0' ORDER BY timestamp DESC");
 			if (mysqli_num_rows($newmessage_result) != 0) {
 				$num_unread = mysqli_num_rows($newmessage_result);
 				echo "<span class=\"badge\">".$num_unread."</span>";
@@ -195,7 +220,20 @@
         <div class="col-md-6 col-md-offset-1">
 			<div class="main">
 				<h3>Messages</h3>
-				<?php
+				<form action="newmessage.php" method="POST">
+					<button class="btn btn-primary" type="submit" name="writemsg" id="writemsg"><span class="glyphicon glyphicon-edit"></span> New Message</button>
+				</form>
+				<!-- Nav tabs -->
+				<ul class="nav nav-tabs" role="tablist">
+				  <li class="active"><a href="#received" role="tab" data-toggle="tab">Received</a></li>
+				  <li><a href="#sent" role="tab" data-toggle="tab">Sent</a></li>
+				  <li><a href="#trades" role="tab" data-toggle="tab">Trades</a></li>
+				</ul>
+
+				<!-- Tab panes -->
+				<div class="tab-content">
+				  <div class="tab-pane fade in active" id="received">
+				  <?php
 				if (mysqli_num_rows($newmessage_result) != 0) {
 					for ($i=0;$i<mysqli_num_rows($newmessage_result);$i++) {
 						$messageData = mysqli_fetch_array($newmessage_result);
@@ -219,15 +257,15 @@
 						
 						echo "<div class=\"container\">
 					<div class=\"row\">
-						<div class=\"col-md-5\">
+						<div class=\"col-md-5\" id=\"msgcontainer\">
 							<div class=\"well newmessage\">
 								<div class=\"row\" id=\"sender\">
 									<div class=\"col-md-3\">
 										<img src=\"".$imagepath."\" height=\"50\">
-										<strong>".$sender_name."</strong>
+										<strong><a href=\"profile.php?profileid=".$sender."\">".$sender_name."</a></strong>
 									</div>
 									<div class=\"col-md-8\">
-									<strong><a href=\"profile.php?profileid=".$sender."\">".$sender_name."</a></strong>
+									<strong>".$subject."</strong><br>
 									Time sent: ".$timestamp."
 									</div>
 								</div>
@@ -239,7 +277,7 @@
 								<div class=\"row\">
 									<form method=\"POST\" action=\"messages.php\" role=\"form\">
 										<input type=\"hidden\" name=\"messageid\" value=\"".$messageid."\">
-										<button type=\"submit\" id=\"delete\" name=\"delete\" class=\"btn btn-primary\"><span class=\"glyphicon glyphicon-trash\"></span> Delete</button>
+										<button type=\"submit\" id=\"delete\" name=\"recdelete\" class=\"btn btn-primary\"><span class=\"glyphicon glyphicon-trash\"></span> Delete</button>
 									</form>
 									<form method=\"POST\" action=\"newmessage.php\" role=\"form\">
 										<input type=\"hidden\" name=\"convsubject\" value=\"".$subject."\">
@@ -276,7 +314,7 @@
 						
 						echo "<div class=\"container\">
 					<div class=\"row\">
-						<div class=\"col-md-5\">
+						<div class=\"col-md-5\" id=\"msgcontainer\">
 							<div class=\"well\">
 								<div class=\"row\" id=\"sender\">
 									<div class=\"col-md-3\">
@@ -296,7 +334,7 @@
 								<div class=\"row\">
 									<form method=\"POST\" action=\"messages.php\" role=\"form\">
 										<input type=\"hidden\" name=\"messageid\" value=\"".$messageid."\">
-										<button type=\"submit\" id=\"delete\" name=\"delete\" class=\"btn btn-primary\"><span class=\"glyphicon glyphicon-trash\"></span> Delete</button>
+										<button type=\"submit\" id=\"delete\" name=\"recdelete\" class=\"btn btn-primary\"><span class=\"glyphicon glyphicon-trash\"></span> Delete</button>
 									</form>
 									<form method=\"POST\" action=\"newmessage.php\" role=\"form\">
 										<input type=\"hidden\" name=\"convsubject\" value=\"".$subject."\">
@@ -312,8 +350,76 @@
 				if (mysqli_num_rows($newmessage_result) == 0 && mysqli_num_rows($oldmessage_result) == 0) {
 					echo "You have no messages!";
 				}
-				?>
+				?></div>
+				  <div class="tab-pane fade" id="sent">
+				  <?php
+				  if(mysqli_num_rows($sentmessage_result)!= 0) {
+					for ($i=0;$i<mysqli_num_rows($sentmessage_result);$i++) {
+						$messageData = mysqli_fetch_array($sentmessage_result);
+						$messageid = $messageData['id'];
+						$recipient = $messageData['to'];
+						$subject = $messageData['subject'];
+						$message = $messageData['message'];
+						$message_read =$messageData['read'];
+						$timestamp = $messageData['timestamp'];
+						
+						$to_result = mysqli_query($conn,"SELECT username from member WHERE id=$recipient");
+						$toData = mysqli_fetch_array($to_result);
+						$recipient_name = $toData['username'];
+						
+						$photo_result = mysqli_query($conn,"SELECT filename FROM photos WHERE member_id=$recipient AND pri='yes'");
+						$photoData = mysqli_fetch_array($photo_result);
+						if ($photoData['filename'] != "") {
+							$imagepath = "./uploads/".$photoData['filename'];
+						} else {
+							$imagepath="profile.jpg";
+						}
+						
+						echo "<div class=\"container\">
+					<div class=\"row\">
+						<div class=\"col-md-5\" id=\"msgcontainer\">
+							<div class=\"well\">
+								<div class=\"row\" id=\"sender\">
+									<div class=\"col-md-3\">
+										<img src=\"".$imagepath."\" height=\"50\"><br>
+										<strong>To: <a href=\"profile.php?profileid=".$recipient."\">".$recipient_name."</a></strong>
+									</div>
+									<div class=\"col-md-8\">
+									<strong>".$subject."</strong><br>
+									Time sent: ".$timestamp."
+									</div>
+								</div>
+								<div class=\"row\" id=\"message\">
+									<div class=\"col-md-8 col-md-offset-3\">
+									".$message."
+									</div>
+								</div>
+								<div class=\"row\">
+									<form method=\"POST\" action=\"messages.php\" role=\"form\">
+										<input type=\"hidden\" name=\"messageid\" value=\"".$messageid."\">
+										<button type=\"submit\" id=\"delete\" name=\"sentdelete\" class=\"btn btn-primary\"><span class=\"glyphicon glyphicon-trash\"></span> Delete</button>
+									</form>";
+							if ($message_read=='1') {
+								echo "<div class=\"read-indicator\"><span class=\"glyphicon glyphicon-ok\"></span> Read</div>";
+							}
+						echo "</div>
+							</div>
+						</div>
+					</div>
+				</div>";
+					}
+				  } else {
+					echo "No sent messages.";
+				  }
+				  ?>
+				  </div>
+				  <div class="tab-pane fade" id="trades">
+				  Not implemented yet...
+				  </div>
+				</div>
 			</div>
+				
+				
         </div>
       </div>
     </div>

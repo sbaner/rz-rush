@@ -36,13 +36,22 @@ if (mysqli_num_rows($checkUser) > 0) {
 	$result = "sameemail";
 } else {
 	$signupdate = date("m")."/".date("d")."/".date("y");
-	$query = "INSERT INTO member ( username, password, email, salt, signup, premium, last_login )
-			VALUES ( '$username', '$password', '$email', '$salt', '$signupdate', 'n', '$signupdate' );";
+	$ipaddress = $_SERVER['REMOTE_ADDR'];
+	$ip_result = mysqli_query($conn,"SELECT id FROM member WHERE ipaddress='$ipaddress'");
+	if (mysqli_num_rows($ip_result) > 0) {
+		$result = "sameip";
+		header('Location: register_result.php?result='.$result);
+		die();
+	}
+	$query = "INSERT INTO member ( username, password, email, salt, signup, premium, last_login, ipaddress )
+			VALUES ( '$username', '$password', '$email', '$salt', '$signupdate', 'n', '$signupdate','$ipaddress' );";
 	mysqli_query($conn, $query);
+	if (mysqli_affected_rows($conn) == 1) {
+		$result = "success";
+	}
 	$userid = mysqli_insert_id($conn);
 	$friend_query = "INSERT INTO friends (friend_one, friend_two, status) VALUES ($userid, $userid, '2');";
 	mysqli_query($conn, $friend_query);
-	$result = "success";
 }
 
 mysqli_close($conn);

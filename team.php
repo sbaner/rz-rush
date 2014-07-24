@@ -1,5 +1,6 @@
 <?php
 	session_start();
+	date_default_timezone_set('America/New_York');
 	if(isset($_SESSION['userID'])) {
 		$userID = $_SESSION['userID'];
 		$username = $_SESSION['username'];
@@ -68,7 +69,7 @@
 		$ir_player_result = mysqli_query($conn,"SELECT id,start_year,firstname,lastname,position,health,overall_now FROM player WHERE team=$teamid AND status='ir'");
 	} else if (isset($_POST['activate'])) {
 		$players = $_POST['playercheck'];
-		if (count($players)+mysqli_num_rows($active_player_result) < 46) {
+		if (count($players)+mysqli_num_rows($active_player_result) <= 46) {
 			foreach($players as $player) {
 				mysqli_query($conn,"UPDATE player SET status='active' WHERE id=$player");
 			}
@@ -93,6 +94,14 @@
 		$players = $_POST['playercheck'];
 		foreach($players as $player) {
 			mysqli_query($conn,"UPDATE player SET team=0,status='' WHERE id=$player");
+			mysqli_query($conn,"UPDATE contract SET base=0 WHERE player=$player AND team=$teamid");
+			$caphit_result = mysqli_query($conn,"SELECT caphit FROM contract WHERE player=$player AND team=$teamid");
+			$caphitData = mysqli_fetch_array($caphit_result);
+			$caphit = $caphitData['caphit'];
+			mysqli_query($conn,"UPDATE contract SET deadcap=$caphit WHERE player=$player AND team=$teamid");
+			
+			$timestamp = date("Y")."-".date("m")."-".date("d")." ".date("g").":".date("i")." ".date("A");
+			mysqli_query($conn,"INSERT INTO leagueactivity (league,team,action,player,timestamp) VALUES ($leagueid,$teamid,'cut',$player,'$timestamp')");
 		}
 		$active_player_result = mysqli_query($conn,"SELECT id,start_year,firstname,lastname,position,health,overall_now FROM player WHERE team=$teamid AND status='active'");
 		$inactive_player_result = mysqli_query($conn,"SELECT id,start_year,firstname,lastname,position,health,overall_now FROM player WHERE team=$teamid AND status='inactive'");
@@ -209,7 +218,7 @@
                 <li>
                   <a href="scores.php?leagueid=<?php echo $leagueid;?>">Scores &amp; Schedule</a>
                 </li><li>
-                  <a href="#">Depth Chart</a>
+                  <a href="depthchart.php?teamid=<?php echo $teamid;?>">Depth Chart</a>
                 </li>
                 <li>
                   <a href="#">Playbooks</a>
@@ -238,7 +247,7 @@
 								<h3 id="teamname"><?php echo $location." ".$teamname;?></h3>
 								<img src="<?php echo $logopath;?>">
 						</div>
-						<div class="col-md-3 col-md-offset-1">
+						<div class="col-md-3 col-md">
 							<div class="middle-col">
 							<?php
 							echo "<h3>".$season_win." - ".$season_loss."</h3>";
@@ -270,7 +279,7 @@
 				</div>
 			</div>
             <h3>Team Details</h3>
-			<p>Total Salary:</p>
+				
 			 <div class="container">
 			 <div class="row">
 			 <div class="col-md-9">
@@ -280,7 +289,53 @@
 				 <button type=\"button\" class=\"close\" data-dismiss=\"alert\"><span aria-hidden=\"true\">&times;</span><span class=\"sr-only\">Close</span></button><strong>Sorry! </strong>"
 				 .$message.
 				 "</div>";
-			}
+			} ?>
+			<div class="panel-group" id="accordion">
+				  <div class="panel panel-default">
+					<div class="panel-heading">
+					  <h4 class="panel-title">
+						<a data-toggle="collapse" data-parent="#accordion" href="#collapseOne">
+						  Click to view salary information
+						</a>
+					  </h4>
+					</div>
+					<div id="collapseOne" class="panel-collapse collapse">
+					  <div class="panel-body">
+						<div class="table-responsive">
+							<table class="table">
+								<thead>
+									<tr>
+										<th>Year</th>
+										<th>Dead Money</th>
+										<th>Total Spending (includes dead money)</th>
+										<th>Total Cap</th>
+									</tr>
+								</thead>
+								<tbody>
+								<?php
+								for ($i=0;$i<6;$i++) {
+									$contract_year = $league_year + $i;
+									$total_result = mysqli_query($conn,"SELECT * FROM contract WHERE team=$teamid AND year=$contract_year");
+									$total_salary = 0;
+									$deadcap = 0;
+									while ($totalData = mysqli_fetch_array($total_result)) {
+										$total_salary = $total_salary + $totalData['bonus'] + $totalData['base'];
+										$deadcap = $deadcap + $totalData['deadcap'];
+									}
+									echo "<tr><td>".$contract_year."</td>
+										<td>$".number_format($deadcap)."</td>
+										<td>$".number_format($total_salary)."</td>
+										<td>$130,000,000</td>";
+								}
+								?>
+								</tbody>
+							</table>
+						</div>
+					  </div>
+					</div>
+				  </div>
+				</div>
+			<?php
 			 if($own_team) {
 			 echo "<form name=\"active\" action=\"team.php?teamid=".$teamid."\" method=\"POST\" role=\"form\">";
 			 }
@@ -312,7 +367,7 @@
                 <tbody>
 				<?php
 				$active_qb_result = mysqli_query($conn,"SELECT id,start_year,firstname,lastname,position,health,overall_now FROM player WHERE team=$teamid AND status='active' AND position='QB' ORDER BY overall_now DESC");
-				for ($i=0; $i < mysqli_num_rows($active_qb_result); $i++) {
+				for ($i=1; $i < mysqli_num_rows($active_qb_result); $i++) {
 					$activeData = mysqli_fetch_array($active_qb_result);
 					$playerid = $activeData['id'];
 					$player_exp = $league_year - $activeData['start_year'];
@@ -320,7 +375,9 @@
 					$position = $activeData['position'];
 					$health = ucfirst($activeData['health']);
 					$rating = $activeData['overall_now'];
-					
+					$salary_result = mysqli_query($conn,"SELECT bonus,base FROM contract WHERE player=$playerid AND year=$league_year");
+					$salaryData = mysqli_fetch_array($salary_result);
+					$salary = "$".number_format($salaryData['base']+$salaryData['bonus']);
 					echo "<tr>
 							<td>".$position."</td>
 							<td><a href=\"player.php?playerid=".$playerid."\">".$player_name."</a></td>
@@ -331,14 +388,41 @@
 					} else {
 						echo "<td>Healthy</td>";
 					}
-					echo "<td></td><td>";
+					echo "<td>".$salary."</td><td>";
+					if($own_team) {
+						echo "<input type=\"checkbox\" name=\"playercheck[]\" id=\"playercheck\" value=\"".$playerid."\">";
+					}
+					echo "</td></tr>";
+				} if (mysqli_num_rows($active_qb_result) > 0) {
+					$activeData = mysqli_fetch_array($active_qb_result);
+					$playerid = $activeData['id'];
+					$player_exp = $league_year - $activeData['start_year'];
+					$player_name = $activeData['firstname']." ".$activeData['lastname'];
+					$position = $activeData['position'];
+					$health = ucfirst($activeData['health']);
+					$rating = $activeData['overall_now'];
+					$salary_result = mysqli_query($conn,"SELECT bonus,base FROM contract WHERE player=$playerid AND year=$league_year");
+					$salaryData = mysqli_fetch_array($salary_result);
+					$salary = "$".number_format($salaryData['base']+$salaryData['bonus']);
+					
+					echo "<tr class=\"bottom-border\">
+							<td>".$position."</td>
+							<td><a href=\"player.php?playerid=".$playerid."\">".$player_name."</a></td>
+							<td>".$rating."</td>
+							<td>".$player_exp."</td>";
+					if ($health != "Healthy") {
+						echo "<td class=\"injured\">".$health."</td>";
+					} else {
+						echo "<td>Healthy</td>";
+					}
+					echo "<td>".$salary."</td><td>";
 					if($own_team) {
 						echo "<input type=\"checkbox\" name=\"playercheck[]\" id=\"playercheck\" value=\"".$playerid."\">";
 					}
 					echo "</td></tr>";
 				}
 				$active_rb_result = mysqli_query($conn,"SELECT id,start_year,firstname,lastname,position,health,overall_now FROM player WHERE team=$teamid AND status='active' AND position='RB' ORDER BY overall_now DESC");
-				for ($i=0; $i < mysqli_num_rows($active_rb_result); $i++) {
+				for ($i=1; $i < mysqli_num_rows($active_rb_result); $i++) {
 					$activeData = mysqli_fetch_array($active_rb_result);
 					$playerid = $activeData['id'];
 					$player_exp = $league_year - $activeData['start_year'];
@@ -346,7 +430,9 @@
 					$position = $activeData['position'];
 					$health = ucfirst($activeData['health']);
 					$rating = $activeData['overall_now'];
-					
+					$salary_result = mysqli_query($conn,"SELECT bonus,base FROM contract WHERE player=$playerid AND year=$league_year");
+					$salaryData = mysqli_fetch_array($salary_result);
+					$salary = "$".number_format($salaryData['base']+$salaryData['bonus']);
 					echo "<tr>
 							<td>".$position."</td>
 							<td><a href=\"player.php?playerid=".$playerid."\">".$player_name."</a></td>
@@ -357,14 +443,40 @@
 					} else {
 						echo "<td>Healthy</td>";
 					}
-					echo "<td></td><td>";
+					echo "<td>".$salary."</td><td>";
+					if($own_team) {
+						echo "<input type=\"checkbox\" name=\"playercheck[]\" id=\"playercheck\" value=\"".$playerid."\">";
+					}
+					echo "</td></tr>";
+				} if (mysqli_num_rows($active_rb_result) > 0) {
+					$activeData = mysqli_fetch_array($active_rb_result);
+					$playerid = $activeData['id'];
+					$player_exp = $league_year - $activeData['start_year'];
+					$player_name = $activeData['firstname']." ".$activeData['lastname'];
+					$position = $activeData['position'];
+					$health = ucfirst($activeData['health']);
+					$rating = $activeData['overall_now'];
+					$salary_result = mysqli_query($conn,"SELECT bonus,base FROM contract WHERE player=$playerid AND year=$league_year");
+					$salaryData = mysqli_fetch_array($salary_result);
+					$salary = "$".number_format($salaryData['base']+$salaryData['bonus']);
+					echo "<tr class=\"bottom-border\">
+							<td>".$position."</td>
+							<td><a href=\"player.php?playerid=".$playerid."\">".$player_name."</a></td>
+							<td>".$rating."</td>
+							<td>".$player_exp."</td>";
+					if ($health != "Healthy") {
+						echo "<td class=\"injured\">".$health."</td>";
+					} else {
+						echo "<td>Healthy</td>";
+					}
+					echo "<td>".$salary."</td><td>";
 					if($own_team) {
 						echo "<input type=\"checkbox\" name=\"playercheck[]\" id=\"playercheck\" value=\"".$playerid."\">";
 					}
 					echo "</td></tr>";
 				}
 				$active_fb_result = mysqli_query($conn,"SELECT id,start_year,firstname,lastname,position,health,overall_now FROM player WHERE team=$teamid AND status='active' AND position='FB' ORDER BY overall_now DESC");
-				for ($i=0; $i < mysqli_num_rows($active_fb_result); $i++) {
+				for ($i=1; $i < mysqli_num_rows($active_fb_result); $i++) {
 					$activeData = mysqli_fetch_array($active_fb_result);
 					$playerid = $activeData['id'];
 					$player_exp = $league_year - $activeData['start_year'];
@@ -372,7 +484,9 @@
 					$position = $activeData['position'];
 					$health = ucfirst($activeData['health']);
 					$rating = $activeData['overall_now'];
-					
+					$salary_result = mysqli_query($conn,"SELECT bonus,base FROM contract WHERE player=$playerid AND year=$league_year");
+					$salaryData = mysqli_fetch_array($salary_result);
+					$salary = "$".number_format($salaryData['base']+$salaryData['bonus']);
 					echo "<tr>
 							<td>".$position."</td>
 							<td><a href=\"player.php?playerid=".$playerid."\">".$player_name."</a></td>
@@ -383,14 +497,40 @@
 					} else {
 						echo "<td>Healthy</td>";
 					}
-					echo "<td></td><td>";
+					echo "<td>".$salary."</td><td>";
+					if($own_team) {
+						echo "<input type=\"checkbox\" name=\"playercheck[]\" id=\"playercheck\" value=\"".$playerid."\">";
+					}
+					echo "</td></tr>";
+				}  if (mysqli_num_rows($active_fb_result) > 0) {
+					$activeData = mysqli_fetch_array($active_fb_result);
+					$playerid = $activeData['id'];
+					$player_exp = $league_year - $activeData['start_year'];
+					$player_name = $activeData['firstname']." ".$activeData['lastname'];
+					$position = $activeData['position'];
+					$health = ucfirst($activeData['health']);
+					$rating = $activeData['overall_now'];
+					$salary_result = mysqli_query($conn,"SELECT bonus,base FROM contract WHERE player=$playerid AND year=$league_year");
+					$salaryData = mysqli_fetch_array($salary_result);
+					$salary = "$".number_format($salaryData['base']+$salaryData['bonus']);
+					echo "<tr class=\"bottom-border\">
+							<td>".$position."</td>
+							<td><a href=\"player.php?playerid=".$playerid."\">".$player_name."</a></td>
+							<td>".$rating."</td>
+							<td>".$player_exp."</td>";
+					if ($health != "Healthy") {
+						echo "<td class=\"injured\">".$health."</td>";
+					} else {
+						echo "<td>Healthy</td>";
+					}
+					echo "<td>".$salary."</td><td>";
 					if($own_team) {
 						echo "<input type=\"checkbox\" name=\"playercheck[]\" id=\"playercheck\" value=\"".$playerid."\">";
 					}
 					echo "</td></tr>";
 				}
 				$active_wr_result = mysqli_query($conn,"SELECT id,start_year,firstname,lastname,position,health,overall_now FROM player WHERE team=$teamid AND status='active' AND position='WR' ORDER BY overall_now DESC");
-				for ($i=0; $i < mysqli_num_rows($active_wr_result); $i++) {
+				for ($i=1; $i < mysqli_num_rows($active_wr_result); $i++) {
 					$activeData = mysqli_fetch_array($active_wr_result);
 					$playerid = $activeData['id'];
 					$player_exp = $league_year - $activeData['start_year'];
@@ -398,7 +538,9 @@
 					$position = $activeData['position'];
 					$health = ucfirst($activeData['health']);
 					$rating = $activeData['overall_now'];
-					
+					$salary_result = mysqli_query($conn,"SELECT bonus,base FROM contract WHERE player=$playerid AND year=$league_year");
+					$salaryData = mysqli_fetch_array($salary_result);
+					$salary = "$".number_format($salaryData['base']+$salaryData['bonus']);
 					echo "<tr>
 							<td>".$position."</td>
 							<td><a href=\"player.php?playerid=".$playerid."\">".$player_name."</a></td>
@@ -409,14 +551,40 @@
 					} else {
 						echo "<td>Healthy</td>";
 					}
-					echo "<td></td><td>";
+					echo "<td>".$salary."</td><td>";
+					if($own_team) {
+						echo "<input type=\"checkbox\" name=\"playercheck[]\" id=\"playercheck\" value=\"".$playerid."\">";
+					}
+					echo "</td></tr>";
+				} if (mysqli_num_rows($active_wr_result) > 0) {
+					$activeData = mysqli_fetch_array($active_wr_result);
+					$playerid = $activeData['id'];
+					$player_exp = $league_year - $activeData['start_year'];
+					$player_name = $activeData['firstname']." ".$activeData['lastname'];
+					$position = $activeData['position'];
+					$health = ucfirst($activeData['health']);
+					$rating = $activeData['overall_now'];
+					$salary_result = mysqli_query($conn,"SELECT bonus,base FROM contract WHERE player=$playerid AND year=$league_year");
+					$salaryData = mysqli_fetch_array($salary_result);
+					$salary = "$".number_format($salaryData['base']+$salaryData['bonus']);
+					echo "<tr class=\"bottom-border\">
+							<td>".$position."</td>
+							<td><a href=\"player.php?playerid=".$playerid."\">".$player_name."</a></td>
+							<td>".$rating."</td>
+							<td>".$player_exp."</td>";
+					if ($health != "Healthy") {
+						echo "<td class=\"injured\">".$health."</td>";
+					} else {
+						echo "<td>Healthy</td>";
+					}
+					echo "<td>".$salary."</td><td>";
 					if($own_team) {
 						echo "<input type=\"checkbox\" name=\"playercheck[]\" id=\"playercheck\" value=\"".$playerid."\">";
 					}
 					echo "</td></tr>";
 				}
 				$active_te_result = mysqli_query($conn,"SELECT id,start_year,firstname,lastname,position,health,overall_now FROM player WHERE team=$teamid AND status='active' AND position='TE' ORDER BY overall_now DESC");
-				for ($i=0; $i < mysqli_num_rows($active_te_result); $i++) {
+				for ($i=1; $i < mysqli_num_rows($active_te_result); $i++) {
 					$activeData = mysqli_fetch_array($active_te_result);
 					$playerid = $activeData['id'];
 					$player_exp = $league_year - $activeData['start_year'];
@@ -424,7 +592,9 @@
 					$position = $activeData['position'];
 					$health = ucfirst($activeData['health']);
 					$rating = $activeData['overall_now'];
-					
+					$salary_result = mysqli_query($conn,"SELECT bonus,base FROM contract WHERE player=$playerid AND year=$league_year");
+					$salaryData = mysqli_fetch_array($salary_result);
+					$salary = "$".number_format($salaryData['base']+$salaryData['bonus']);
 					echo "<tr>
 							<td>".$position."</td>
 							<td><a href=\"player.php?playerid=".$playerid."\">".$player_name."</a></td>
@@ -435,14 +605,40 @@
 					} else {
 						echo "<td>Healthy</td>";
 					}
-					echo "<td></td><td>";
+					echo "<td>".$salary."</td><td>";
+					if($own_team) {
+						echo "<input type=\"checkbox\" name=\"playercheck[]\" id=\"playercheck\" value=\"".$playerid."\">";
+					}
+					echo "</td></tr>";
+				} if (mysqli_num_rows($active_te_result) > 0) {
+					$activeData = mysqli_fetch_array($active_te_result);
+					$playerid = $activeData['id'];
+					$player_exp = $league_year - $activeData['start_year'];
+					$player_name = $activeData['firstname']." ".$activeData['lastname'];
+					$position = $activeData['position'];
+					$health = ucfirst($activeData['health']);
+					$rating = $activeData['overall_now'];
+					$salary_result = mysqli_query($conn,"SELECT bonus,base FROM contract WHERE player=$playerid AND year=$league_year");
+					$salaryData = mysqli_fetch_array($salary_result);
+					$salary = "$".number_format($salaryData['base']+$salaryData['bonus']);
+					echo "<tr class=\"bottom-border\">
+							<td>".$position."</td>
+							<td><a href=\"player.php?playerid=".$playerid."\">".$player_name."</a></td>
+							<td>".$rating."</td>
+							<td>".$player_exp."</td>";
+					if ($health != "Healthy") {
+						echo "<td class=\"injured\">".$health."</td>";
+					} else {
+						echo "<td>Healthy</td>";
+					}
+					echo "<td>".$salary."</td><td>";
 					if($own_team) {
 						echo "<input type=\"checkbox\" name=\"playercheck[]\" id=\"playercheck\" value=\"".$playerid."\">";
 					}
 					echo "</td></tr>";
 				}
 				$active_g_result = mysqli_query($conn,"SELECT id,start_year,firstname,lastname,position,health,overall_now FROM player WHERE team=$teamid AND status='active' AND position='G' ORDER BY overall_now DESC");
-				for ($i=0; $i < mysqli_num_rows($active_g_result); $i++) {
+				for ($i=1; $i < mysqli_num_rows($active_g_result); $i++) {
 					$activeData = mysqli_fetch_array($active_g_result);
 					$playerid = $activeData['id'];
 					$player_exp = $league_year - $activeData['start_year'];
@@ -450,7 +646,9 @@
 					$position = $activeData['position'];
 					$health = ucfirst($activeData['health']);
 					$rating = $activeData['overall_now'];
-					
+					$salary_result = mysqli_query($conn,"SELECT bonus,base FROM contract WHERE player=$playerid AND year=$league_year");
+					$salaryData = mysqli_fetch_array($salary_result);
+					$salary = "$".number_format($salaryData['base']+$salaryData['bonus']);
 					echo "<tr>
 							<td>".$position."</td>
 							<td><a href=\"player.php?playerid=".$playerid."\">".$player_name."</a></td>
@@ -461,14 +659,40 @@
 					} else {
 						echo "<td>Healthy</td>";
 					}
-					echo "<td></td><td>";
+					echo "<td>".$salary."</td><td>";
+					if($own_team) {
+						echo "<input type=\"checkbox\" name=\"playercheck[]\" id=\"playercheck\" value=\"".$playerid."\">";
+					}
+					echo "</td></tr>";
+				} if (mysqli_num_rows($active_g_result) > 0) {
+					$activeData = mysqli_fetch_array($active_g_result);
+					$playerid = $activeData['id'];
+					$player_exp = $league_year - $activeData['start_year'];
+					$player_name = $activeData['firstname']." ".$activeData['lastname'];
+					$position = $activeData['position'];
+					$health = ucfirst($activeData['health']);
+					$rating = $activeData['overall_now'];
+					$salary_result = mysqli_query($conn,"SELECT bonus,base FROM contract WHERE player=$playerid AND year=$league_year");
+					$salaryData = mysqli_fetch_array($salary_result);
+					$salary = "$".number_format($salaryData['base']+$salaryData['bonus']);
+					echo "<tr class=\"bottom-border\">
+							<td>".$position."</td>
+							<td><a href=\"player.php?playerid=".$playerid."\">".$player_name."</a></td>
+							<td>".$rating."</td>
+							<td>".$player_exp."</td>";
+					if ($health != "Healthy") {
+						echo "<td class=\"injured\">".$health."</td>";
+					} else {
+						echo "<td>Healthy</td>";
+					}
+					echo "<td>".$salary."</td><td>";
 					if($own_team) {
 						echo "<input type=\"checkbox\" name=\"playercheck[]\" id=\"playercheck\" value=\"".$playerid."\">";
 					}
 					echo "</td></tr>";
 				}
 				$active_c_result = mysqli_query($conn,"SELECT id,start_year,firstname,lastname,position,health,overall_now FROM player WHERE team=$teamid AND status='active' AND position='C' ORDER BY overall_now DESC");
-				for ($i=0; $i < mysqli_num_rows($active_c_result); $i++) {
+				for ($i=1; $i < mysqli_num_rows($active_c_result); $i++) {
 					$activeData = mysqli_fetch_array($active_c_result);
 					$playerid = $activeData['id'];
 					$player_exp = $league_year - $activeData['start_year'];
@@ -476,7 +700,9 @@
 					$position = $activeData['position'];
 					$health = ucfirst($activeData['health']);
 					$rating = $activeData['overall_now'];
-					
+					$salary_result = mysqli_query($conn,"SELECT bonus,base FROM contract WHERE player=$playerid AND year=$league_year");
+					$salaryData = mysqli_fetch_array($salary_result);
+					$salary = "$".number_format($salaryData['base']+$salaryData['bonus']);
 					echo "<tr>
 							<td>".$position."</td>
 							<td><a href=\"player.php?playerid=".$playerid."\">".$player_name."</a></td>
@@ -492,9 +718,35 @@
 						echo "<input type=\"checkbox\" name=\"playercheck[]\" id=\"playercheck\" value=\"".$playerid."\">";
 					}
 					echo "</td></tr>";
+				} if (mysqli_num_rows($active_c_result) > 0) {
+					$activeData = mysqli_fetch_array($active_c_result);
+					$playerid = $activeData['id'];
+					$player_exp = $league_year - $activeData['start_year'];
+					$player_name = $activeData['firstname']." ".$activeData['lastname'];
+					$position = $activeData['position'];
+					$health = ucfirst($activeData['health']);
+					$rating = $activeData['overall_now'];
+					$salary_result = mysqli_query($conn,"SELECT bonus,base FROM contract WHERE player=$playerid AND year=$league_year");
+					$salaryData = mysqli_fetch_array($salary_result);
+					$salary = "$".number_format($salaryData['base']+$salaryData['bonus']);
+					echo "<tr class=\"bottom-border\">
+							<td>".$position."</td>
+							<td><a href=\"player.php?playerid=".$playerid."\">".$player_name."</a></td>
+							<td>".$rating."</td>
+							<td>".$player_exp."</td>";
+					if ($health != "Healthy") {
+						echo "<td class=\"injured\">".$health."</td>";
+					} else {
+						echo "<td>Healthy</td>";
+					}
+					echo "<td>".$salary."</td><td>";
+					if($own_team) {
+						echo "<input type=\"checkbox\" name=\"playercheck[]\" id=\"playercheck\" value=\"".$playerid."\">";
+					}
+					echo "</td></tr>";
 				}
 				$active_t_result = mysqli_query($conn,"SELECT id,start_year,firstname,lastname,position,health,overall_now FROM player WHERE team=$teamid AND status='active' AND position='T' ORDER BY overall_now DESC");
-				for ($i=0; $i < mysqli_num_rows($active_t_result); $i++) {
+				for ($i=1; $i < mysqli_num_rows($active_t_result); $i++) {
 					$activeData = mysqli_fetch_array($active_t_result);
 					$playerid = $activeData['id'];
 					$player_exp = $league_year - $activeData['start_year'];
@@ -502,7 +754,9 @@
 					$position = $activeData['position'];
 					$health = ucfirst($activeData['health']);
 					$rating = $activeData['overall_now'];
-					
+					$salary_result = mysqli_query($conn,"SELECT bonus,base FROM contract WHERE player=$playerid AND year=$league_year");
+					$salaryData = mysqli_fetch_array($salary_result);
+					$salary = "$".number_format($salaryData['base']+$salaryData['bonus']);
 					echo "<tr>
 							<td>".$position."</td>
 							<td><a href=\"player.php?playerid=".$playerid."\">".$player_name."</a></td>
@@ -513,14 +767,40 @@
 					} else {
 						echo "<td>Healthy</td>";
 					}
-					echo "<td></td><td>";
+					echo "<td>".$salary."</td><td>";
+					if($own_team) {
+						echo "<input type=\"checkbox\" name=\"playercheck[]\" id=\"playercheck\" value=\"".$playerid."\">";
+					}
+					echo "</td></tr>";
+				} if (mysqli_num_rows($active_t_result) > 0) {
+					$activeData = mysqli_fetch_array($active_t_result);
+					$playerid = $activeData['id'];
+					$player_exp = $league_year - $activeData['start_year'];
+					$player_name = $activeData['firstname']." ".$activeData['lastname'];
+					$position = $activeData['position'];
+					$health = ucfirst($activeData['health']);
+					$rating = $activeData['overall_now'];
+					$salary_result = mysqli_query($conn,"SELECT bonus,base FROM contract WHERE player=$playerid AND year=$league_year");
+					$salaryData = mysqli_fetch_array($salary_result);
+					$salary = "$".number_format($salaryData['base']+$salaryData['bonus']);
+					echo "<tr class=\"bottom-border\">
+							<td>".$position."</td>
+							<td><a href=\"player.php?playerid=".$playerid."\">".$player_name."</a></td>
+							<td>".$rating."</td>
+							<td>".$player_exp."</td>";
+					if ($health != "Healthy") {
+						echo "<td class=\"injured\">".$health."</td>";
+					} else {
+						echo "<td>Healthy</td>";
+					}
+					echo "<td>".$salary."</td><td>";
 					if($own_team) {
 						echo "<input type=\"checkbox\" name=\"playercheck[]\" id=\"playercheck\" value=\"".$playerid."\">";
 					}
 					echo "</td></tr>";
 				}
 				$active_de_result = mysqli_query($conn,"SELECT id,start_year,firstname,lastname,position,health,overall_now FROM player WHERE team=$teamid AND status='active' AND position='DE' ORDER BY overall_now DESC");
-				for ($i=0; $i < mysqli_num_rows($active_de_result); $i++) {
+				for ($i=1; $i < mysqli_num_rows($active_de_result); $i++) {
 					$activeData = mysqli_fetch_array($active_de_result);
 					$playerid = $activeData['id'];
 					$player_exp = $league_year - $activeData['start_year'];
@@ -528,7 +808,9 @@
 					$position = $activeData['position'];
 					$health = ucfirst($activeData['health']);
 					$rating = $activeData['overall_now'];
-					
+					$salary_result = mysqli_query($conn,"SELECT bonus,base FROM contract WHERE player=$playerid AND year=$league_year");
+					$salaryData = mysqli_fetch_array($salary_result);
+					$salary = "$".number_format($salaryData['base']+$salaryData['bonus']);
 					echo "<tr>
 							<td>".$position."</td>
 							<td><a href=\"player.php?playerid=".$playerid."\">".$player_name."</a></td>
@@ -539,14 +821,40 @@
 					} else {
 						echo "<td>Healthy</td>";
 					}
-					echo "<td></td><td>";
+					echo "<td>".$salary."</td><td>";
+					if($own_team) {
+						echo "<input type=\"checkbox\" name=\"playercheck[]\" id=\"playercheck\" value=\"".$playerid."\">";
+					}
+					echo "</td></tr>";
+				} if (mysqli_num_rows($active_de_result) > 0) {
+					$activeData = mysqli_fetch_array($active_de_result);
+					$playerid = $activeData['id'];
+					$player_exp = $league_year - $activeData['start_year'];
+					$player_name = $activeData['firstname']." ".$activeData['lastname'];
+					$position = $activeData['position'];
+					$health = ucfirst($activeData['health']);
+					$rating = $activeData['overall_now'];
+					$salary_result = mysqli_query($conn,"SELECT bonus,base FROM contract WHERE player=$playerid AND year=$league_year");
+					$salaryData = mysqli_fetch_array($salary_result);
+					$salary = "$".number_format($salaryData['base']+$salaryData['bonus']);
+					echo "<tr class=\"bottom-border\">
+							<td>".$position."</td>
+							<td><a href=\"player.php?playerid=".$playerid."\">".$player_name."</a></td>
+							<td>".$rating."</td>
+							<td>".$player_exp."</td>";
+					if ($health != "Healthy") {
+						echo "<td class=\"injured\">".$health."</td>";
+					} else {
+						echo "<td>Healthy</td>";
+					}
+					echo "<td>".$salary."</td><td>";
 					if($own_team) {
 						echo "<input type=\"checkbox\" name=\"playercheck[]\" id=\"playercheck\" value=\"".$playerid."\">";
 					}
 					echo "</td></tr>";
 				}
 				$active_dt_result = mysqli_query($conn,"SELECT id,start_year,firstname,lastname,position,health,overall_now FROM player WHERE team=$teamid AND status='active' AND position='DT' ORDER BY overall_now DESC");
-				for ($i=0; $i < mysqli_num_rows($active_dt_result); $i++) {
+				for ($i=1; $i < mysqli_num_rows($active_dt_result); $i++) {
 					$activeData = mysqli_fetch_array($active_dt_result);
 					$playerid = $activeData['id'];
 					$player_exp = $league_year - $activeData['start_year'];
@@ -554,7 +862,9 @@
 					$position = $activeData['position'];
 					$health = ucfirst($activeData['health']);
 					$rating = $activeData['overall_now'];
-					
+					$salary_result = mysqli_query($conn,"SELECT bonus,base FROM contract WHERE player=$playerid AND year=$league_year");
+					$salaryData = mysqli_fetch_array($salary_result);
+					$salary = "$".number_format($salaryData['base']+$salaryData['bonus']);
 					echo "<tr>
 							<td>".$position."</td>
 							<td><a href=\"player.php?playerid=".$playerid."\">".$player_name."</a></td>
@@ -565,14 +875,40 @@
 					} else {
 						echo "<td>Healthy</td>";
 					}
-					echo "<td></td><td>";
+					echo "<td>".$salary."</td><td>";
+					if($own_team) {
+						echo "<input type=\"checkbox\" name=\"playercheck[]\" id=\"playercheck\" value=\"".$playerid."\">";
+					}
+					echo "</td></tr>";
+				} if (mysqli_num_rows($active_dt_result) > 0) {
+					$activeData = mysqli_fetch_array($active_dt_result);
+					$playerid = $activeData['id'];
+					$player_exp = $league_year - $activeData['start_year'];
+					$player_name = $activeData['firstname']." ".$activeData['lastname'];
+					$position = $activeData['position'];
+					$health = ucfirst($activeData['health']);
+					$rating = $activeData['overall_now'];
+					$salary_result = mysqli_query($conn,"SELECT bonus,base FROM contract WHERE player=$playerid AND year=$league_year");
+					$salaryData = mysqli_fetch_array($salary_result);
+					$salary = "$".number_format($salaryData['base']+$salaryData['bonus']);
+					echo "<tr class=\"bottom-border\">
+							<td>".$position."</td>
+							<td><a href=\"player.php?playerid=".$playerid."\">".$player_name."</a></td>
+							<td>".$rating."</td>
+							<td>".$player_exp."</td>";
+					if ($health != "Healthy") {
+						echo "<td class=\"injured\">".$health."</td>";
+					} else {
+						echo "<td>Healthy</td>";
+					}
+					echo "<td>".$salary."</td><td>";
 					if($own_team) {
 						echo "<input type=\"checkbox\" name=\"playercheck[]\" id=\"playercheck\" value=\"".$playerid."\">";
 					}
 					echo "</td></tr>";
 				}
 				$active_lb_result = mysqli_query($conn,"SELECT id,start_year,firstname,lastname,position,health,overall_now FROM player WHERE team=$teamid AND status='active' AND position='LB' ORDER BY overall_now DESC");
-				for ($i=0; $i < mysqli_num_rows($active_lb_result); $i++) {
+				for ($i=1; $i < mysqli_num_rows($active_lb_result); $i++) {
 					$activeData = mysqli_fetch_array($active_lb_result);
 					$playerid = $activeData['id'];
 					$player_exp = $league_year - $activeData['start_year'];
@@ -580,7 +916,9 @@
 					$position = $activeData['position'];
 					$health = ucfirst($activeData['health']);
 					$rating = $activeData['overall_now'];
-					
+					$salary_result = mysqli_query($conn,"SELECT bonus,base FROM contract WHERE player=$playerid AND year=$league_year");
+					$salaryData = mysqli_fetch_array($salary_result);
+					$salary = "$".number_format($salaryData['base']+$salaryData['bonus']);
 					echo "<tr>
 							<td>".$position."</td>
 							<td><a href=\"player.php?playerid=".$playerid."\">".$player_name."</a></td>
@@ -591,14 +929,40 @@
 					} else {
 						echo "<td>Healthy</td>";
 					}
-					echo "<td></td><td>";
+					echo "<td>".$salary."</td><td>";
+					if($own_team) {
+						echo "<input type=\"checkbox\" name=\"playercheck[]\" id=\"playercheck\" value=\"".$playerid."\">";
+					}
+					echo "</td></tr>";
+				} if (mysqli_num_rows($active_lb_result) > 0) {
+					$activeData = mysqli_fetch_array($active_lb_result);
+					$playerid = $activeData['id'];
+					$player_exp = $league_year - $activeData['start_year'];
+					$player_name = $activeData['firstname']." ".$activeData['lastname'];
+					$position = $activeData['position'];
+					$health = ucfirst($activeData['health']);
+					$rating = $activeData['overall_now'];
+					$salary_result = mysqli_query($conn,"SELECT bonus,base FROM contract WHERE player=$playerid AND year=$league_year");
+					$salaryData = mysqli_fetch_array($salary_result);
+					$salary = "$".number_format($salaryData['base']+$salaryData['bonus']);
+					echo "<tr class=\"bottom-border\">
+							<td>".$position."</td>
+							<td><a href=\"player.php?playerid=".$playerid."\">".$player_name."</a></td>
+							<td>".$rating."</td>
+							<td>".$player_exp."</td>";
+					if ($health != "Healthy") {
+						echo "<td class=\"injured\">".$health."</td>";
+					} else {
+						echo "<td>Healthy</td>";
+					}
+					echo "<td>".$salary."</td><td>";
 					if($own_team) {
 						echo "<input type=\"checkbox\" name=\"playercheck[]\" id=\"playercheck\" value=\"".$playerid."\">";
 					}
 					echo "</td></tr>";
 				}
 				$active_cb_result = mysqli_query($conn,"SELECT id,start_year,firstname,lastname,position,health,overall_now FROM player WHERE team=$teamid AND status='active' AND position='CB' ORDER BY overall_now DESC");
-				for ($i=0; $i < mysqli_num_rows($active_cb_result); $i++) {
+				for ($i=1; $i < mysqli_num_rows($active_cb_result); $i++) {
 					$activeData = mysqli_fetch_array($active_cb_result);
 					$playerid = $activeData['id'];
 					$player_exp = $league_year - $activeData['start_year'];
@@ -606,7 +970,9 @@
 					$position = $activeData['position'];
 					$health = ucfirst($activeData['health']);
 					$rating = $activeData['overall_now'];
-					
+					$salary_result = mysqli_query($conn,"SELECT bonus,base FROM contract WHERE player=$playerid AND year=$league_year");
+					$salaryData = mysqli_fetch_array($salary_result);
+					$salary = "$".number_format($salaryData['base']+$salaryData['bonus']);
 					echo "<tr>
 							<td>".$position."</td>
 							<td><a href=\"player.php?playerid=".$playerid."\">".$player_name."</a></td>
@@ -617,14 +983,40 @@
 					} else {
 						echo "<td>Healthy</td>";
 					}
-					echo "<td></td><td>";
+					echo "<td>".$salary."</td><td>";
+					if($own_team) {
+						echo "<input type=\"checkbox\" name=\"playercheck[]\" id=\"playercheck\" value=\"".$playerid."\">";
+					}
+					echo "</td></tr>";
+				} if (mysqli_num_rows($active_cb_result) > 0) {
+					$activeData = mysqli_fetch_array($active_cb_result);
+					$playerid = $activeData['id'];
+					$player_exp = $league_year - $activeData['start_year'];
+					$player_name = $activeData['firstname']." ".$activeData['lastname'];
+					$position = $activeData['position'];
+					$health = ucfirst($activeData['health']);
+					$rating = $activeData['overall_now'];
+					$salary_result = mysqli_query($conn,"SELECT bonus,base FROM contract WHERE player=$playerid AND year=$league_year");
+					$salaryData = mysqli_fetch_array($salary_result);
+					$salary = "$".number_format($salaryData['base']+$salaryData['bonus']);
+					echo "<tr class=\"bottom-border\">
+							<td>".$position."</td>
+							<td><a href=\"player.php?playerid=".$playerid."\">".$player_name."</a></td>
+							<td>".$rating."</td>
+							<td>".$player_exp."</td>";
+					if ($health != "Healthy") {
+						echo "<td class=\"injured\">".$health."</td>";
+					} else {
+						echo "<td>Healthy</td>";
+					}
+					echo "<td>".$salary."</td><td>";
 					if($own_team) {
 						echo "<input type=\"checkbox\" name=\"playercheck[]\" id=\"playercheck\" value=\"".$playerid."\">";
 					}
 					echo "</td></tr>";
 				}
 				$active_s_result = mysqli_query($conn,"SELECT id,start_year,firstname,lastname,position,health,overall_now FROM player WHERE team=$teamid AND status='active' AND position='S' ORDER BY overall_now DESC");
-				for ($i=0; $i < mysqli_num_rows($active_s_result); $i++) {
+				for ($i=1; $i < mysqli_num_rows($active_s_result); $i++) {
 					$activeData = mysqli_fetch_array($active_s_result);
 					$playerid = $activeData['id'];
 					$player_exp = $league_year - $activeData['start_year'];
@@ -632,7 +1024,9 @@
 					$position = $activeData['position'];
 					$health = ucfirst($activeData['health']);
 					$rating = $activeData['overall_now'];
-					
+					$salary_result = mysqli_query($conn,"SELECT bonus,base FROM contract WHERE player=$playerid AND year=$league_year");
+					$salaryData = mysqli_fetch_array($salary_result);
+					$salary = "$".number_format($salaryData['base']+$salaryData['bonus']);
 					echo "<tr>
 							<td>".$position."</td>
 							<td><a href=\"player.php?playerid=".$playerid."\">".$player_name."</a></td>
@@ -643,14 +1037,40 @@
 					} else {
 						echo "<td>Healthy</td>";
 					}
-					echo "<td></td><td>";
+					echo "<td>".$salary."</td><td>";
+					if($own_team) {
+						echo "<input type=\"checkbox\" name=\"playercheck[]\" id=\"playercheck\" value=\"".$playerid."\">";
+					}
+					echo "</td></tr>";
+				} if (mysqli_num_rows($active_s_result) > 0) {
+					$activeData = mysqli_fetch_array($active_s_result);
+					$playerid = $activeData['id'];
+					$player_exp = $league_year - $activeData['start_year'];
+					$player_name = $activeData['firstname']." ".$activeData['lastname'];
+					$position = $activeData['position'];
+					$health = ucfirst($activeData['health']);
+					$rating = $activeData['overall_now'];
+					$salary_result = mysqli_query($conn,"SELECT bonus,base FROM contract WHERE player=$playerid AND year=$league_year");
+					$salaryData = mysqli_fetch_array($salary_result);
+					$salary = "$".number_format($salaryData['base']+$salaryData['bonus']);
+					echo "<tr class=\"bottom-border\">
+							<td>".$position."</td>
+							<td><a href=\"player.php?playerid=".$playerid."\">".$player_name."</a></td>
+							<td>".$rating."</td>
+							<td>".$player_exp."</td>";
+					if ($health != "Healthy") {
+						echo "<td class=\"injured\">".$health."</td>";
+					} else {
+						echo "<td>Healthy</td>";
+					}
+					echo "<td>".$salary."</td><td>";
 					if($own_team) {
 						echo "<input type=\"checkbox\" name=\"playercheck[]\" id=\"playercheck\" value=\"".$playerid."\">";
 					}
 					echo "</td></tr>";
 				}
 				$active_k_result = mysqli_query($conn,"SELECT id,start_year,firstname,lastname,position,health,overall_now FROM player WHERE team=$teamid AND status='active' AND position='K' ORDER BY overall_now DESC");
-				for ($i=0; $i < mysqli_num_rows($active_k_result); $i++) {
+				for ($i=1; $i < mysqli_num_rows($active_k_result); $i++) {
 					$activeData = mysqli_fetch_array($active_k_result);
 					$playerid = $activeData['id'];
 					$player_exp = $league_year - $activeData['start_year'];
@@ -658,7 +1078,9 @@
 					$position = $activeData['position'];
 					$health = ucfirst($activeData['health']);
 					$rating = $activeData['overall_now'];
-					
+					$salary_result = mysqli_query($conn,"SELECT bonus,base FROM contract WHERE player=$playerid AND year=$league_year");
+					$salaryData = mysqli_fetch_array($salary_result);
+					$salary = "$".number_format($salaryData['base']+$salaryData['bonus']);
 					echo "<tr>
 							<td>".$position."</td>
 							<td><a href=\"player.php?playerid=".$playerid."\">".$player_name."</a></td>
@@ -669,7 +1091,33 @@
 					} else {
 						echo "<td>Healthy</td>";
 					}
-					echo "<td></td><td>";
+					echo "<td>".$salary."</td><td>";
+					if($own_team) {
+						echo "<input type=\"checkbox\" name=\"playercheck[]\" id=\"playercheck\" value=\"".$playerid."\">";
+					}
+					echo "</td></tr>";
+				} if (mysqli_num_rows($active_k_result) > 0) {
+					$activeData = mysqli_fetch_array($active_k_result);
+					$playerid = $activeData['id'];
+					$player_exp = $league_year - $activeData['start_year'];
+					$player_name = $activeData['firstname']." ".$activeData['lastname'];
+					$position = $activeData['position'];
+					$health = ucfirst($activeData['health']);
+					$rating = $activeData['overall_now'];
+					$salary_result = mysqli_query($conn,"SELECT bonus,base FROM contract WHERE player=$playerid AND year=$league_year");
+					$salaryData = mysqli_fetch_array($salary_result);
+					$salary = "$".number_format($salaryData['base']+$salaryData['bonus']);
+					echo "<tr class=\"bottom-border\">
+							<td>".$position."</td>
+							<td><a href=\"player.php?playerid=".$playerid."\">".$player_name."</a></td>
+							<td>".$rating."</td>
+							<td>".$player_exp."</td>";
+					if ($health != "Healthy") {
+						echo "<td class=\"injured\">".$health."</td>";
+					} else {
+						echo "<td>Healthy</td>";
+					}
+					echo "<td>".$salary."</td><td>";
 					if($own_team) {
 						echo "<input type=\"checkbox\" name=\"playercheck[]\" id=\"playercheck\" value=\"".$playerid."\">";
 					}
@@ -684,7 +1132,9 @@
 					$position = $activeData['position'];
 					$health = ucfirst($activeData['health']);
 					$rating = $activeData['overall_now'];
-					
+					$salary_result = mysqli_query($conn,"SELECT bonus,base FROM contract WHERE player=$playerid AND year=$league_year");
+					$salaryData = mysqli_fetch_array($salary_result);
+					$salary = "$".number_format($salaryData['base']+$salaryData['bonus']);
 					echo "<tr>
 							<td>".$position."</td>
 							<td><a href=\"player.php?playerid=".$playerid."\">".$player_name."</a></td>
@@ -695,7 +1145,7 @@
 					} else {
 						echo "<td>Healthy</td>";
 					}
-					echo "<td></td><td>";
+					echo "<td>".$salary."</td><td>";
 					if($own_team) {
 						echo "<input type=\"checkbox\" name=\"playercheck[]\" id=\"playercheck\" value=\"".$playerid."\">";
 					}
@@ -738,7 +1188,7 @@
                 <tbody>
                   <?php
 					$inactive_qb_result = mysqli_query($conn,"SELECT id,start_year,firstname,lastname,position,health,overall_now FROM player WHERE team=$teamid AND status='inactive' AND position='QB' ORDER BY overall_now DESC");
-				for ($i=0; $i < mysqli_num_rows($inactive_qb_result); $i++) {
+				for ($i=1; $i < mysqli_num_rows($inactive_qb_result); $i++) {
 					$inactiveData = mysqli_fetch_array($inactive_qb_result);
 					$playerid = $inactiveData['id'];
 					$player_exp = $league_year - $inactiveData['start_year'];
@@ -746,7 +1196,9 @@
 					$position = $inactiveData['position'];
 					$health = ucfirst($inactiveData['health']);
 					$rating = $inactiveData['overall_now'];
-					
+					$salary_result = mysqli_query($conn,"SELECT bonus,base FROM contract WHERE player=$playerid AND year=$league_year");
+					$salaryData = mysqli_fetch_array($salary_result);
+					$salary = "$".number_format($salaryData['base']+$salaryData['bonus']);
 					echo "<tr>
 							<td>".$position."</td>
 							<td><a href=\"player.php?playerid=".$playerid."\">".$player_name."</a></td>
@@ -757,14 +1209,40 @@
 					} else {
 						echo "<td>Healthy</td>";
 					}
-					echo "<td></td><td>";
+					echo "<td>".$salary."</td><td>";
+					if($own_team) {
+						echo "<input type=\"checkbox\" name=\"playercheck[]\" id=\"playercheck\" value=\"".$playerid."\">";
+					}
+					echo "</td></tr>";
+				} if (mysqli_num_rows($inactive_qb_result) > 0) {
+					$inactiveData = mysqli_fetch_array($inactive_qb_result);
+					$playerid = $inactiveData['id'];
+					$player_exp = $league_year - $inactiveData['start_year'];
+					$player_name = $inactiveData['firstname']." ".$inactiveData['lastname'];
+					$position = $inactiveData['position'];
+					$health = ucfirst($inactiveData['health']);
+					$rating = $inactiveData['overall_now'];
+					$salary_result = mysqli_query($conn,"SELECT bonus,base FROM contract WHERE player=$playerid AND year=$league_year");
+					$salaryData = mysqli_fetch_array($salary_result);
+					$salary = "$".number_format($salaryData['base']+$salaryData['bonus']);
+					echo "<tr class=\"bottom-border\">
+							<td>".$position."</td>
+							<td><a href=\"player.php?playerid=".$playerid."\">".$player_name."</a></td>
+							<td>".$rating."</td>
+							<td>".$player_exp."</td>";
+					if ($health != "Healthy") {
+						echo "<td class=\"injured\">".$health."</td>";
+					} else {
+						echo "<td>Healthy</td>";
+					}
+					echo "<td>".$salary."</td><td>";
 					if($own_team) {
 						echo "<input type=\"checkbox\" name=\"playercheck[]\" id=\"playercheck\" value=\"".$playerid."\">";
 					}
 					echo "</td></tr>";
 				}
 				$inactive_rb_result = mysqli_query($conn,"SELECT id,start_year,firstname,lastname,position,health,overall_now FROM player WHERE team=$teamid AND status='inactive' AND position='RB' ORDER BY overall_now DESC");
-				for ($i=0; $i < mysqli_num_rows($inactive_rb_result); $i++) {
+				for ($i=1; $i < mysqli_num_rows($inactive_rb_result); $i++) {
 					$inactiveData = mysqli_fetch_array($inactive_rb_result);
 					$playerid = $inactiveData['id'];
 					$player_exp = $league_year - $inactiveData['start_year'];
@@ -772,7 +1250,9 @@
 					$position = $inactiveData['position'];
 					$health = ucfirst($inactiveData['health']);
 					$rating = $inactiveData['overall_now'];
-					
+					$salary_result = mysqli_query($conn,"SELECT bonus,base FROM contract WHERE player=$playerid AND year=$league_year");
+					$salaryData = mysqli_fetch_array($salary_result);
+					$salary = "$".number_format($salaryData['base']+$salaryData['bonus']);
 					echo "<tr>
 							<td>".$position."</td>
 							<td><a href=\"player.php?playerid=".$playerid."\">".$player_name."</a></td>
@@ -783,14 +1263,40 @@
 					} else {
 						echo "<td>Healthy</td>";
 					}
-					echo "<td></td><td>";
+					echo "<td>".$salary."</td><td>";
+					if($own_team) {
+						echo "<input type=\"checkbox\" name=\"playercheck[]\" id=\"playercheck\" value=\"".$playerid."\">";
+					}
+					echo "</td></tr>";
+				} if (mysqli_num_rows($inactive_rb_result) > 0) {
+					$inactiveData = mysqli_fetch_array($inactive_rb_result);
+					$playerid = $inactiveData['id'];
+					$player_exp = $league_year - $inactiveData['start_year'];
+					$player_name = $inactiveData['firstname']." ".$inactiveData['lastname'];
+					$position = $inactiveData['position'];
+					$health = ucfirst($inactiveData['health']);
+					$rating = $inactiveData['overall_now'];
+					$salary_result = mysqli_query($conn,"SELECT bonus,base FROM contract WHERE player=$playerid AND year=$league_year");
+					$salaryData = mysqli_fetch_array($salary_result);
+					$salary = "$".number_format($salaryData['base']+$salaryData['bonus']);
+					echo "<tr class=\"bottom-border\">
+							<td>".$position."</td>
+							<td><a href=\"player.php?playerid=".$playerid."\">".$player_name."</a></td>
+							<td>".$rating."</td>
+							<td>".$player_exp."</td>";
+					if ($health != "Healthy") {
+						echo "<td class=\"injured\">".$health."</td>";
+					} else {
+						echo "<td>Healthy</td>";
+					}
+					echo "<td>".$salary."</td><td>";
 					if($own_team) {
 						echo "<input type=\"checkbox\" name=\"playercheck[]\" id=\"playercheck\" value=\"".$playerid."\">";
 					}
 					echo "</td></tr>";
 				}
 				$inactive_fb_result = mysqli_query($conn,"SELECT id,start_year,firstname,lastname,position,health,overall_now FROM player WHERE team=$teamid AND status='inactive' AND position='FB' ORDER BY overall_now DESC");
-				for ($i=0; $i < mysqli_num_rows($inactive_fb_result); $i++) {
+				for ($i=1; $i < mysqli_num_rows($inactive_fb_result); $i++) {
 					$inactiveData = mysqli_fetch_array($inactive_fb_result);
 					$playerid = $inactiveData['id'];
 					$player_exp = $league_year - $inactiveData['start_year'];
@@ -798,7 +1304,9 @@
 					$position = $inactiveData['position'];
 					$health = ucfirst($inactiveData['health']);
 					$rating = $inactiveData['overall_now'];
-					
+					$salary_result = mysqli_query($conn,"SELECT bonus,base FROM contract WHERE player=$playerid AND year=$league_year");
+					$salaryData = mysqli_fetch_array($salary_result);
+					$salary = "$".number_format($salaryData['base']+$salaryData['bonus']);
 					echo "<tr>
 							<td>".$position."</td>
 							<td><a href=\"player.php?playerid=".$playerid."\">".$player_name."</a></td>
@@ -809,14 +1317,40 @@
 					} else {
 						echo "<td>Healthy</td>";
 					}
-					echo "<td></td><td>";
+					echo "<td>".$salary."</td><td>";
+					if($own_team) {
+						echo "<input type=\"checkbox\" name=\"playercheck[]\" id=\"playercheck\" value=\"".$playerid."\">";
+					}
+					echo "</td></tr>";
+				}  if (mysqli_num_rows($inactive_fb_result) > 0) {
+					$inactiveData = mysqli_fetch_array($inactive_fb_result);
+					$playerid = $inactiveData['id'];
+					$player_exp = $league_year - $inactiveData['start_year'];
+					$player_name = $inactiveData['firstname']." ".$inactiveData['lastname'];
+					$position = $inactiveData['position'];
+					$health = ucfirst($inactiveData['health']);
+					$rating = $inactiveData['overall_now'];
+					$salary_result = mysqli_query($conn,"SELECT bonus,base FROM contract WHERE player=$playerid AND year=$league_year");
+					$salaryData = mysqli_fetch_array($salary_result);
+					$salary = "$".number_format($salaryData['base']+$salaryData['bonus']);
+					echo "<tr class=\"bottom-border\">
+							<td>".$position."</td>
+							<td><a href=\"player.php?playerid=".$playerid."\">".$player_name."</a></td>
+							<td>".$rating."</td>
+							<td>".$player_exp."</td>";
+					if ($health != "Healthy") {
+						echo "<td class=\"injured\">".$health."</td>";
+					} else {
+						echo "<td>Healthy</td>";
+					}
+					echo "<td>".$salary."</td><td>";
 					if($own_team) {
 						echo "<input type=\"checkbox\" name=\"playercheck[]\" id=\"playercheck\" value=\"".$playerid."\">";
 					}
 					echo "</td></tr>";
 				}
 				$inactive_wr_result = mysqli_query($conn,"SELECT id,start_year,firstname,lastname,position,health,overall_now FROM player WHERE team=$teamid AND status='inactive' AND position='WR' ORDER BY overall_now DESC");
-				for ($i=0; $i < mysqli_num_rows($inactive_wr_result); $i++) {
+				for ($i=1; $i < mysqli_num_rows($inactive_wr_result); $i++) {
 					$inactiveData = mysqli_fetch_array($inactive_wr_result);
 					$playerid = $inactiveData['id'];
 					$player_exp = $league_year - $inactiveData['start_year'];
@@ -824,7 +1358,9 @@
 					$position = $inactiveData['position'];
 					$health = ucfirst($inactiveData['health']);
 					$rating = $inactiveData['overall_now'];
-					
+					$salary_result = mysqli_query($conn,"SELECT bonus,base FROM contract WHERE player=$playerid AND year=$league_year");
+					$salaryData = mysqli_fetch_array($salary_result);
+					$salary = "$".number_format($salaryData['base']+$salaryData['bonus']);
 					echo "<tr>
 							<td>".$position."</td>
 							<td><a href=\"player.php?playerid=".$playerid."\">".$player_name."</a></td>
@@ -835,14 +1371,40 @@
 					} else {
 						echo "<td>Healthy</td>";
 					}
-					echo "<td></td><td>";
+					echo "<td>".$salary."</td><td>";
+					if($own_team) {
+						echo "<input type=\"checkbox\" name=\"playercheck[]\" id=\"playercheck\" value=\"".$playerid."\">";
+					}
+					echo "</td></tr>";
+				} if (mysqli_num_rows($inactive_wr_result) > 0) {
+					$inactiveData = mysqli_fetch_array($inactive_wr_result);
+					$playerid = $inactiveData['id'];
+					$player_exp = $league_year - $inactiveData['start_year'];
+					$player_name = $inactiveData['firstname']." ".$inactiveData['lastname'];
+					$position = $inactiveData['position'];
+					$health = ucfirst($inactiveData['health']);
+					$rating = $inactiveData['overall_now'];
+					$salary_result = mysqli_query($conn,"SELECT bonus,base FROM contract WHERE player=$playerid AND year=$league_year");
+					$salaryData = mysqli_fetch_array($salary_result);
+					$salary = "$".number_format($salaryData['base']+$salaryData['bonus']);
+					echo "<tr class=\"bottom-border\">
+							<td>".$position."</td>
+							<td><a href=\"player.php?playerid=".$playerid."\">".$player_name."</a></td>
+							<td>".$rating."</td>
+							<td>".$player_exp."</td>";
+					if ($health != "Healthy") {
+						echo "<td class=\"injured\">".$health."</td>";
+					} else {
+						echo "<td>Healthy</td>";
+					}
+					echo "<td>".$salary."</td><td>";
 					if($own_team) {
 						echo "<input type=\"checkbox\" name=\"playercheck[]\" id=\"playercheck\" value=\"".$playerid."\">";
 					}
 					echo "</td></tr>";
 				}
 				$inactive_te_result = mysqli_query($conn,"SELECT id,start_year,firstname,lastname,position,health,overall_now FROM player WHERE team=$teamid AND status='inactive' AND position='TE' ORDER BY overall_now DESC");
-				for ($i=0; $i < mysqli_num_rows($inactive_te_result); $i++) {
+				for ($i=1; $i < mysqli_num_rows($inactive_te_result); $i++) {
 					$inactiveData = mysqli_fetch_array($inactive_te_result);
 					$playerid = $inactiveData['id'];
 					$player_exp = $league_year - $inactiveData['start_year'];
@@ -850,7 +1412,9 @@
 					$position = $inactiveData['position'];
 					$health = ucfirst($inactiveData['health']);
 					$rating = $inactiveData['overall_now'];
-					
+					$salary_result = mysqli_query($conn,"SELECT bonus,base FROM contract WHERE player=$playerid AND year=$league_year");
+					$salaryData = mysqli_fetch_array($salary_result);
+					$salary = "$".number_format($salaryData['base']+$salaryData['bonus']);
 					echo "<tr>
 							<td>".$position."</td>
 							<td><a href=\"player.php?playerid=".$playerid."\">".$player_name."</a></td>
@@ -861,14 +1425,40 @@
 					} else {
 						echo "<td>Healthy</td>";
 					}
-					echo "<td></td><td>";
+					echo "<td>".$salary."</td><td>";
+					if($own_team) {
+						echo "<input type=\"checkbox\" name=\"playercheck[]\" id=\"playercheck\" value=\"".$playerid."\">";
+					}
+					echo "</td></tr>";
+				} if (mysqli_num_rows($inactive_te_result) > 0) {
+					$inactiveData = mysqli_fetch_array($inactive_te_result);
+					$playerid = $inactiveData['id'];
+					$player_exp = $league_year - $inactiveData['start_year'];
+					$player_name = $inactiveData['firstname']." ".$inactiveData['lastname'];
+					$position = $inactiveData['position'];
+					$health = ucfirst($inactiveData['health']);
+					$rating = $inactiveData['overall_now'];
+					$salary_result = mysqli_query($conn,"SELECT bonus,base FROM contract WHERE player=$playerid AND year=$league_year");
+					$salaryData = mysqli_fetch_array($salary_result);
+					$salary = "$".number_format($salaryData['base']+$salaryData['bonus']);
+					echo "<tr class=\"bottom-border\">
+							<td>".$position."</td>
+							<td><a href=\"player.php?playerid=".$playerid."\">".$player_name."</a></td>
+							<td>".$rating."</td>
+							<td>".$player_exp."</td>";
+					if ($health != "Healthy") {
+						echo "<td class=\"injured\">".$health."</td>";
+					} else {
+						echo "<td>Healthy</td>";
+					}
+					echo "<td>".$salary."</td><td>";
 					if($own_team) {
 						echo "<input type=\"checkbox\" name=\"playercheck[]\" id=\"playercheck\" value=\"".$playerid."\">";
 					}
 					echo "</td></tr>";
 				}
 				$inactive_g_result = mysqli_query($conn,"SELECT id,start_year,firstname,lastname,position,health,overall_now FROM player WHERE team=$teamid AND status='inactive' AND position='G' ORDER BY overall_now DESC");
-				for ($i=0; $i < mysqli_num_rows($inactive_g_result); $i++) {
+				for ($i=1; $i < mysqli_num_rows($inactive_g_result); $i++) {
 					$inactiveData = mysqli_fetch_array($inactive_g_result);
 					$playerid = $inactiveData['id'];
 					$player_exp = $league_year - $inactiveData['start_year'];
@@ -876,7 +1466,9 @@
 					$position = $inactiveData['position'];
 					$health = ucfirst($inactiveData['health']);
 					$rating = $inactiveData['overall_now'];
-					
+					$salary_result = mysqli_query($conn,"SELECT bonus,base FROM contract WHERE player=$playerid AND year=$league_year");
+					$salaryData = mysqli_fetch_array($salary_result);
+					$salary = "$".number_format($salaryData['base']+$salaryData['bonus']);
 					echo "<tr>
 							<td>".$position."</td>
 							<td><a href=\"player.php?playerid=".$playerid."\">".$player_name."</a></td>
@@ -887,14 +1479,40 @@
 					} else {
 						echo "<td>Healthy</td>";
 					}
-					echo "<td></td><td>";
+					echo "<td>".$salary."</td><td>";
+					if($own_team) {
+						echo "<input type=\"checkbox\" name=\"playercheck[]\" id=\"playercheck\" value=\"".$playerid."\">";
+					}
+					echo "</td></tr>";
+				} if (mysqli_num_rows($inactive_g_result) > 0) {
+					$inactiveData = mysqli_fetch_array($inactive_g_result);
+					$playerid = $inactiveData['id'];
+					$player_exp = $league_year - $inactiveData['start_year'];
+					$player_name = $inactiveData['firstname']." ".$inactiveData['lastname'];
+					$position = $inactiveData['position'];
+					$health = ucfirst($inactiveData['health']);
+					$rating = $inactiveData['overall_now'];
+					$salary_result = mysqli_query($conn,"SELECT bonus,base FROM contract WHERE player=$playerid AND year=$league_year");
+					$salaryData = mysqli_fetch_array($salary_result);
+					$salary = "$".number_format($salaryData['base']+$salaryData['bonus']);
+					echo "<tr class=\"bottom-border\">
+							<td>".$position."</td>
+							<td><a href=\"player.php?playerid=".$playerid."\">".$player_name."</a></td>
+							<td>".$rating."</td>
+							<td>".$player_exp."</td>";
+					if ($health != "Healthy") {
+						echo "<td class=\"injured\">".$health."</td>";
+					} else {
+						echo "<td>Healthy</td>";
+					}
+					echo "<td>".$salary."</td><td>";
 					if($own_team) {
 						echo "<input type=\"checkbox\" name=\"playercheck[]\" id=\"playercheck\" value=\"".$playerid."\">";
 					}
 					echo "</td></tr>";
 				}
 				$inactive_c_result = mysqli_query($conn,"SELECT id,start_year,firstname,lastname,position,health,overall_now FROM player WHERE team=$teamid AND status='inactive' AND position='C' ORDER BY overall_now DESC");
-				for ($i=0; $i < mysqli_num_rows($inactive_c_result); $i++) {
+				for ($i=1; $i < mysqli_num_rows($inactive_c_result); $i++) {
 					$inactiveData = mysqli_fetch_array($inactive_c_result);
 					$playerid = $inactiveData['id'];
 					$player_exp = $league_year - $inactiveData['start_year'];
@@ -902,7 +1520,9 @@
 					$position = $inactiveData['position'];
 					$health = ucfirst($inactiveData['health']);
 					$rating = $inactiveData['overall_now'];
-					
+					$salary_result = mysqli_query($conn,"SELECT bonus,base FROM contract WHERE player=$playerid AND year=$league_year");
+					$salaryData = mysqli_fetch_array($salary_result);
+					$salary = "$".number_format($salaryData['base']+$salaryData['bonus']);
 					echo "<tr>
 							<td>".$position."</td>
 							<td><a href=\"player.php?playerid=".$playerid."\">".$player_name."</a></td>
@@ -913,14 +1533,40 @@
 					} else {
 						echo "<td>Healthy</td>";
 					}
-					echo "<td></td><td>";
+					echo "<td>".$salary."</td><td>";
+					if($own_team) {
+						echo "<input type=\"checkbox\" name=\"playercheck[]\" id=\"playercheck\" value=\"".$playerid."\">";
+					}
+					echo "</td></tr>";
+				} if (mysqli_num_rows($inactive_c_result) > 0) {
+					$inactiveData = mysqli_fetch_array($inactive_c_result);
+					$playerid = $inactiveData['id'];
+					$player_exp = $league_year - $inactiveData['start_year'];
+					$player_name = $inactiveData['firstname']." ".$inactiveData['lastname'];
+					$position = $inactiveData['position'];
+					$health = ucfirst($inactiveData['health']);
+					$rating = $inactiveData['overall_now'];
+					$salary_result = mysqli_query($conn,"SELECT bonus,base FROM contract WHERE player=$playerid AND year=$league_year");
+					$salaryData = mysqli_fetch_array($salary_result);
+					$salary = "$".number_format($salaryData['base']+$salaryData['bonus']);
+					echo "<tr class=\"bottom-border\">
+							<td>".$position."</td>
+							<td><a href=\"player.php?playerid=".$playerid."\">".$player_name."</a></td>
+							<td>".$rating."</td>
+							<td>".$player_exp."</td>";
+					if ($health != "Healthy") {
+						echo "<td class=\"injured\">".$health."</td>";
+					} else {
+						echo "<td>Healthy</td>";
+					}
+					echo "<td>".$salary."</td><td>";
 					if($own_team) {
 						echo "<input type=\"checkbox\" name=\"playercheck[]\" id=\"playercheck\" value=\"".$playerid."\">";
 					}
 					echo "</td></tr>";
 				}
 				$inactive_t_result = mysqli_query($conn,"SELECT id,start_year,firstname,lastname,position,health,overall_now FROM player WHERE team=$teamid AND status='inactive' AND position='T' ORDER BY overall_now DESC");
-				for ($i=0; $i < mysqli_num_rows($inactive_t_result); $i++) {
+				for ($i=1; $i < mysqli_num_rows($inactive_t_result); $i++) {
 					$inactiveData = mysqli_fetch_array($inactive_t_result);
 					$playerid = $inactiveData['id'];
 					$player_exp = $league_year - $inactiveData['start_year'];
@@ -928,7 +1574,9 @@
 					$position = $inactiveData['position'];
 					$health = ucfirst($inactiveData['health']);
 					$rating = $inactiveData['overall_now'];
-					
+					$salary_result = mysqli_query($conn,"SELECT bonus,base FROM contract WHERE player=$playerid AND year=$league_year");
+					$salaryData = mysqli_fetch_array($salary_result);
+					$salary = "$".number_format($salaryData['base']+$salaryData['bonus']);
 					echo "<tr>
 							<td>".$position."</td>
 							<td><a href=\"player.php?playerid=".$playerid."\">".$player_name."</a></td>
@@ -939,14 +1587,40 @@
 					} else {
 						echo "<td>Healthy</td>";
 					}
-					echo "<td></td><td>";
+					echo "<td>".$salary."</td><td>";
+					if($own_team) {
+						echo "<input type=\"checkbox\" name=\"playercheck[]\" id=\"playercheck\" value=\"".$playerid."\">";
+					}
+					echo "</td></tr>";
+				} if (mysqli_num_rows($inactive_t_result) > 0) {
+					$inactiveData = mysqli_fetch_array($inactive_t_result);
+					$playerid = $inactiveData['id'];
+					$player_exp = $league_year - $inactiveData['start_year'];
+					$player_name = $inactiveData['firstname']." ".$inactiveData['lastname'];
+					$position = $inactiveData['position'];
+					$health = ucfirst($inactiveData['health']);
+					$rating = $inactiveData['overall_now'];
+					$salary_result = mysqli_query($conn,"SELECT bonus,base FROM contract WHERE player=$playerid AND year=$league_year");
+					$salaryData = mysqli_fetch_array($salary_result);
+					$salary = "$".number_format($salaryData['base']+$salaryData['bonus']);
+					echo "<tr class=\"bottom-border\">
+							<td>".$position."</td>
+							<td><a href=\"player.php?playerid=".$playerid."\">".$player_name."</a></td>
+							<td>".$rating."</td>
+							<td>".$player_exp."</td>";
+					if ($health != "Healthy") {
+						echo "<td class=\"injured\">".$health."</td>";
+					} else {
+						echo "<td>Healthy</td>";
+					}
+					echo "<td>".$salary."</td><td>";
 					if($own_team) {
 						echo "<input type=\"checkbox\" name=\"playercheck[]\" id=\"playercheck\" value=\"".$playerid."\">";
 					}
 					echo "</td></tr>";
 				}
 				$inactive_de_result = mysqli_query($conn,"SELECT id,start_year,firstname,lastname,position,health,overall_now FROM player WHERE team=$teamid AND status='inactive' AND position='DE' ORDER BY overall_now DESC");
-				for ($i=0; $i < mysqli_num_rows($inactive_de_result); $i++) {
+				for ($i=1; $i < mysqli_num_rows($inactive_de_result); $i++) {
 					$inactiveData = mysqli_fetch_array($inactive_de_result);
 					$playerid = $inactiveData['id'];
 					$player_exp = $league_year - $inactiveData['start_year'];
@@ -954,7 +1628,9 @@
 					$position = $inactiveData['position'];
 					$health = ucfirst($inactiveData['health']);
 					$rating = $inactiveData['overall_now'];
-					
+					$salary_result = mysqli_query($conn,"SELECT bonus,base FROM contract WHERE player=$playerid AND year=$league_year");
+					$salaryData = mysqli_fetch_array($salary_result);
+					$salary = "$".number_format($salaryData['base']+$salaryData['bonus']);
 					echo "<tr>
 							<td>".$position."</td>
 							<td><a href=\"player.php?playerid=".$playerid."\">".$player_name."</a></td>
@@ -965,14 +1641,40 @@
 					} else {
 						echo "<td>Healthy</td>";
 					}
-					echo "<td></td><td>";
+					echo "<td>".$salary."</td><td>";
+					if($own_team) {
+						echo "<input type=\"checkbox\" name=\"playercheck[]\" id=\"playercheck\" value=\"".$playerid."\">";
+					}
+					echo "</td></tr>";
+				} if (mysqli_num_rows($inactive_de_result) > 0) {
+					$inactiveData = mysqli_fetch_array($inactive_de_result);
+					$playerid = $inactiveData['id'];
+					$player_exp = $league_year - $inactiveData['start_year'];
+					$player_name = $inactiveData['firstname']." ".$inactiveData['lastname'];
+					$position = $inactiveData['position'];
+					$health = ucfirst($inactiveData['health']);
+					$rating = $inactiveData['overall_now'];
+					$salary_result = mysqli_query($conn,"SELECT bonus,base FROM contract WHERE player=$playerid AND year=$league_year");
+					$salaryData = mysqli_fetch_array($salary_result);
+					$salary = "$".number_format($salaryData['base']+$salaryData['bonus']);
+					echo "<tr class=\"bottom-border\">
+							<td>".$position."</td>
+							<td><a href=\"player.php?playerid=".$playerid."\">".$player_name."</a></td>
+							<td>".$rating."</td>
+							<td>".$player_exp."</td>";
+					if ($health != "Healthy") {
+						echo "<td class=\"injured\">".$health."</td>";
+					} else {
+						echo "<td>Healthy</td>";
+					}
+					echo "<td>".$salary."</td><td>";
 					if($own_team) {
 						echo "<input type=\"checkbox\" name=\"playercheck[]\" id=\"playercheck\" value=\"".$playerid."\">";
 					}
 					echo "</td></tr>";
 				}
 				$inactive_dt_result = mysqli_query($conn,"SELECT id,start_year,firstname,lastname,position,health,overall_now FROM player WHERE team=$teamid AND status='inactive' AND position='DT' ORDER BY overall_now DESC");
-				for ($i=0; $i < mysqli_num_rows($inactive_dt_result); $i++) {
+				for ($i=1; $i < mysqli_num_rows($inactive_dt_result); $i++) {
 					$inactiveData = mysqli_fetch_array($inactive_dt_result);
 					$playerid = $inactiveData['id'];
 					$player_exp = $league_year - $inactiveData['start_year'];
@@ -980,7 +1682,9 @@
 					$position = $inactiveData['position'];
 					$health = ucfirst($inactiveData['health']);
 					$rating = $inactiveData['overall_now'];
-					
+					$salary_result = mysqli_query($conn,"SELECT bonus,base FROM contract WHERE player=$playerid AND year=$league_year");
+					$salaryData = mysqli_fetch_array($salary_result);
+					$salary = "$".number_format($salaryData['base']+$salaryData['bonus']);
 					echo "<tr>
 							<td>".$position."</td>
 							<td><a href=\"player.php?playerid=".$playerid."\">".$player_name."</a></td>
@@ -991,14 +1695,40 @@
 					} else {
 						echo "<td>Healthy</td>";
 					}
-					echo "<td></td><td>";
+					echo "<td>".$salary."</td><td>";
+					if($own_team) {
+						echo "<input type=\"checkbox\" name=\"playercheck[]\" id=\"playercheck\" value=\"".$playerid."\">";
+					}
+					echo "</td></tr>";
+				} if (mysqli_num_rows($inactive_dt_result) > 0) {
+					$inactiveData = mysqli_fetch_array($inactive_dt_result);
+					$playerid = $inactiveData['id'];
+					$player_exp = $league_year - $inactiveData['start_year'];
+					$player_name = $inactiveData['firstname']." ".$inactiveData['lastname'];
+					$position = $inactiveData['position'];
+					$health = ucfirst($inactiveData['health']);
+					$rating = $inactiveData['overall_now'];
+					$salary_result = mysqli_query($conn,"SELECT bonus,base FROM contract WHERE player=$playerid AND year=$league_year");
+					$salaryData = mysqli_fetch_array($salary_result);
+					$salary = "$".number_format($salaryData['base']+$salaryData['bonus']);
+					echo "<tr class=\"bottom-border\">
+							<td>".$position."</td>
+							<td><a href=\"player.php?playerid=".$playerid."\">".$player_name."</a></td>
+							<td>".$rating."</td>
+							<td>".$player_exp."</td>";
+					if ($health != "Healthy") {
+						echo "<td class=\"injured\">".$health."</td>";
+					} else {
+						echo "<td>Healthy</td>";
+					}
+					echo "<td>".$salary."</td><td>";
 					if($own_team) {
 						echo "<input type=\"checkbox\" name=\"playercheck[]\" id=\"playercheck\" value=\"".$playerid."\">";
 					}
 					echo "</td></tr>";
 				}
 				$inactive_lb_result = mysqli_query($conn,"SELECT id,start_year,firstname,lastname,position,health,overall_now FROM player WHERE team=$teamid AND status='inactive' AND position='LB' ORDER BY overall_now DESC");
-				for ($i=0; $i < mysqli_num_rows($inactive_lb_result); $i++) {
+				for ($i=1; $i < mysqli_num_rows($inactive_lb_result); $i++) {
 					$inactiveData = mysqli_fetch_array($inactive_lb_result);
 					$playerid = $inactiveData['id'];
 					$player_exp = $league_year - $inactiveData['start_year'];
@@ -1006,7 +1736,9 @@
 					$position = $inactiveData['position'];
 					$health = ucfirst($inactiveData['health']);
 					$rating = $inactiveData['overall_now'];
-					
+					$salary_result = mysqli_query($conn,"SELECT bonus,base FROM contract WHERE player=$playerid AND year=$league_year");
+					$salaryData = mysqli_fetch_array($salary_result);
+					$salary = "$".number_format($salaryData['base']+$salaryData['bonus']);
 					echo "<tr>
 							<td>".$position."</td>
 							<td><a href=\"player.php?playerid=".$playerid."\">".$player_name."</a></td>
@@ -1017,14 +1749,40 @@
 					} else {
 						echo "<td>Healthy</td>";
 					}
-					echo "<td></td><td>";
+					echo "<td>".$salary."</td><td>";
+					if($own_team) {
+						echo "<input type=\"checkbox\" name=\"playercheck[]\" id=\"playercheck\" value=\"".$playerid."\">";
+					}
+					echo "</td></tr>";
+				} if (mysqli_num_rows($inactive_lb_result) > 0) {
+					$inactiveData = mysqli_fetch_array($inactive_lb_result);
+					$playerid = $inactiveData['id'];
+					$player_exp = $league_year - $inactiveData['start_year'];
+					$player_name = $inactiveData['firstname']." ".$inactiveData['lastname'];
+					$position = $inactiveData['position'];
+					$health = ucfirst($inactiveData['health']);
+					$rating = $inactiveData['overall_now'];
+					$salary_result = mysqli_query($conn,"SELECT bonus,base FROM contract WHERE player=$playerid AND year=$league_year");
+					$salaryData = mysqli_fetch_array($salary_result);
+					$salary = "$".number_format($salaryData['base']+$salaryData['bonus']);
+					echo "<tr class=\"bottom-border\">
+							<td>".$position."</td>
+							<td><a href=\"player.php?playerid=".$playerid."\">".$player_name."</a></td>
+							<td>".$rating."</td>
+							<td>".$player_exp."</td>";
+					if ($health != "Healthy") {
+						echo "<td class=\"injured\">".$health."</td>";
+					} else {
+						echo "<td>Healthy</td>";
+					}
+					echo "<td>".$salary."</td><td>";
 					if($own_team) {
 						echo "<input type=\"checkbox\" name=\"playercheck[]\" id=\"playercheck\" value=\"".$playerid."\">";
 					}
 					echo "</td></tr>";
 				}
 				$inactive_cb_result = mysqli_query($conn,"SELECT id,start_year,firstname,lastname,position,health,overall_now FROM player WHERE team=$teamid AND status='inactive' AND position='CB' ORDER BY overall_now DESC");
-				for ($i=0; $i < mysqli_num_rows($inactive_cb_result); $i++) {
+				for ($i=1; $i < mysqli_num_rows($inactive_cb_result); $i++) {
 					$inactiveData = mysqli_fetch_array($inactive_cb_result);
 					$playerid = $inactiveData['id'];
 					$player_exp = $league_year - $inactiveData['start_year'];
@@ -1032,7 +1790,9 @@
 					$position = $inactiveData['position'];
 					$health = ucfirst($inactiveData['health']);
 					$rating = $inactiveData['overall_now'];
-					
+					$salary_result = mysqli_query($conn,"SELECT bonus,base FROM contract WHERE player=$playerid AND year=$league_year");
+					$salaryData = mysqli_fetch_array($salary_result);
+					$salary = "$".number_format($salaryData['base']+$salaryData['bonus']);
 					echo "<tr>
 							<td>".$position."</td>
 							<td><a href=\"player.php?playerid=".$playerid."\">".$player_name."</a></td>
@@ -1043,14 +1803,40 @@
 					} else {
 						echo "<td>Healthy</td>";
 					}
-					echo "<td></td><td>";
+					echo "<td>".$salary."</td><td>";
+					if($own_team) {
+						echo "<input type=\"checkbox\" name=\"playercheck[]\" id=\"playercheck\" value=\"".$playerid."\">";
+					}
+					echo "</td></tr>";
+				} if (mysqli_num_rows($inactive_cb_result) > 0) {
+					$inactiveData = mysqli_fetch_array($inactive_cb_result);
+					$playerid = $inactiveData['id'];
+					$player_exp = $league_year - $inactiveData['start_year'];
+					$player_name = $inactiveData['firstname']." ".$inactiveData['lastname'];
+					$position = $inactiveData['position'];
+					$health = ucfirst($inactiveData['health']);
+					$rating = $inactiveData['overall_now'];
+					$salary_result = mysqli_query($conn,"SELECT bonus,base FROM contract WHERE player=$playerid AND year=$league_year");
+					$salaryData = mysqli_fetch_array($salary_result);
+					$salary = "$".number_format($salaryData['base']+$salaryData['bonus']);
+					echo "<tr class=\"bottom-border\">
+							<td>".$position."</td>
+							<td><a href=\"player.php?playerid=".$playerid."\">".$player_name."</a></td>
+							<td>".$rating."</td>
+							<td>".$player_exp."</td>";
+					if ($health != "Healthy") {
+						echo "<td class=\"injured\">".$health."</td>";
+					} else {
+						echo "<td>Healthy</td>";
+					}
+					echo "<td>".$salary."</td><td>";
 					if($own_team) {
 						echo "<input type=\"checkbox\" name=\"playercheck[]\" id=\"playercheck\" value=\"".$playerid."\">";
 					}
 					echo "</td></tr>";
 				}
 				$inactive_s_result = mysqli_query($conn,"SELECT id,start_year,firstname,lastname,position,health,overall_now FROM player WHERE team=$teamid AND status='inactive' AND position='S' ORDER BY overall_now DESC");
-				for ($i=0; $i < mysqli_num_rows($inactive_s_result); $i++) {
+				for ($i=1; $i < mysqli_num_rows($inactive_s_result); $i++) {
 					$inactiveData = mysqli_fetch_array($inactive_s_result);
 					$playerid = $inactiveData['id'];
 					$player_exp = $league_year - $inactiveData['start_year'];
@@ -1058,7 +1844,9 @@
 					$position = $inactiveData['position'];
 					$health = ucfirst($inactiveData['health']);
 					$rating = $inactiveData['overall_now'];
-					
+					$salary_result = mysqli_query($conn,"SELECT bonus,base FROM contract WHERE player=$playerid AND year=$league_year");
+					$salaryData = mysqli_fetch_array($salary_result);
+					$salary = "$".number_format($salaryData['base']+$salaryData['bonus']);
 					echo "<tr>
 							<td>".$position."</td>
 							<td><a href=\"player.php?playerid=".$playerid."\">".$player_name."</a></td>
@@ -1069,14 +1857,40 @@
 					} else {
 						echo "<td>Healthy</td>";
 					}
-					echo "<td></td><td>";
+					echo "<td>".$salary."</td><td>";
+					if($own_team) {
+						echo "<input type=\"checkbox\" name=\"playercheck[]\" id=\"playercheck\" value=\"".$playerid."\">";
+					}
+					echo "</td></tr>";
+				} if (mysqli_num_rows($inactive_s_result) > 0) {
+					$inactiveData = mysqli_fetch_array($inactive_s_result);
+					$playerid = $inactiveData['id'];
+					$player_exp = $league_year - $inactiveData['start_year'];
+					$player_name = $inactiveData['firstname']." ".$inactiveData['lastname'];
+					$position = $inactiveData['position'];
+					$health = ucfirst($inactiveData['health']);
+					$rating = $inactiveData['overall_now'];
+					$salary_result = mysqli_query($conn,"SELECT bonus,base FROM contract WHERE player=$playerid AND year=$league_year");
+					$salaryData = mysqli_fetch_array($salary_result);
+					$salary = "$".number_format($salaryData['base']+$salaryData['bonus']);
+					echo "<tr class=\"bottom-border\">
+							<td>".$position."</td>
+							<td><a href=\"player.php?playerid=".$playerid."\">".$player_name."</a></td>
+							<td>".$rating."</td>
+							<td>".$player_exp."</td>";
+					if ($health != "Healthy") {
+						echo "<td class=\"injured\">".$health."</td>";
+					} else {
+						echo "<td>Healthy</td>";
+					}
+					echo "<td>".$salary."</td><td>";
 					if($own_team) {
 						echo "<input type=\"checkbox\" name=\"playercheck[]\" id=\"playercheck\" value=\"".$playerid."\">";
 					}
 					echo "</td></tr>";
 				}
 				$inactive_k_result = mysqli_query($conn,"SELECT id,start_year,firstname,lastname,position,health,overall_now FROM player WHERE team=$teamid AND status='inactive' AND position='K' ORDER BY overall_now DESC");
-				for ($i=0; $i < mysqli_num_rows($inactive_k_result); $i++) {
+				for ($i=1; $i < mysqli_num_rows($inactive_k_result); $i++) {
 					$inactiveData = mysqli_fetch_array($inactive_k_result);
 					$playerid = $inactiveData['id'];
 					$player_exp = $league_year - $inactiveData['start_year'];
@@ -1084,7 +1898,9 @@
 					$position = $inactiveData['position'];
 					$health = ucfirst($inactiveData['health']);
 					$rating = $inactiveData['overall_now'];
-					
+					$salary_result = mysqli_query($conn,"SELECT bonus,base FROM contract WHERE player=$playerid AND year=$league_year");
+					$salaryData = mysqli_fetch_array($salary_result);
+					$salary = "$".number_format($salaryData['base']+$salaryData['bonus']);
 					echo "<tr>
 							<td>".$position."</td>
 							<td><a href=\"player.php?playerid=".$playerid."\">".$player_name."</a></td>
@@ -1095,7 +1911,33 @@
 					} else {
 						echo "<td>Healthy</td>";
 					}
-					echo "<td></td><td>";
+					echo "<td>".$salary."</td><td>";
+					if($own_team) {
+						echo "<input type=\"checkbox\" name=\"playercheck[]\" id=\"playercheck\" value=\"".$playerid."\">";
+					}
+					echo "</td></tr>";
+				} if (mysqli_num_rows($inactive_k_result) > 0) {
+					$inactiveData = mysqli_fetch_array($inactive_k_result);
+					$playerid = $inactiveData['id'];
+					$player_exp = $league_year - $inactiveData['start_year'];
+					$player_name = $inactiveData['firstname']." ".$inactiveData['lastname'];
+					$position = $inactiveData['position'];
+					$health = ucfirst($inactiveData['health']);
+					$rating = $inactiveData['overall_now'];
+					$salary_result = mysqli_query($conn,"SELECT bonus,base FROM contract WHERE player=$playerid AND year=$league_year");
+					$salaryData = mysqli_fetch_array($salary_result);
+					$salary = "$".number_format($salaryData['base']+$salaryData['bonus']);
+					echo "<tr class=\"bottom-border\">
+							<td>".$position."</td>
+							<td><a href=\"player.php?playerid=".$playerid."\">".$player_name."</a></td>
+							<td>".$rating."</td>
+							<td>".$player_exp."</td>";
+					if ($health != "Healthy") {
+						echo "<td class=\"injured\">".$health."</td>";
+					} else {
+						echo "<td>Healthy</td>";
+					}
+					echo "<td>".$salary."</td><td>";
 					if($own_team) {
 						echo "<input type=\"checkbox\" name=\"playercheck[]\" id=\"playercheck\" value=\"".$playerid."\">";
 					}
@@ -1110,7 +1952,9 @@
 					$position = $inactiveData['position'];
 					$health = ucfirst($inactiveData['health']);
 					$rating = $inactiveData['overall_now'];
-					
+					$salary_result = mysqli_query($conn,"SELECT bonus,base FROM contract WHERE player=$playerid AND year=$league_year");
+					$salaryData = mysqli_fetch_array($salary_result);
+					$salary = "$".number_format($salaryData['base']+$salaryData['bonus']);
 					echo "<tr>
 							<td>".$position."</td>
 							<td><a href=\"player.php?playerid=".$playerid."\">".$player_name."</a></td>
@@ -1121,7 +1965,7 @@
 					} else {
 						echo "<td>Healthy</td>";
 					}
-					echo "<td></td><td>";
+					echo "<td>".$salary."</td><td>";
 					if($own_team) {
 						echo "<input type=\"checkbox\" name=\"playercheck[]\" id=\"playercheck\" value=\"".$playerid."\">";
 					}
@@ -1169,13 +2013,15 @@
 					$player_name = $irData['firstname']." ".$irData['lastname'];
 					$position = $irData['position'];
 					$rating = $irData['overall_now'];
-					
+					$salary_result = mysqli_query($conn,"SELECT bonus,base FROM contract WHERE player=$playerid AND year=$league_year");
+					$salaryData = mysqli_fetch_array($salary_result);
+					$salary = "$".number_format($salaryData['base']+$salaryData['bonus']);
 					echo "<tr>
 							<td>".$position."</td>
 							<td><a href=\"player.php?playerid=".$playerid."\">".$player_name."</a></td>
 							<td>".$rating."</td>
 							<td>".$player_exp."</td>";
-					echo "<td></td><td>";
+					echo "<td>".$salary."</td><td>";
 					if($own_team) {
 						echo "<input type=\"checkbox\" name=\"playercheck[]\" id=\"playercheck\" value=\"".$playerid."\">";
 					}
@@ -1190,13 +2036,15 @@
 					$position = $irData['position'];
 					$health = ucfirst($irData['health']);
 					$rating = $irData['overall_now'];
-					
+					$salary_result = mysqli_query($conn,"SELECT bonus,base FROM contract WHERE player=$playerid AND year=$league_year");
+					$salaryData = mysqli_fetch_array($salary_result);
+					$salary = "$".number_format($salaryData['base']+$salaryData['bonus']);
 					echo "<tr>
 							<td>".$position."</td>
 							<td><a href=\"player.php?playerid=".$playerid."\">".$player_name."</a></td>
 							<td>".$rating."</td>
 							<td>".$player_exp."</td>";
-					echo "<td></td><td>";
+					echo "<td>".$salary."</td><td>";
 					if($own_team) {
 						echo "<input type=\"checkbox\" name=\"playercheck[]\" id=\"playercheck\" value=\"".$playerid."\">";
 					}
@@ -1211,13 +2059,15 @@
 					$position = $irData['position'];
 					$health = ucfirst($irData['health']);
 					$rating = $irData['overall_now'];
-					
+					$salary_result = mysqli_query($conn,"SELECT bonus,base FROM contract WHERE player=$playerid AND year=$league_year");
+					$salaryData = mysqli_fetch_array($salary_result);
+					$salary = "$".number_format($salaryData['base']+$salaryData['bonus']);
 					echo "<tr>
 							<td>".$position."</td>
 							<td><a href=\"player.php?playerid=".$playerid."\">".$player_name."</a></td>
 							<td>".$rating."</td>
 							<td>".$player_exp."</td>";
-					echo "<td></td><td>";
+					echo "<td>".$salary."</td><td>";
 					if($own_team) {
 						echo "<input type=\"checkbox\" name=\"playercheck[]\" id=\"playercheck\" value=\"".$playerid."\">";
 					}
@@ -1232,13 +2082,15 @@
 					$position = $irData['position'];
 					$health = ucfirst($irData['health']);
 					$rating = $irData['overall_now'];
-					
+					$salary_result = mysqli_query($conn,"SELECT bonus,base FROM contract WHERE player=$playerid AND year=$league_year");
+					$salaryData = mysqli_fetch_array($salary_result);
+					$salary = "$".number_format($salaryData['base']+$salaryData['bonus']);
 					echo "<tr>
 							<td>".$position."</td>
 							<td><a href=\"player.php?playerid=".$playerid."\">".$player_name."</a></td>
 							<td>".$rating."</td>
 							<td>".$player_exp."</td>";
-					echo "<td></td><td>";
+					echo "<td>".$salary."</td><td>";
 					if($own_team) {
 						echo "<input type=\"checkbox\" name=\"playercheck[]\" id=\"playercheck\" value=\"".$playerid."\">";
 					}
@@ -1253,13 +2105,15 @@
 					$position = $irData['position'];
 					$health = ucfirst($irData['health']);
 					$rating = $irData['overall_now'];
-					
+					$salary_result = mysqli_query($conn,"SELECT bonus,base FROM contract WHERE player=$playerid AND year=$league_year");
+					$salaryData = mysqli_fetch_array($salary_result);
+					$salary = "$".number_format($salaryData['base']+$salaryData['bonus']);
 					echo "<tr>
 							<td>".$position."</td>
 							<td><a href=\"player.php?playerid=".$playerid."\">".$player_name."</a></td>
 							<td>".$rating."</td>
 							<td>".$player_exp."</td>";
-					echo "<td></td><td>";
+					echo "<td>".$salary."</td><td>";
 					if($own_team) {
 						echo "<input type=\"checkbox\" name=\"playercheck[]\" id=\"playercheck\" value=\"".$playerid."\">";
 					}
@@ -1274,13 +2128,15 @@
 					$position = $irData['position'];
 					$health = ucfirst($irData['health']);
 					$rating = $irData['overall_now'];
-					
+					$salary_result = mysqli_query($conn,"SELECT bonus,base FROM contract WHERE player=$playerid AND year=$league_year");
+					$salaryData = mysqli_fetch_array($salary_result);
+					$salary = "$".number_format($salaryData['base']+$salaryData['bonus']);
 					echo "<tr>
 							<td>".$position."</td>
 							<td><a href=\"player.php?playerid=".$playerid."\">".$player_name."</a></td>
 							<td>".$rating."</td>
 							<td>".$player_exp."</td>";
-					echo "<td></td><td>";
+					echo "<td>".$salary."</td><td>";
 					if($own_team) {
 						echo "<input type=\"checkbox\" name=\"playercheck[]\" id=\"playercheck\" value=\"".$playerid."\">";
 					}
@@ -1295,13 +2151,15 @@
 					$position = $irData['position'];
 					$health = ucfirst($irData['health']);
 					$rating = $irData['overall_now'];
-					
+					$salary_result = mysqli_query($conn,"SELECT bonus,base FROM contract WHERE player=$playerid AND year=$league_year");
+					$salaryData = mysqli_fetch_array($salary_result);
+					$salary = "$".number_format($salaryData['base']+$salaryData['bonus']);
 					echo "<tr>
 							<td>".$position."</td>
 							<td><a href=\"player.php?playerid=".$playerid."\">".$player_name."</a></td>
 							<td>".$rating."</td>
 							<td>".$player_exp."</td>";
-					echo "<td></td><td>";
+					echo "<td>".$salary."</td><td>";
 					if($own_team) {
 						echo "<input type=\"checkbox\" name=\"playercheck[]\" id=\"playercheck\" value=\"".$playerid."\">";
 					}
@@ -1316,13 +2174,15 @@
 					$position = $irData['position'];
 					$health = ucfirst($irData['health']);
 					$rating = $irData['overall_now'];
-					
+					$salary_result = mysqli_query($conn,"SELECT bonus,base FROM contract WHERE player=$playerid AND year=$league_year");
+					$salaryData = mysqli_fetch_array($salary_result);
+					$salary = "$".number_format($salaryData['base']+$salaryData['bonus']);
 					echo "<tr>
 							<td>".$position."</td>
 							<td><a href=\"player.php?playerid=".$playerid."\">".$player_name."</a></td>
 							<td>".$rating."</td>
 							<td>".$player_exp."</td>";
-					echo "<td></td><td>";
+					echo "<td>".$salary."</td><td>";
 					if($own_team) {
 						echo "<input type=\"checkbox\" name=\"playercheck[]\" id=\"playercheck\" value=\"".$playerid."\">";
 					}
@@ -1337,13 +2197,15 @@
 					$position = $irData['position'];
 					$health = ucfirst($irData['health']);
 					$rating = $irData['overall_now'];
-					
+					$salary_result = mysqli_query($conn,"SELECT bonus,base FROM contract WHERE player=$playerid AND year=$league_year");
+					$salaryData = mysqli_fetch_array($salary_result);
+					$salary = "$".number_format($salaryData['base']+$salaryData['bonus']);
 					echo "<tr>
 							<td>".$position."</td>
 							<td><a href=\"player.php?playerid=".$playerid."\">".$player_name."</a></td>
 							<td>".$rating."</td>
 							<td>".$player_exp."</td>";
-					echo "<td></td><td>";
+					echo "<td>".$salary."</td><td>";
 					if($own_team) {
 						echo "<input type=\"checkbox\" name=\"playercheck[]\" id=\"playercheck\" value=\"".$playerid."\">";
 					}
@@ -1358,13 +2220,15 @@
 					$position = $irData['position'];
 					$health = ucfirst($irData['health']);
 					$rating = $irData['overall_now'];
-					
+					$salary_result = mysqli_query($conn,"SELECT bonus,base FROM contract WHERE player=$playerid AND year=$league_year");
+					$salaryData = mysqli_fetch_array($salary_result);
+					$salary = "$".number_format($salaryData['base']+$salaryData['bonus']);
 					echo "<tr>
 							<td>".$position."</td>
 							<td><a href=\"player.php?playerid=".$playerid."\">".$player_name."</a></td>
 							<td>".$rating."</td>
 							<td>".$player_exp."</td>";
-					echo "<td></td><td>";
+					echo "<td>".$salary."</td><td>";
 					if($own_team) {
 						echo "<input type=\"checkbox\" name=\"playercheck[]\" id=\"playercheck\" value=\"".$playerid."\">";
 					}
@@ -1379,13 +2243,15 @@
 					$position = $irData['position'];
 					$health = ucfirst($irData['health']);
 					$rating = $irData['overall_now'];
-					
+					$salary_result = mysqli_query($conn,"SELECT bonus,base FROM contract WHERE player=$playerid AND year=$league_year");
+					$salaryData = mysqli_fetch_array($salary_result);
+					$salary = "$".number_format($salaryData['base']+$salaryData['bonus']);
 					echo "<tr>
 							<td>".$position."</td>
 							<td><a href=\"player.php?playerid=".$playerid."\">".$player_name."</a></td>
 							<td>".$rating."</td>
 							<td>".$player_exp."</td>";
-					echo "<td></td><td>";
+					echo "<td>".$salary."</td><td>";
 					if($own_team) {
 						echo "<input type=\"checkbox\" name=\"playercheck[]\" id=\"playercheck\" value=\"".$playerid."\">";
 					}
@@ -1400,13 +2266,15 @@
 					$position = $irData['position'];
 					$health = ucfirst($irData['health']);
 					$rating = $irData['overall_now'];
-					
+					$salary_result = mysqli_query($conn,"SELECT bonus,base FROM contract WHERE player=$playerid AND year=$league_year");
+					$salaryData = mysqli_fetch_array($salary_result);
+					$salary = "$".number_format($salaryData['base']+$salaryData['bonus']);
 					echo "<tr>
 							<td>".$position."</td>
 							<td><a href=\"player.php?playerid=".$playerid."\">".$player_name."</a></td>
 							<td>".$rating."</td>
 							<td>".$player_exp."</td>";
-					echo "<td></td><td>";
+					echo "<td>".$salary."</td><td>";
 					if($own_team) {
 						echo "<input type=\"checkbox\" name=\"playercheck[]\" id=\"playercheck\" value=\"".$playerid."\">";
 					}
@@ -1421,13 +2289,15 @@
 					$position = $irData['position'];
 					$health = ucfirst($irData['health']);
 					$rating = $irData['overall_now'];
-					
+					$salary_result = mysqli_query($conn,"SELECT bonus,base FROM contract WHERE player=$playerid AND year=$league_year");
+					$salaryData = mysqli_fetch_array($salary_result);
+					$salary = "$".number_format($salaryData['base']+$salaryData['bonus']);
 					echo "<tr>
 							<td>".$position."</td>
 							<td><a href=\"player.php?playerid=".$playerid."\">".$player_name."</a></td>
 							<td>".$rating."</td>
 							<td>".$player_exp."</td>";
-					echo "<td></td><td>";
+					echo "<td>".$salary."</td><td>";
 					if($own_team) {
 						echo "<input type=\"checkbox\" name=\"playercheck[]\" id=\"playercheck\" value=\"".$playerid."\">";
 					}
@@ -1442,13 +2312,15 @@
 					$position = $irData['position'];
 					$health = ucfirst($irData['health']);
 					$rating = $irData['overall_now'];
-					
+					$salary_result = mysqli_query($conn,"SELECT bonus,base FROM contract WHERE player=$playerid AND year=$league_year");
+					$salaryData = mysqli_fetch_array($salary_result);
+					$salary = "$".number_format($salaryData['base']+$salaryData['bonus']);
 					echo "<tr>
 							<td>".$position."</td>
 							<td><a href=\"player.php?playerid=".$playerid."\">".$player_name."</a></td>
 							<td>".$rating."</td>
 							<td>".$player_exp."</td>";
-					echo "<td></td><td>";
+					echo "<td>".$salary."</td><td>";
 					if($own_team) {
 						echo "<input type=\"checkbox\" name=\"playercheck[]\" id=\"playercheck\" value=\"".$playerid."\">";
 					}
@@ -1463,13 +2335,15 @@
 					$position = $irData['position'];
 					$health = ucfirst($irData['health']);
 					$rating = $irData['overall_now'];
-					
+					$salary_result = mysqli_query($conn,"SELECT bonus,base FROM contract WHERE player=$playerid AND year=$league_year");
+					$salaryData = mysqli_fetch_array($salary_result);
+					$salary = "$".number_format($salaryData['base']+$salaryData['bonus']);
 					echo "<tr>
 							<td>".$position."</td>
 							<td><a href=\"player.php?playerid=".$playerid."\">".$player_name."</a></td>
 							<td>".$rating."</td>
 							<td>".$player_exp."</td>";
-					echo "<td></td><td>";
+					echo "<td>".$salary."</td><td>";
 					if($own_team) {
 						echo "<input type=\"checkbox\" name=\"playercheck[]\" id=\"playercheck\" value=\"".$playerid."\">";
 					}

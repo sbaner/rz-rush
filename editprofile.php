@@ -7,29 +7,16 @@
 	} else {
 		header('Location: index.php');
 	}
-	//Retrieve POST data
-	if (isset($_POST['newemail'])) {
-		$newemail = $_POST['newemail'];
-	}
-	if (isset($_POST['oldpassword'])) {
-		$oldpassword = $_POST['oldpassword'];
-	}
-	if (isset($_POST['password1'])) {
-		$newpassword = $_POST['password1'];
-	}
-	$udt_message = "";
-	
-	$conn = mysqli_connect('localhost', 'rzrushco_admin', 'rzr_3541', 'rzrushco_main');
-	$own_team_result = mysqli_query($conn,"SELECT * FROM team WHERE `owner`='$userID'");
-	
 	function createSalt()
 		{
 			$text = md5(uniqid(rand(), true));
 			return substr($text, 0, 3);
 		}
-	
-	//Update email
-	if ($newemail != "") {
+		
+	//Retrieve POST data
+	if (isset($_POST['newemail'])) {
+		$newemail = $_POST['newemail'];
+		if ($newemail != "") {
 		$email_result = mysqli_query($conn,"UPDATE member SET email='$newemail' WHERE id=$userID");
 		
 		if (mysqli_affected_rows($conn) == 1) {
@@ -38,9 +25,13 @@
 			$udt_message = "Something went wrong while updating email.";
 		}
 	}
-
-	//Update password
-	if ($newpassword != "") {
+	}
+	if (isset($_POST['oldpassword'])) {
+		$oldpassword = $_POST['oldpassword'];
+	}
+	if (isset($_POST['password1'])) {
+		$newpassword = $_POST['password1'];
+		if ($newpassword != "") {
 		$pass_result = mysqli_query($conn,"SELECT * FROM member WHERE id=$userID");
 		$userData = mysqli_fetch_array($pass_result, MYSQL_ASSOC);
 		$oldhash = hash('sha256', $userData['salt'] . hash('sha256', $oldpassword));
@@ -61,6 +52,15 @@
 			}
 		}
 	}
+	}
+	$udt_message = "";
+	
+	$conn = mysqli_connect('localhost', 'rzrushco_admin', 'rzr_3541', 'rzrushco_main');
+	$own_team_result = mysqli_query($conn,"SELECT * FROM team WHERE `owner`='$userID'");
+	
+	
+	
+	
 ?>
 <!DOCTYPE html>
 <html>
@@ -71,7 +71,7 @@
     <link href='http://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css' />
     <link href="../css/bootstrap.css" rel="stylesheet" />
     <link href="../css/main.css" rel="stylesheet" />
-    <link href="../css/register.css" rel="stylesheet" />
+    <link href="../css/editprofile.css" rel="stylesheet" />
 	<link rel="shortcut icon" href="favicon.ico" />
     <script src="../js/jquery-1.11.1.min.js"></script>
     <script src="../js/bootstrap.js"></script>

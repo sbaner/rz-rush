@@ -36,6 +36,7 @@
 .stats {
 	padding:10px;
 	background-color:#888;
+	margin-top:10px;
 }
 
 .stats a {
@@ -46,9 +47,21 @@
 	padding:10px;
 }
 
+.contract {
+	color:#333;
+	margin-top:10px;
+}
+
+.contract h4{
+	font-weight:bold;
+}
+
 .progression {
 	background-color:#AAA;
 	padding:10px;
 }
 
-
+.salaryinput {
+	padding-left:0;
+	padding-right:0;
+}

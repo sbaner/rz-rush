@@ -15,6 +15,25 @@
 	background-color:#FFFBDB;
 }
 
+.tab-pane {
+	padding-top:10px;
+}
+
+.read-indicator {
+	color:#AAA;
+	font-size: 12px;
+	float:right;
+	margin-right:10px;
+}
+
+#writemsg {
+	float:right;
+	margin-right:10px;
+}
+#msgcontainer {
+	padding-left:0px;
+}
+
 #sender {
 	margin-top:10px;
 	margin-bottom:10px;

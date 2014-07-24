@@ -252,7 +252,11 @@
 										$profile_total_loss = $profile_total_loss + $profile_teamData['total_loss'];
 										$profile_total_ties = $profile_total_ties + $profile_teamData['total_tie'];
 										$profile_championships = $profile_championships + $profile_teamData['championships'];
-										echo "<p><a href=\"team.php?teamid=".$profile_teamid."\">".$profile_location." ".$profile_teamname."</a><br>(League ".$profile_league.")</p>";
+										
+										$league_result = mysqli_query($conn,"SELECT leaguename FROM league WHERE id=$profile_league");
+										$leagueData = mysqli_fetch_array($league_result, MYSQL_ASSOC);
+										$leaguename = $leagueData['leaguename'];
+										echo "<p><a href=\"team.php?teamid=".$profile_teamid."\">".$profile_location." ".$profile_teamname."</a><br>(".$leaguename.")</p>";
 									}
 									?>
 								</div>

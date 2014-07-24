@@ -26,6 +26,17 @@
 	padding-right:10px;
 }
 
+.main h3 {
+	font-family:"Arial Bold",sans-serif;
+	font-weight:bold;
+	padding-top:10px;
+	padding-bottom:5px;
+	border-bottom-style:solid;
+	border-bottom-width:1px;
+	border-bottom-color:#AAA;
+
+}
+
 .team-result h3 {
 	text-transform:none;
 	border-bottom-style:solid;

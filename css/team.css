@@ -79,6 +79,10 @@ table {
 	padding-top:100px;
 }
 
+.bottom-border {
+	border-bottom: 4px solid #DDD;
+}
+
 #teamname {
 	padding-bottom:5px;
 	border-bottom-style:solid;

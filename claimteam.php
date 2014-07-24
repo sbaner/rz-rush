@@ -54,6 +54,8 @@
 	if ($teamunowned && $canclaim && $teamlimit) {
 		$date = date("m")."/".date("d")."/".date("y");
 		$claim_result = mysqli_query($conn,"UPDATE team SET owner='$userID',owndate='$date' WHERE id=$teamid");
+		$timestamp = date("Y")."-".date("m")."-".date("d")." ".date("g").":".date("i")." ".date("A");
+		mysqli_query($conn,"INSERT INTO leagueactivity (league,team,member,action,timestamp) VALUES  ($leagueid,$teamid,$userID,'claimed','$timestamp')");
 		header('Location: team.php?teamid='.$teamid);
 	}
 ?>

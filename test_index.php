@@ -12,7 +12,7 @@ if(isset($_SESSION['userID'])) {
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 	<link href='http://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
     <link href="css/bootstrap.css" rel="stylesheet" />
-    <link href="css/index.css" rel="stylesheet" />
+    <link href="css/test.css" rel="stylesheet" />
 	<link rel="shortcut icon" href="favicon.ico" />
 	<script src="js/jquery-1.11.1.min.js"></script>
 	<script src="js/bootstrap.js"></script>
@@ -44,10 +44,10 @@ if(isset($_SESSION['userID'])) {
         </div>
       </div>
       <div class="row" id="content">
-	  <div class=" col-xs-12 col-md-2 col-md-offset-1" id="login-col">
+	  <div class="col-md-2 col-md-offset-1">
           <div class="login-bar">
 		  <h1>Log in</h1>
-            <form class="form" id="login-form" name="login-form" method="post" action="login.php" role="login">
+            <form class="navbar-form navbar-left" id="login-form" name="login-form" method="post" action="login.php" role="login">
               <div class="form-group">
                 <input type="text" class="form-control" name="username" placeholder="Username" />
                 <br />
@@ -66,7 +66,7 @@ if(isset($_SESSION['userID'])) {
 			?>
           </div> 
         </div>
-		<div class="col-md-7 col-xs-12">
+		<div class="col-md-7">
 		<div id="carousel" class="carousel slide" data-ride="carousel">
 		  <!-- Indicators -->
 		  <ol class="carousel-indicators">

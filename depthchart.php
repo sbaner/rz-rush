@@ -33,19 +33,7 @@
 	$own_team_result = mysqli_query($conn,"SELECT * FROM team WHERE `owner`='$userID'");
 	
 	//Retrieve POST data and update
-	if(isset($_POST['delete-button'])) {
-		mysqli_query($conn,"UPDATE team SET owner=0,total_win=0,total_loss=0,championships=0,total_tie=0,logofile='helmet.png',owndate='' WHERE id=$teamid");
-		$timestamp = date("Y")."-".date("m")."-".date("d")." ".date("g").":".date("i")." ".date("A");
-		mysqli_query($conn,"INSERT INTO leagueactivity (league,team,member,action,timestamp) VALUES ($leagueid,$teamid,$userID,'dropped','$timestamp')");
-		header('Location: team.php?teamid='.$teamid);
-	} else if(isset($_POST['location'])) {
-		$newlocation = mysqli_real_escape_string($conn,$_POST['location']);
-		$newname = mysqli_real_escape_string($conn,$_POST['teamname']);
-		
-		mysqli_query($conn,"UPDATE team SET location='$newlocation',teamname='$newname' WHERE id=$teamid");
-		
-		header('Location: team.php?teamid='.$teamid);
-	}
+	
 	
 	
 ?>
@@ -58,28 +46,12 @@
     <link href='http://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css' />
     <link href="../css/bootstrap.css" rel="stylesheet" />
     <link href="../css/main.css" rel="stylesheet" />
-    <link href="../css/register.css" rel="stylesheet" />
+    <link href="../css/depthchart.css" rel="stylesheet" />
 	<link rel="shortcut icon" href="favicon.ico" />
     <script src="../js/jquery-1.11.1.min.js"></script>
     <script src="../js/bootstrap.js"></script>
-	<script>
-		function checkForm() {
-			var location = $("#location").val()
-			var teamname = $("#teamname").val();
-			var button = document.getElementById('signup-button');
-			
-			if (location.length > 0 && teamname.length > 0) {
-				button.disabled = false;
-			} else {
-				button.disabled = true;
-			}
-		}
-		$(document).ready(function () {
-		   $("#location").keyup(checkForm);
-		   $("#teamname").keyup(checkForm);
-		});
-		</script>
-    <title>RedZone Rush - Edit Team</title>
+	
+    <title>RedZone Rush - Depth Chart</title>
   </head>
   <body>
     <div class="container-fluid">
@@ -182,7 +154,7 @@
             <h3>Team Links</h3></div>
             <div class="nav">
               <ul class="nav nav-pills nav-stacked navbar-left">
-				<li class="active">
+				<li>
 					<a href="teamedit.php?teamid=<?php echo $teamid;?>">Edit Team</a>
 				</li>
                 <li>
@@ -193,8 +165,8 @@
                 </li>
                 <li>
                   <a href="scores.php?leagueid=<?php echo $leagueid;?>">Scores &amp; Schedule</a>
-                </li><li>
-                  <a href="depthchart.php?teamid=<?php echo $teamid;?>">Depth Chart</a>
+                </li><li class="active">
+                  <a href="depthchart.php">Depth Chart</a>
                 </li>
                 <li>
                   <a href="#">Playbooks</a>
@@ -209,38 +181,96 @@
 			<button type="submit" class="btn btn-primary">Log out</button>
 		</form>
         </div>
-        <div class="col-md-offset-1 col-md-6">
+        <div class="col-md-8">
           <div class="main">
-		  <h3>Edit Team</h3>
-            <form class="form-horizontal" method="POST" id="edit-team" action="teamedit.php?teamid=<?php echo $teamid;?>" role="form">
-              <div class="form-group">
-                <label for="location" class="col-sm-2 control-label">Location</label>
-                <div class="col-sm-10">
-                  <input type="text" class="form-control" id="location" name="location" placeholder="Location (Ex: New York)"/>
-                </div>
-              </div>
-			  <div class="form-group">
-                <label for="teamname" class="col-sm-2 control-label">Team Name</label>
-                <div class="col-sm-10">
-                  <input type="text" class="form-control" id="teamname" name="teamname" placeholder="Team Name (Ex: Giants)"/>
-                </div>
-              </div>
-              <div class="form-group">
-                <div class="col-sm-offset-2 col-sm-10">
-                  <button type="submit" class="btn btn-primary" id="signup-button" disabled>Update Info</button>
-                  <button type="submit" class="btn btn-danger" id="delete-button" name="delete-button" onclick="return confirm('Really delete this team? All historical data will be lost and you will no longer control this team.');">Delete Team</button>
-                </div>
-              </div>
-            </form>
-			<h4><b>Update Team Logo</b></h4>
-			<?php if(!empty($message)) { echo "<p>{$message}</p>";}?>
-			<form action="upload.php?teamid=<?php echo $teamid;?>" id="profile-pic-form" enctype="multipart/form-data" method="POST">
-				
-				<input type="hidden" name="MAX_FILE_SIZE" value="5000000">
-				<input type="file" id="upload_file" name="upload_file">
-                <button type="submit" name="changelogo" class="btn btn-primary" id="upload-button">Upload</button>
-				<span class="help-block">Image requirements: JPG or PNG, less than 5MB.</span>
-			</form>
+		  <div class="row">
+			<div class="col-md-2">
+                    <ul class="nav nav-pills nav-stacked" role="tablist">
+                      <li class="active dropdown">
+                        <a class="dropdown-toggle" data-toggle="dropdown" href="#">Formation <span class="caret"></span></a>
+						<ul class="dropdown-menu" role="menu">
+							<li role="presentation">
+								<a role="menuitem" href="#offense" data-toggle="tab">General Offense</a>
+							</li>
+							<li role="presentation">
+								<a role="menuitem" href="#iform" data-toggle="tab">I Formation</a>
+							</li>
+							<li role="presentation">
+								<a role="menuitem" href="#single" data-toggle="tab">Single-back</a>
+							</li>
+							<li role="presentation">
+								<a role="menuitem" href="#shotgun" data-toggle="tab">Shotgun Formation</a>
+							</li>
+							<li role="presentation">
+								<a role="menuitem" href="#fivewide" data-toggle="tab">Five-wide</a>
+							</li>
+							<li role="presentation" class="divider"></li>
+							<li role="presentation">
+								<a role="menuitem" href="#defense" data-toggle="tab">General Defense</a>
+							</li>
+							<li role="presentation">
+								<a role="menuitem" href="#43" data-toggle="tab">4-3 Defense</a>
+							</li>
+							<li role="presentation">
+								<a role="menuitem" href="#34" data-toggle="tab">3-4 Defense</a>
+							</li>
+							<li role="presentation">
+								<a role="menuitem" href="#eight" data-toggle="tab">Eight in the box</a>
+							</li>
+							<li role="presentation">
+								<a role="menuitem" href="#nickel" data-toggle="tab">Nickel</a>
+							</li>
+							<li role="presentation">
+								<a role="menuitem" href="#dime" data-toggle="tab">Dime</a>
+							</li>
+							<li role="presentation">
+								<a role="menuitem" href="#goalline" data-toggle="tab">Goal Line</a>
+							</li>
+						</ul>
+                      </li>
+                    </ul>
+                  </div>
+				  <div class="col-md-8 col-md-offset-1">
+				  <h3><?php echo $location." ".$teamname;?> Depth Chart</h3>
+					<div class="tab-content" id="all-scores">
+						<div class="tab-pane fade in active" id="offense">
+							This is the general offensive depth chart. Changes here will affect every offensive formation.
+						</div>
+						<div class="tab-pane fade in" id="iform">
+							<h4>I Formation</h4>
+							Info: 1 HB, 1 FB, 1 TE, 2 WR
+						</div>
+						<div class="tab-pane fade in" id="single">
+							<h4>Single-back Formation</h4>
+							Info: 1 HB, 0/1 TE, 3/4 WR
+						</div>
+						<div class="tab-pane fade in" id="shotgun">
+							<h4>Shotgun Formation</h4>
+							Info: 1 HB, 0/1 FB, 1 TE, 2/3 WR
+						</div>
+						<div class="tab-pane fade in" id="fivewide">
+							<h4>Five-Wide (Empty Backfield)</h4>
+							Info: 5 WR
+						</div>
+						<div class="tab-pane fade in" id="defense">
+							This is the general defensive depth chart. Changes here will affect every defensive formation.
+						</div>
+						<div class="tab-pane fade in" id="43">
+						</div>
+						<div class="tab-pane fade in" id="34">
+						</div>
+						<div class="tab-pane fade in" id="eight">
+						</div>
+						<div class="tab-pane fade in" id="nickel">
+						</div>
+						<div class="tab-pane fade in" id="dime">
+						</div>
+						<div class="tab-pane fade in" id="dime">
+						</div>
+					</div>
+				  </div>
+				</div>
+			</div>
           </div>
         </div>
       </div>
