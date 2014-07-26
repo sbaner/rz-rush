@@ -30,32 +30,19 @@
 		$year = $leagueData['year'];
 	}
 	
-	if (!(isset($_GET['pagenum']))) { 
-		$pagenum = 1; 
+	if (!(isset($_GET['round']))) { 
+		$roundnum = 1; 
 	} else {
-		$pagenum = $_GET['pagenum'];
+		$roundnum = $_GET['round'];
+	 }
+	 
+	 //Retreive year from POST
+	 if (isset($_POST['draft_year'])) {
+		$draft_year = $_POST['draft_year'];
+	 } else {
+		$draft_year = $year;
 	 }
 	
-	//filter
-	$filter = "";
-	if(isset($_POST['filter'])) {
-		$minoverall = $_POST['minoverall'];
-		$maxoverall = $_POST['maxoverall'];
-		$position = $_POST['position']; 
-		
-		if ($minoverall !=0) {
-		$filter = $filter."AND overall_now >= $minoverall ";
-		$nopages = true;
-		}
-		if ($maxoverall !=99) {
-			$filter = $filter."AND overall_now <= $maxoverall ";
-			$nopages = true;
-		}
-		if ($position !="All") {
-		$filter = $filter."AND position='$position' ";
-		$nopages = true;
-		}
-	}
 	
 ?>
 <!DOCTYPE html>
@@ -71,7 +58,7 @@
 	<link rel="shortcut icon" href="favicon.ico" />
 	<script src="js/jquery-1.11.1.min.js"></script>
 	<script src="js/bootstrap.js"></script>
-    <title>RedZone Rush - Free Agents</title>
+    <title>RedZone Rush - Draft</title>
   </head>
   <body>
     <div class="container-fluid">
@@ -185,10 +172,10 @@
                 <li>
                   <a href=\"scores.php?leagueid=".$leagueid."\">Scores &amp; Schedule</a>
                 </li>
-                <li class=\"active\">
+                <li>
                   <a href=\"freeagents.php?leagueid=".$leagueid."\">Free Agents</a>
                 </li>
-				<li>
+				<li class=\"active\">
                   <a href=\"draft.php?leagueid=".$leagueid."\">Draft</a>
                 </li>
                 <li>
@@ -205,127 +192,82 @@
 		<ol class="breadcrumb">
 		<?php
 			echo "<li><a href=\"league.php?leagueid=".$leagueid."\">".$leaguename."</a></li>";
-				echo "<li><a href=\"freeagents.php?leagueid=".$leagueid."\">Free Agents</a></li>";
+				echo "<li><a href=\"draft.php?leagueid=".$leagueid."\">Draft</a></li>";
 			
 		?>
 		</ol>
           <div class="main">
-            <h3>Free Agents</h3>
-			<div class="panel-group" id="accordion">
-			  <div class="panel panel-default searchfilter">
-				<div class="panel-heading">
-				  <h4 class="panel-title">
-					<a data-toggle="collapse" data-parent="#accordion" href="#collapseOne">
-					  <b>Filter Search</b>
-					</a>
-				  </h4>
+            <h3><?php echo $leaguename." ".$draft_year." Draft"?></h3>
+			<form class="form horizontal" action="draft.php?leagueid=<?php echo $leagueid;?>" method="POST">
+			<div class="row">
+				<div class="col-md-2">
+					<select class="form-control" name="draft_year" onchange="this.form.submit()">
+					<?php
+						$draftyear_result = mysqli_query($conn,"SELECT start_year FROM `player` ORDER BY start_year LIMIT 1");
+						$draftyearData = mysqli_fetch_array($draftyear_result);
+						$firstyear = $draftyearData['start_year'];
+						if ($firstyear == $year) {
+							echo "<option>".$firstyear."</option>";
+						} else {
+							for ($i=$firstyear;$i<$year;$i++) {
+								echo "<option>".$i."</option>";
+							}
+							echo "<option selected>".$year."</option>";
+						}
+					?>
+					</select>
 				</div>
-				<div id="collapseOne" class="panel-collapse collapse <?php echo $inornot;?>">
-				  <div class="panel-body">
-					<form class="form horizontal" action="freeagents.php?leagueid=<?php echo $leagueid;?>" method="POST">
-					<div class="row">
-						<div class="form-group col-md-5">
-							<label for="minoverall" class="col-sm-5 control-label">Minimum Overall</label>
-							<div class="col-sm-4">
-							  <input type="number" class="form-control" id="minoverall" name="minoverall" value="0">
-							</div>
-						</div>
-						<div class="form-group col-md-5">
-							<label for="maxoverall" class="col-sm-5 control-label">Maximum Overall</label>
-							<div class="col-sm-4">
-							  <input type="number" class="form-control" id="maxoverall" name="maxoverall" value="99">
-							</div>
-						</div>
-					</div>
-					<div class="row">
-						<div class="col-md-5">
-							<div class="col-sm-5">
-							<b>Position</b>
-							</div>
-							<div class="col-sm-4">
-							<select class="form-control" name="position">
-								<option>All</option>
-								<option>QB</option>
-								<option>RB</option>
-								<option>FB</option>
-								<option>WR</option>
-								<option>TE</option>
-								<option>G</option>
-								<option>C</option>
-								<option>T</option>
-								<option>DE</option>
-								<option>DT</option>
-								<option>LB</option>
-								<option>CB</option>
-								<option>S</option>
-								<option>K</option>
-								<option>P</option>
-							</select>
-							</div>
-						</div>
-					</div>
-					<div class="form-group">
-						<div class="col-sm-10">
-						  <button type="submit" name="filter" class="btn btn-default filter-btn">Filter</button>
-						</div>
-					</div>
-					</form>
-				  </div>
-				</div>
-			  </div>
 			</div>
-			<div class="well playerlist">
+			</form>
+			<div class="well playerlist" style="margin-top: 10px">
 			<div class="table-responsive">
 				<table class="table">
 					<thead>
 						<tr>
 							<th width="10%">Pos</th>
 							<th width="20%">Name</th>
-							<th width="10%">Rating</th>
-							<th width="10%">Exp</th>
-							<th width="20%">Health</th>
+							<th width="20%">Team</th>
+							<th width="20%">Rating</th>
+							<th width="15%">Round</th>
+							<th width="15%">Pick #</th>
 						</tr>
 					</thead>
 					<tbody>
             <?php 
 			
-			 $fa_result = mysqli_query($conn,"SELECT * FROM player WHERE league=$leagueid AND team=0 $filter");
-			 $rows = mysqli_num_rows($fa_result); 
-			 $page_rows = 25; 
+			 $draft_result = mysqli_query($conn,"SELECT * FROM player WHERE league=$leagueid AND draft_round=$roundnum AND start_year=$draft_year ORDER BY draft_round,draft_pos");
+			 $draft_result_p = mysqli_query($conn,"SELECT * FROM player WHERE league=$leagueid AND start_year=$draft_year ORDER BY draft_round,draft_pos");
+			 $rows = mysqli_num_rows($draft_result_p); 
+			 $page_rows = 32; 
 
 			 //This tells us the page number of our last page 
 			 $last = ceil($rows/$page_rows); 
-			 
+			 if ($last==0)  {
+				$nopages = true;
+			 } else {
+				$nopages = false;
+			 }
 			 //this makes sure the page number isn't below one, or more than our maximum pages 
 
-			 if ($pagenum < 1) { 
-				$pagenum = 1; 
+			 if ($roundnum < 1) { 
+				$roundnum = 1; 
 			} 
 
-			 elseif ($pagenum > $last) { 
+			 elseif ($roundnum > $last) { 
 
-			 $pagenum = $last; 
+			 $roundnum = $last; 
 
 			 } 
-
-
-			 //This sets the range to display in our query 
-			if (!$nopages) {
-				$max = 'LIMIT ' .($pagenum - 1) * $page_rows .',' .$page_rows; 
-			} else {
-				$max = "";
-			}
-			  //This is your query again, the same one... the only difference is we add $max into it
-
-			 $fa_result_p = mysqli_query($conn, "SELECT * FROM player WHERE league=$leagueid AND team=0 $filter ORDER BY overall_now DESC $max"); 
-
-
+			 
 			 //This is where you display your query results
-			 while($faData = mysqli_fetch_array( $fa_result_p ))  { 
-				$player_exp = $year - $faData['start_year'];
+			 while($draftData = mysqli_fetch_array($draft_result))  {
+				$draftteamid = $draftData['draft_team'];
+				$teamname_result = mysqli_query($conn,"SELECT location,teamname FROM team WHERE id=$draftteamid");
+				$teamnameData = mysqli_fetch_array($teamname_result);
+				$teamname = $teamnameData['location']." ".$teamnameData['teamname'];
 				echo "<tr>
-				<td>".$faData['position']."</td><td><a href=\"player.php?playerid=".$faData['id']."\">".$faData['firstname']." ".$faData['lastname']."</td>",
-				"<td>".$faData['overall_now']."</td><td>".$player_exp."</td><td>".ucfirst($faData['health'])."</td>";
+				<td>".$draftData['position']."</td><td><a href=\"player.php?playerid=".$draftData['id']."\">".$draftData['firstname']." ".$draftData['lastname']."</td>",
+				"<td><a href=\"team.php?teamid=".$draftteamid."\">".$teamname."</a></td><td>".$draftData['overall_now']."</td><td>".$draftData['draft_round']."</td><td>".$draftData['draft_pos']."</td>";
 			 } 
 			 
 			 ?>
@@ -334,33 +276,32 @@
 			 </table>
 			 <?php
 			 
-
 			 // First we check if we are on page one. If we are then we don't need a link to the previous page or the first page so we do nothing. If we aren't then we generate links to the first page, and to the previous page.
-			$previous = $pagenum-1;
-			$next = $pagenum+1;
+			$previous = $roundnum-1;
+			$next = $roundnum+1;
 			if (!$nopages) {
-			echo "Page $pagenum of $last";
+			echo "Round $roundnum of $last";
 			echo "<ul class=\"pager\">
 			  <li class=\"previous ";
-			  if ($pagenum == 1) {
+			  if ($roundnum == 1) {
 				echo "disabled";
 			  }
-			  echo "\"><a href=\"{$_SERVER['PHP_SELF']}?leagueid=$leagueid&pagenum=1\"><span class=\"glyphicon glyphicon-step-backward\"></span> First</a></li>
+			  echo "\"><a href=\"{$_SERVER['PHP_SELF']}?leagueid=$leagueid&round=1\"><span class=\"glyphicon glyphicon-step-backward\"></span> First</a></li>
 			  <li class=\"previous ";
-			  if ($pagenum == 1) {
+			  if ($roundnum == 1) {
 				echo "disabled";
 			  }
-			  echo "\"><a href=\"{$_SERVER['PHP_SELF']}?leagueid=$leagueid&pagenum=$previous\"><span class=\"glyphicon glyphicon-chevron-left\"></span> Previous</a></li>
+			  echo "\"><a href=\"{$_SERVER['PHP_SELF']}?leagueid=$leagueid&round=$previous\"><span class=\"glyphicon glyphicon-chevron-left\"></span> Previous</a></li>
 			  <li class=\"next ";
-			  if ($pagenum == $last) {
+			  if ($roundnum == $last) {
 				echo "disabled";
 			  }
-			  echo "\"><a href=\"{$_SERVER['PHP_SELF']}?leagueid=$leagueid&pagenum=$last\">Last <span class=\"glyphicon glyphicon-step-forward\"></span></a></li>
+			  echo "\"><a href=\"{$_SERVER['PHP_SELF']}?leagueid=$leagueid&round=$last\">Last <span class=\"glyphicon glyphicon-step-forward\"></span></a></li>
 			  <li class=\"next ";
-			  if ($pagenum == $last) {
+			  if ($roundnum == $last) {
 				echo "disabled";
 			  }
-			  echo "\"><a href=\"{$_SERVER['PHP_SELF']}?leagueid=$leagueid&pagenum=$next\">Next <span class=\"glyphicon glyphicon-chevron-right\"></span></a></li>
+			  echo "\"><a href=\"{$_SERVER['PHP_SELF']}?leagueid=$leagueid&round=$next\">Next <span class=\"glyphicon glyphicon-chevron-right\"></span></a></li>
 			</ul>";
 			}
 			 ?> 

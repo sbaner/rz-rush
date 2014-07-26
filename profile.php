@@ -1,11 +1,13 @@
 <?php
 	session_start();
+	ob_start();
 	if(isset($_SESSION['userID'])) {
 		$userID = $_SESSION['userID'];
 		$username = $_SESSION['username'];
 		$email = $_SESSION['email'];
 	} else {
 		header('Location: index.php');
+		die();
 	}
 	if (!empty($_GET['profileid'])) {
 	  $profileID = $_GET['profileid'];
@@ -27,6 +29,7 @@
 	
 	if(mysqli_num_rows($member_result) == 0) { //user not found
 		header('Location: 404.php');
+		die();
 	} else {
 		$memberData = mysqli_fetch_array($member_result, MYSQL_ASSOC);
 		$profile_name = $memberData['username'];
@@ -307,6 +310,7 @@
 												</div>";
 											}
 									}
+									ob_flush();
 									?>
 								</div>
 							</div>

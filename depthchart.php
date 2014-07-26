@@ -193,16 +193,25 @@
 								<a role="menuitem" href="#offense" data-toggle="tab">General Offense</a>
 							</li>
 							<li role="presentation">
-								<a role="menuitem" href="#iform" data-toggle="tab">I Formation</a>
+								<a role="menuitem" href="#22" data-toggle="tab">22 Personnel - 1 RB, 1 FB, 2 TE, 1 WR</a>
 							</li>
 							<li role="presentation">
-								<a role="menuitem" href="#single" data-toggle="tab">Single-back</a>
+								<a role="menuitem" href="#21" data-toggle="tab">21 Personnel - 1 RB, 1 FB, 1 TE, 2 WR</a>
 							</li>
 							<li role="presentation">
-								<a role="menuitem" href="#shotgun" data-toggle="tab">Shotgun Formation</a>
+								<a role="menuitem" href="#20" data-toggle="tab">20 Personnel - 1 RB, 1 FB, 3 WR</a>
 							</li>
 							<li role="presentation">
-								<a role="menuitem" href="#fivewide" data-toggle="tab">Five-wide</a>
+								<a role="menuitem" href="#12" data-toggle="tab">12 Personnel - 1 RB/FB, 2 TE, 2 WR</a>
+							</li>
+							<li role="presentation">
+								<a role="menuitem" href="#11" data-toggle="tab">11 Personnel - 1 RB/FB, 1 TE, 3 WR</a>
+							</li>
+							<li role="presentation">
+								<a role="menuitem" href="#10" data-toggle="tab">10 Personnel - 1 RB/FB, 4 WR</a>
+							</li>
+							<li role="presentation">
+								<a role="menuitem" href="#00" data-toggle="tab">00 Personnel - 5 WR</a>
 							</li>
 							<li role="presentation" class="divider"></li>
 							<li role="presentation">
@@ -236,21 +245,33 @@
 						<div class="tab-pane fade in active" id="offense">
 							This is the general offensive depth chart. Changes here will affect every offensive formation.
 						</div>
-						<div class="tab-pane fade in" id="iform">
-							<h4>I Formation</h4>
-							Info: 1 HB, 1 FB, 1 TE, 2 WR
+						<div class="tab-pane fade in" id="22">
+							<h4>22 Personnel</h4>
+							<p>Players: 1 RB, 1 FB, 2 TE, 1 WR</p>
 						</div>
-						<div class="tab-pane fade in" id="single">
-							<h4>Single-back Formation</h4>
-							Info: 1 HB, 0/1 TE, 3/4 WR
+						<div class="tab-pane fade in" id="21">
+							<h4>21 Personnel</h4>
+							<p>Players: 1 RB, 1 FB, 1 TE, 2 WR</p>
 						</div>
-						<div class="tab-pane fade in" id="shotgun">
-							<h4>Shotgun Formation</h4>
-							Info: 1 HB, 0/1 FB, 1 TE, 2/3 WR
+						<div class="tab-pane fade in" id="20">
+							<h4>20 Personnel</h4>
+							<p>Players: 1 RB, 1 FB, 3 WR</p>
 						</div>
-						<div class="tab-pane fade in" id="fivewide">
-							<h4>Five-Wide (Empty Backfield)</h4>
-							Info: 5 WR
+						<div class="tab-pane fade in" id="12">
+							<h4>12 Personnel</h4>
+							<p>Players: 1 RB/FB, 2 TE, 2 WR</p>
+						</div>
+						<div class="tab-pane fade in" id="11">
+							<h4>11 Personnel</h4>
+							<p>Players: 1 RB/FB, 1 TE, 3 WR</p>
+						</div>
+						<div class="tab-pane fade in" id="10">
+							<h4>10 Personnel</h4>
+							<p>Players: 1 RB/FB, 4 WR</p>
+						</div>
+						<div class="tab-pane fade in" id="00">
+							<h4>00 Personnel</h4>
+							<p>Players: 5 WR</p>
 						</div>
 						<div class="tab-pane fade in" id="defense">
 							This is the general defensive depth chart. Changes here will affect every defensive formation.
@@ -265,7 +286,7 @@
 						</div>
 						<div class="tab-pane fade in" id="dime">
 						</div>
-						<div class="tab-pane fade in" id="dime">
+						<div class="tab-pane fade in" id="goalline">
 						</div>
 					</div>
 				  </div>

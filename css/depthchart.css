@@ -6,3 +6,15 @@
 .main h3 {
 	text-transform:none;
 }
+
+.image-wrapper img{
+	max-width: 100%;
+	height: auto;
+	margin-top:15px;
+}
+
+@media \0screen {
+  .image-wrapper img { 
+  	width: auto; /* for ie 8 */
+  }
+}

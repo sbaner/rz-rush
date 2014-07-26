@@ -157,6 +157,9 @@ if (!empty($_GET['leagueid'])) {
                 <li>
                   <a href=\"freeagents.php?leagueid=".$leagueid."\">Free Agents</a>
                 </li>
+				<li>
+                  <a href=\"draft.php?leagueid=".$leagueid."\">Draft</a>
+                </li>
                 <li>
                   <a href=\"leaguealmanac.php?leagueid=".$leagueid."\">Almanac</a>
                 </li><li>
