@@ -1,6 +1,7 @@
 <?php
 	session_start();
 	require_once('includes/functions.php');
+	require_once('includes/getweek.php');
 	if(isset($_SESSION['userID'])) {
 		$userID = $_SESSION['userID'];
 		$username = $_SESSION['username'];
@@ -43,6 +44,51 @@ if (!empty($_GET['playerid'])) {
 		$teamname = $teamData['location']." ".$teamData['teamname'];
 	}
 	
+	//Retrieve and process POSTed free agent offer
+	if (isset($_POST['offersubmit'])) {
+		$offer_team = $_POST['teamid'];
+		$alreadybid_result = mysqli_query($conn,"SELECT * FROM bids WHERE player=$playerid AND team=$offer_team");
+		$bid_rows = mysqli_num_rows($alreadybid_result);
+		
+		if ($bid_rows == 0)  {
+			if ($_POST['base']!="") {
+				$totalbase_offer = $_POST['base']*1000;
+			}
+			
+			if ($_POST['bonus']!="") {
+				$totalbonus_offer = $_POST['bonus']*1000;
+			}
+			
+			$yearsoffered = $_POST['years'];
+			
+			
+			$demandarray = fa_demand($player_position,$overall_now,$player_exp,$yearsoffered);
+			$totalbase_demand = 0;
+			$totalbonus_demand = 0;
+			foreach($demandarray as $yeararray) {
+				$totalbase_demand = $totalbase_demand + $yeararray[1];
+				$totalbonus_demand = $totalbonus_demand + $yeararray[2];
+			}
+			
+			$base_difference = round(($totalbase_offer - $totalbase_demand)/$yearsoffered,-3);
+			$bonus_difference = round(($totalbonus_offer - $totalbonus_demand)/$yearsoffered,-3);
+			
+			mysqli_query($conn,"INSERT INTO `bids` (player,team,years,totalbonus,totalbase) VALUES ($playerid,$offer_team,$yearsoffered,$totalbonus_offer,$totalbase_offer)");
+			
+			for ($i=0;$i<$yearsoffered;$i++) {
+				$baseoffer = $demandarray[$i][1] + $base_difference;
+				$bonusoffer = $demandarray[$i][2] + $bonus_difference;
+				$yearnum = $i+1;
+				$query = "UPDATE `bids` SET bonus_".$yearnum."=$bonusoffer,base_".$yearnum."=$baseoffer WHERE player=$playerid AND team=$offer_team";
+				mysqli_query($conn,$query);
+			}
+		}
+	}
+	
+	if (isset($_POST['retract'])) {
+		$retract_team = $_POST['teamid'];
+		mysqli_query($conn,"DELETE FROM `bids` WHERE player=$playerid AND team=$retract_team");
+	}
 ?>
 <!DOCTYPE html>
 <html>
@@ -60,14 +106,19 @@ if (!empty($_GET['playerid'])) {
     <script src="js/bootstrap.js"></script>
 	<script>
 	$( document ).ready(function() {
+		var years = 0;
+		var totsal = 0;
+		var totbon = 0;
+		var salArray = [];
+		var bonArray = [];
 		$.ajax({
 		  url: 'fademand.php',
 		  type: 'POST',
 		  dataType : 'json',
 		  data: {'position': '<?php echo $player_position; ?>', 'rating': '<?php echo $overall_now; ?>', 'exp': '<?php echo $player_exp;?>', 'years': $( "#years	").val()},
 		  success: function(data) {
-			var totsal = 0;
-			var totbon = 0;
+			years = data.length;
+			
 			$.each(data, function(index, value) {
 				var salelementid = "#salyear"+index;
 				var bonelementid = "#bonyear"+index;
@@ -77,6 +128,9 @@ if (!empty($_GET['playerid'])) {
 				var salvalue = value[1];
 				var bonvalue = value[2];
 				var sumvalue = value[1]+value[2];
+				
+				salArray[index] = salvalue;
+				bonArray[index] = bonvalue;
 				
 				$(salelementid).html(salvalue);
 				$(bonelementid).html(bonvalue);
@@ -109,19 +163,178 @@ if (!empty($_GET['playerid'])) {
 			$('td.number').number(true);
 			$('td.number').prepend("$");
 			$("#base").attr({
-				min: totsal,
-				value: totsal
+				min: totsal/1000,
+				value: totsal/1000
 			});
 			$("#bonus").attr({
-				min: totbon,
-				value: totbon
+				min: totbon/1000,
+				value: totbon/1000
 			});
+			$("#saltext").html(data.length+" year(s), $"+$.number(totsal)+" base,");
+			$("#bontext").html("$"+$.number(totbon)+" guaranteed.");
 		  },
 		  error: function(xhr, desc, err) {
 			console.log(xhr);
 			console.log("Details: " + desc + "\nError:" + err);
 		  }
 		}); // end ajax call
+		
+		
+		$('#years').on('change', function(e){
+		e.preventDefault();
+		$.ajax({
+		  url: 'fademand.php',
+		  type: 'POST',
+		  dataType : 'json',
+		  data: {'position': '<?php echo $player_position; ?>', 'rating': '<?php echo $overall_now; ?>', 'exp': '<?php echo $player_exp;?>', 'years': $( "#years	").val()},
+		  success: function(data) {
+			totsal = 0;
+			totbon = 0;
+			$.each(data, function(index, value) {
+				years = data.length;
+				var salelementid = "#salyear"+index;
+				var bonelementid = "#bonyear"+index;
+				var sumelementid = "#sumyear"+index;
+				var totelementid = "#totyear"+index;
+				
+				var salvalue = value[1];
+				var bonvalue = value[2];
+				var sumvalue = value[1]+value[2];
+				
+				salArray[index] = salvalue;
+				bonArray[index] = bonvalue;
+				
+				$(salelementid).html(salvalue);
+				$(bonelementid).html(bonvalue);
+				$(sumelementid).html(sumvalue);
+				
+				totsal = totsal + value[1];
+				totbon = totbon + value[2];
+				
+			});
+			for ( var i = data.length; i < 6; i++ ) {
+					var emptysalid = "#salyear"+i;
+					var emptybonid = "#bonyear"+i;
+					var emptysumid = "#sumyear"+i;
+					$(emptysalid).html("0");
+					$(emptybonid).html("0");
+					$(emptysumid).html("0");
+				}
+				
+				for (var j = 0; j < 6; j++) {
+					var sumid = "#sumyear"+j;
+					var totid = "#totyear"+j;
+					var aftid = "#aftyear"+j;
+					
+					var sumvalue = $(sumid).html();
+					var totvalue = $(totid).html();
+					
+					var sum =  sumvalue.replace(/[^0-9\.]/g, "");
+					var tot =  totvalue.replace(/[^0-9\.]/g, "");
+					
+					var sumint = parseInt(sum);
+					var totint = parseInt(tot);
+					var aftvalue = sumint+totint;
+					$(aftid).html(aftvalue);
+				}
+			$('td.number').number(true);
+			$('td.number').prepend("$");
+			$("#base").attr({
+				min: totsal/1000,
+				value: totsal/1000
+			});
+			$("#bonus").attr({
+				min: totbon/1000,
+				value: totbon/1000
+			});
+			$("#saltext").html(data.length+" year(s), $"+$.number(totsal)+" base,");
+			$("#bontext").html("$"+$.number(totbon)+" guaranteed.");
+		  },
+		  error: function(xhr, desc, err) {
+			console.log(xhr);
+			console.log("Details: " + desc + "\nError:" + err);
+		  }
+		}); // end ajax call
+	  });
+		
+			//Update table when values change
+			 $('#base').on('change', function(){
+				var newbase = $(this).val();
+				if (newbase >= totsal/1000) {
+					var change = newbase - totsal/1000;
+					var yearlychange = Math.floor(change / years);
+					for (var k = 0; k < years; k++) {
+						var salelementid = "#salyear"+k;
+						var bonelementid = "#bonyear"+k;
+						var sumelementid = "#sumyear"+k;
+						var newvalue = salArray[k] + yearlychange*1000;
+						$(salelementid).html(newvalue);
+						
+						var bonus = parseInt($(bonelementid).html().replace(/[^0-9\.]/g, ""));
+						var newsum = bonus+newvalue;
+						$(sumelementid).html(newsum);
+						
+					}
+					for (var j = 0; j < 6; j++) {
+					var sumid = "#sumyear"+j;
+					var totid = "#totyear"+j;
+					var aftid = "#aftyear"+j;
+					
+					var sumvalue = $(sumid).html();
+					var totvalue = $(totid).html();
+					
+					var sum =  sumvalue.replace(/[^0-9\.]/g, "");
+					var tot =  totvalue.replace(/[^0-9\.]/g, "");
+					
+					var sumint = parseInt(sum);
+					var totint = parseInt(tot);
+					var aftvalue = sumint+totint;
+					$(aftid).html(aftvalue);
+				}
+				}
+				$("#saltext").html(years+" year(s), $"+$.number(newbase*1000)+" base,");
+				$('td.number').number(true);
+				$('td.number').prepend("$");
+				
+			 });
+			 
+			 $('#bonus').on('change', function(){
+				var newbonus = $(this).val();
+				if (newbonus >= totbon/1000) {
+					var change = newbonus - totbon/1000;
+					var yearlychange = Math.floor(change / years);
+					for (var m = 0; m < years; m++) {
+						var salelementid = "#salyear"+m;
+						var bonelementid = "#bonyear"+m;
+						var sumelementid = "#sumyear"+m;
+						var newvalue = bonArray[m] + yearlychange*1000;
+						$(bonelementid).html(newvalue);
+						
+						var salary = parseInt($(salelementid).html().replace(/[^0-9\.]/g, ""));
+						var newsum = salary+newvalue;
+						$(sumelementid).html(newsum);
+					}
+					for (var j = 0; j < 6; j++) {
+					var sumid = "#sumyear"+j;
+					var totid = "#totyear"+j;
+					var aftid = "#aftyear"+j;
+					
+					var sumvalue = $(sumid).html();
+					var totvalue = $(totid).html();
+					
+					var sum =  sumvalue.replace(/[^0-9\.]/g, "");
+					var tot =  totvalue.replace(/[^0-9\.]/g, "");
+					
+					var sumint = parseInt(sum);
+					var totint = parseInt(tot);
+					var aftvalue = sumint+totint;
+					$(aftid).html(aftvalue);
+				}
+				}
+				$("#bontext").html("$"+$.number(newbonus*1000)+" guaranteed.");
+				$('td.number').number(true);
+				$('td.number').prepend("$");
+			 }); 
 	});
 	</script>
     <title>RedZone Rush</title>
@@ -216,13 +429,12 @@ if (!empty($_GET['playerid'])) {
 			}
 			$myteam_logopath = "uploads/logos/".$myteamData['logofile'];
 			echo "<h3>My team</h3><a href=\"team.php?teamid=".$myteamid."\">
-              <img src=\"".$myteam_logopath."\" width=\"200\"/>
+              <img src=\"".$myteam_logopath."\" width=\"150\"/>
             </a> 
             <b><a href=\"team.php?teamid=".$myteamid."\">
               <p>".$myteamname."</p>
             </a><p>".$myteamrecord."</p></b>";
-			echo "<p>Week 1</p>
-            <p>Next game: @<a href=\"#\">DAL</a></p>";	
+			echo "<p>".getWeek($player_league)."</p>";	
 			}
 			?></div>
           </div>
@@ -366,83 +578,14 @@ if (!empty($_GET['playerid'])) {
 				
               </div>
             </div>
-				<script>
-					$(function(){
-					
-					  $('#years').on('change', function(e){
-						e.preventDefault();
-						$.ajax({
-						  url: 'fademand.php',
-						  type: 'POST',
-						  dataType : 'json',
-						  data: {'position': '<?php echo $player_position; ?>', 'rating': '<?php echo $overall_now; ?>', 'exp': '<?php echo $player_exp;?>', 'years': $( "#years	").val()},
-						  success: function(data) {
-							var totsal = 0;
-							var totbon = 0;
-							$.each(data, function(index, value) {
-								var salelementid = "#salyear"+index;
-								var bonelementid = "#bonyear"+index;
-								var sumelementid = "#sumyear"+index;
-								var totelementid = "#totyear"+index;
-								
-								var salvalue = value[1];
-								var bonvalue = value[2];
-								var sumvalue = value[1]+value[2];
-								
-								$(salelementid).html(salvalue);
-								$(bonelementid).html(bonvalue);
-								$(sumelementid).html(sumvalue);
-								
-								for ( var i = data.length; i < 6; i++ ) {
-									var emptysalid = "#salyear"+i;
-									var emptybonid = "#bonyear"+i;
-									var emptysumid = "#sumyear"+i;
-									$(emptysalid).html("0");
-									$(emptybonid).html("0");
-									$(emptysumid).html("0");
-								}
-								
-								for (var j = 0; j < 6; j++) {
-									var sumid = "#sumyear"+j;
-									var totid = "#totyear"+j;
-									var aftid = "#aftyear"+j;
-									
-									var sumvalue = $(sumid).html();
-									var totvalue = $(totid).html();
-									
-									var sum =  sumvalue.replace(/[^0-9\.]/g, "");
-									var tot =  totvalue.replace(/[^0-9\.]/g, "");
-									
-									var sumint = parseInt(sum);
-									var totint = parseInt(tot);
-									var aftvalue = sumint+totint;
-									$(aftid).html(aftvalue);
-								}
-								totsal = totsal + value[1];
-								totbon = totbon + value[2];
-							});
-							$('td.number').number(true);
-							$('td.number').prepend("$");
-							$("#base").attr({
-								min: totsal,
-								value: totsal
-							});
-							$("#bonus").attr({
-								min: totbon,
-								value: totbon
-							});
-						  },
-						  error: function(xhr, desc, err) {
-							console.log(xhr);
-							console.log("Details: " + desc + "\nError:" + err);
-						  }
-						}); // end ajax call
-					  });
-					  });
-				</script>
 				<?php
 				$user_team_result = mysqli_query($conn,"SELECT id FROM team WHERE league=$player_league AND owner=$userID");
 				$userteam_rows = mysqli_num_rows($user_team_result);
+				$userteamData = mysqli_fetch_array($user_team_result);
+				$teamid = $userteamData['id'];
+				
+				$alreadybid_result = mysqli_query($conn,"SELECT * FROM bids WHERE player=$playerid AND team=$teamid");
+				$bid_rows = mysqli_num_rows($alreadybid_result);
 				
 				if ($player_team != 0) {
 					echo "<div class=\"panel-group contract\" id=\"accordion\">
@@ -499,26 +642,33 @@ if (!empty($_GET['playerid'])) {
 				</div>
 				</div>
 				</div>";
-				} else if ($userteam_rows == 1) {
-					$userteamData = mysqli_fetch_array($user_team_result);
-					$teamid = $userteamData['id'];
+				} else if ($userteam_rows == 1 && $bid_rows==0) {
 					echo "<div class=\"well contract\">";
-					echo "<h4>Send Contract Offer</h4>";
-					echo "<form class=\"form-horizontal\" action=\"player.php\" method=\"POST\" id=\"faoffer\" name=\"faoffer\" role=\"form\">
+					echo "<h4>Send Contract Offer</h4><p><i>This is the minimum contract the player will accept. He will be more likely to accept your offer if you offer a longer contract with more guaranteed money.</i></p>";
+					echo "<form class=\"form-horizontal\" action=\"player.php?playerid=".$playerid."\" method=\"POST\" id=\"faoffer\" name=\"faoffer\" role=\"form\">
 					<div class=\"row\">
+					
 						<div class=\"col-md-5\">
 							<div class=\"form-group\">
-								<label for=\"base\" class=\"col-sm-5 control-label\">Base Contract Value: </label>
-								<div class=\"col-sm-6\">
-								  <input type=\"number\" class=\"form-control\" id=\"base\" name=\"base\" />
+								<label for=\"base\" class=\"col-md-5 control-label\">Base Contract Value: </label>
+								<div class=\"col-md-6\">
+									<div class=\"input-group\">
+										<span class=\"input-group-addon\">$</span>
+										<input type=\"number\" class=\"form-control\" id=\"base\" name=\"base\" />
+										<span class=\"input-group-addon\">K</span>
+									</div>
 								</div>
 							</div>
 						</div>
 						<div class=\"col-md-4\">
 							<div class=\"form-group\">
-								<label for=\"bonus\" class=\"col-sm-4 control-label\">Guaranteed: $</label>
-								<div class=\"col-sm-7\">
-								  <input type=\"number\" class=\"form-control\" id=\"bonus\" name=\"bonus\"  />
+								<label for=\"bonus\" class=\"col-md-4 control-label\">Guaranteed: </label>
+								<div class=\"col-md-7\">
+									<div class=\"input-group\">
+										<span class=\"input-group-addon\">$</span>
+										<input type=\"number\" class=\"form-control\" id=\"bonus\" name=\"bonus\"  />
+										<span class=\"input-group-addon\">K</span>
+									</div>
 								</div>
 							</div>
 						</div>
@@ -528,9 +678,9 @@ if (!empty($_GET['playerid'])) {
 							<div class=\"col-sm-2 col-sm-offset-3\">
 								<b>Years: </b>
 							</div>
-							<div class=\"col-sm-3\">
+							<div class=\"col-sm-5\">
 								<select class=\"form-control\" name=\"years\" id=\"years\">
-									<option>1</option>
+									<option selected>1</option>
 									<option>2</option>
 									<option>3</option>
 									<option>4</option>
@@ -540,14 +690,27 @@ if (!empty($_GET['playerid'])) {
 							</div>
 						</div>
 					</div>
-					<div class=\"row\">
+					<div class=\"row\" id=\"salarytext\">
+							<div class=\"col-sm-2\">
+								<b>Offered contract: </b>
+							</div>
+							<div class=\"col-sm-8\">
+							<span id=\"saltext\">
+							</span>
+							<span id=\"bontext\">
+							</span>
+							<span id=\"tottext\">
+							</span>
+							</div>
+					</div>
+					<div class=\"row\" id=\"buttonrow\">
+						<input type=\"hidden\" name=\"teamid\" value=\"".$teamid."\"></input>
 							<div class=\"col-md-3 col-md-offset-7\">
-							<button class=\"btn btn-primary\" type=\"submit\" id=\"offersubmit\">Submit Offer</button>
+							<button class=\"btn btn-primary\" type=\"submit\" id=\"offersubmit\" name=\"offersubmit\">Submit Offer</button>
 							</div>
 					</div>
 					</form>";
-					$teamid = $userteamData['id'];
-				echo "<p><i>This is the minimum contract the player will accept. He will be more likely to accept your offer if you offer a longer contract with more guaranteed money.</i></p><h4>Salary situation if signed:</h4><div class=\"table-responsive\" id=\"salarytable\">
+				echo "<h4>Salary situation if signed:</h4><div class=\"table-responsive\" id=\"salarytable\">
 					<table class=\"table\">
 						<thead>
 							<tr>
@@ -584,6 +747,62 @@ if (!empty($_GET['playerid'])) {
 							</div>";
 					echo "</div>";
 					
+				} else {
+					$bidData = mysqli_fetch_array($alreadybid_result);
+					if ($bidData['years'] == 1) {
+						$year = "year";
+					} else {
+						$year = "years";
+					}
+					$totaloffer = $bidData['totalbonus'] + $bidData['totalbase'];
+					echo "<div class=\"well contract\">
+					<b>Offer submitted</b><p>".$bidData['years']." ".$year.", $".number_format($totaloffer)." total. ($"
+					.number_format($bidData['totalbase'])." base, $".number_format($bidData['totalbonus'])." guaranteed)</p>";
+					echo "<form method=\"POST\" action=\"player.php?playerid=".$playerid."\">
+						<button class=\"btn btn-danger\" type=\"submit\" name=\"retract\" id=\"retract\">Retract Offer</button>
+						<input type=\"hidden\" name=\"teamid\" value=\"".$teamid."\"></input>
+						</form>";
+						echo "<h4>Salary situation if signed:</h4><div class=\"table-responsive\" id=\"salarytable\">
+					<table class=\"table\">
+						<thead>
+							<tr>
+								<th width=\"10%\">Year</th>
+								<th width=\"15%\">Salary</th>
+								<th width=\"15%\">Bonus</th>
+								<th width=\"15%\">Total</th>
+								<th width=\"15%\">Current Spending</th>
+								<th width=\"15%\">If Signed</th>
+								<th width=\"15%\">Total Cap</th>
+							</tr>
+						</thead>
+						<tbody>";
+						
+					for ($i=0;$i<6;$i++) {
+								$contract_year = $league_year + $i;
+								$total_result = mysqli_query($conn,"SELECT * FROM contract WHERE team=$teamid AND year=$contract_year");
+								$total_salary = 0;
+								$deadcap = 0;
+								while ($totalData = mysqli_fetch_array($total_result)) {
+									$total_salary = $total_salary + $totalData['bonus'] + $totalData['base'];
+									$deadcap = $deadcap + $totalData['deadcap'];
+								}
+								
+								$bonusfield = "bonus_".($i+1);
+								$basefield = "base_".($i+1);
+								
+								echo "<tr><td>".$contract_year."</td>
+									<td id=\"salyear".$i."\" class=\"number\">$".number_format($bidData[$basefield])."</td>
+									<td id=\"bonyear".$i."\" class=\"number\">$".number_format($bidData[$bonusfield])."</td>
+									<td id=\"sumyear".$i."\" class=\"number\">$".number_format($bidData[$basefield]+$bidData[$bonusfield])."</td>
+									<td id=\"totyear".$i."\" class=\"number\">$".number_format($total_salary)."</td>
+									<td id=\"aftyear".$i."\" class=\"number\">$".number_format($bidData[$basefield]+$bidData[$bonusfield]+$total_salary)."</td>
+									<td>$130,000,000</td></tr>";
+							}
+						echo "</tbody>
+								</table>
+							</div>";
+					echo "</div>";
+					echo "</div>";
 				}
 				?>
 						
