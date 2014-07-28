@@ -118,7 +118,7 @@ if (!empty($_GET['leagueid'])) {
         </div>
       </div>
       <div class="row" id="content">
-        <div class="col-md-2">
+        <div class="col-md-3 col-lg-2">
           <div class="side-bar">
             <div class="team-card">
             <?php 
@@ -170,14 +170,13 @@ if (!empty($_GET['leagueid'])) {
             </div>
           </div>
         </div>
-        <div class="col-md-8">
+        <div class="col-md-9 col-lg-8">
           <div class="main"><button type="button" class="btn btn-primary" id="showbutton">Show/Hide Scores</button>
             <h3>Scores</h3> 
             <div class="score-card">
               <!-- Nav tabs -->
-              <div class="container">
                 <div class="row">
-                  <div class="col-md-2">
+                  <div class="col-md-3 col-lg-2">
                     <ul class="nav nav-pills nav-stacked" role="tablist">
                       <li class="active dropdown">
                         <a class="dropdown-toggle" data-toggle="dropdown" href="#">Select Week <span class="caret"></span></a>
@@ -260,7 +259,7 @@ if (!empty($_GET['leagueid'])) {
                       </li>
                     </ul>
                   </div>
-                  <div class="col-md-8">
+                  <div class="col-md-9 col-lg-8">
                   <!-- Tab panes -->
                   <div class="tab-content" id="all-scores">
 				  
@@ -9472,7 +9471,6 @@ if (!empty($_GET['leagueid'])) {
                    </div>
 				  </div>
                 </div>
-              </div>
             </div>
           </div>
         </div>

@@ -197,7 +197,7 @@
         </div>
       </div>
       <div class="row" id="content">
-        <div class="col-md-2">
+        <div class="col-md-3 col-lg-2">
           <div class="side-bar">
             <h3>Team Links</h3>
             <div class="nav">
@@ -230,7 +230,7 @@
             </div>
           </div>
         </div>
-        <div class="col-md-8">
+        <div class="col-md-9 col-lg-8">
 		<ol class="breadcrumb">
 		<?php
 		$leaguename = $leagueData['leaguename'];
@@ -280,9 +280,8 @@
 			</div>
             <h3>Team Details</h3>
 				
-			 <div class="container">
 			 <div class="row">
-			 <div class="col-md-9">
+			 <div class="col-md-10 col-lg-9">
 			 <?php
 			 if (isset($message)) {
 				 echo "<div class=\"alert alert-warning fade in\" id=\"message\">
@@ -713,7 +712,7 @@
 					} else {
 						echo "<td>Healthy</td>";
 					}
-					echo "<td></td><td>";
+					echo "<td>".$salary."</td><td>";
 					if($own_team) {
 						echo "<input type=\"checkbox\" name=\"playercheck[]\" id=\"playercheck\" value=\"".$playerid."\">";
 					}
@@ -2358,7 +2357,7 @@
 			 echo "</form>";
 			 }
 			 ?>
-			  </div></div></div>
+			  </div></div>
 			  
           </div>
         </div>

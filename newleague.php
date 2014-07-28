@@ -47,8 +47,8 @@
 			die();
 		}
 		$year = date("Y");
-		mysqli_query($conn,"INSERT INTO `league`(`leaguename`, `frequency`, `salarycap`, `injuries`,`year`,`calendar`) 
-				VALUES ('{$leaguename}', '{$freq}', '{$salary}', '{$injury}','{$year}'),1");
+		mysqli_query($conn,"INSERT INTO `league` (`leaguename`, `frequency`, `salarycap`, `injuries`,`year`,`calendar`) 
+				VALUES ('{$leaguename}', '{$freq}', '{$salary}', '{$injury}','{$year}',1)");
 		if (mysqli_affected_rows($conn) == 1) {
 			echo "League create success!";
 			$leagueid = mysqli_insert_id($conn);
@@ -342,6 +342,12 @@
 				create_salaries($playerid,$year,$teamid,"P",$rating);
 			}
 			$draft_round++;
+		}
+		
+		//Create personnel groupings
+		$lineupteams = range($last_team-31,$last_team);
+		for ($i=0;$i<32;$i++) {
+			mysqli_query($conn,"INSERT INTO `offlineup` (team,personnel) VALUES ($lineupteams[$i],'all')");
 		}
 		
 		

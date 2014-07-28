@@ -130,7 +130,7 @@
         </div>
       </div>
       <div class="row" id="content">
-        <div class="col-md-2">
+        <div class="col-md-3 col-lg-2">
           <div class="side-bar">
             <?php 
 			
@@ -217,7 +217,7 @@
 			<button type="submit" class="btn btn-primary">Log out</button>
 		</form>
         </div>
-        <div class="col-md-6 col-md-offset-1">
+        <div class="col-md-8 col-lg-offset-1 col-lg-6">
 			<div class="main">
 				<h3>Messages</h3>
 				<form action="newmessage.php" method="POST">

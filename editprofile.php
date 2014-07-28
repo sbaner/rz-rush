@@ -198,7 +198,7 @@
         </div>
       </div>
       <div class="row" id="content">
-        <div class="col-md-2">
+        <div class="col-md-3 col-lg-2">
           <div class="side-bar">
             <h3>Profile Links</h3>
             <div class="nav">
@@ -221,7 +221,7 @@
 			<button type="submit" class="btn btn-primary">Log out</button>
 		</form>
         </div>
-        <div class="col-md-offset-1 col-md-6">
+        <div class="col-md-offset-1 col-md-7 col-lg-6">
           <div class="main">
 		  <h3>Edit Profile</h3>
             <form class="form-horizontal" method="POST" id="edit-profile" action="editprofile.php" role="form">

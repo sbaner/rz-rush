@@ -82,7 +82,7 @@
       </div>
       <div class="row" id="content">
         
-        <div class="col-md-offset-3 col-md-6">
+        <div class="col-md-offset-2 col-md-8 col-lg-offset-3 col-lg-6">
           <div class="main">
 		  <h3>Sign Up</h3>
             <form class="form-horizontal" method="POST" id="signup" action="registration.php" role="form">

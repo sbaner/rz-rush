@@ -14,8 +14,7 @@
 }
 
 .profile-card img {
-	margin-left:15px;
-	max-width:100%;
+	max-width:80%;
 	border-style:solid;
 	border-color:#DDD;
 	border-width:2px;

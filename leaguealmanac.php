@@ -104,7 +104,7 @@ if (!empty($_GET['leagueid'])) {
         </div>
       </div>
       <div class="row" id="content">
-        <div class="col-md-2">
+        <div class="col-md-3 col-lg-2">
           <div class="side-bar">
             <div class="team-card">
             <?php 
@@ -153,7 +153,7 @@ if (!empty($_GET['leagueid'])) {
             </div>
           </div>
         </div>
-        <div class="col-md-8">
+        <div class="col-md-9 col-lg-8">
           <div class="main">
             <h3>League Almanac</h3>
             <div class="stat-card">

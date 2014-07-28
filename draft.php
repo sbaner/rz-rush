@@ -133,7 +133,7 @@
         </div>
       </div>
       <div class="row" id="content">
-        <div class="col-md-2">
+        <div class="col-md-3 col-lg-2">
           <div class="side-bar">
             <div class="team-card">
             
@@ -188,7 +188,7 @@
             </div>
           </div>
         </div>
-        <div class="col-md-8">
+        <div class="col-md-9 col-lg-8">
 		<ol class="breadcrumb">
 		<?php
 			echo "<li><a href=\"league.php?leagueid=".$leagueid."\">".$leaguename."</a></li>";

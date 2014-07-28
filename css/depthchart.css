@@ -7,14 +7,64 @@
 	text-transform:none;
 }
 
+.playerrow {
+	margin-top:20px;
+}
+
+.borderless tbody tr td, .borderless thead tr th {
+    border: none;
+}
+
+.playerbox {
+	margin-top:20px;
+	background-color:#f5f5f5;
+	padding:20px;
+}
+
+.stacktable.large-only { display: table; }
+.stacktable.small-only { display: none; }
+
+@media (max-width: 800px) {
+  .stacktable.large-only { display: none; }
+  .stacktable.small-only { 
+	display: table;
+	}
+	
+	.stacktable.small-only tr {
+		margin-bottom:10px;
+		padding:5px;
+	}
+}
+
+.st-key {
+	margin-right:10px;
+}
+
+.save {
+	margin-top:10px;
+}
+
 .image-wrapper img{
 	max-width: 100%;
 	height: auto;
 	margin-top:15px;
 }
 
+.autooption {
+	background-color:#A3F4A4;
+	font-weight:bold;
+}
+
 @media \0screen {
   .image-wrapper img { 
   	width: auto; /* for ie 8 */
   }
+}
+
+@media (min-width: 992px) {
+	.playerbox {
+		position:fixed;
+		width:inherit;
+	}
+	
 }

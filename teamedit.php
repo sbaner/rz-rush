@@ -154,7 +154,7 @@
         </div>
       </div>
       <div class="row" id="content">
-        <div class="col-md-2">
+        <div class="col-md-3 col-lg-2">
           <div class="side-bar">
             <div class="team-card">
             <?php 

@@ -129,7 +129,7 @@
         </div>
       </div>
       <div class="row" id="content">
-        <div class="col-md-2">
+        <div class="col-md-3 col-lg-2">
           <div class="side-bar">
             <?php 
 			if ($own_profile) {
@@ -215,7 +215,7 @@
 			<button type="submit" class="btn btn-primary">Log out</button>
 		</form>
         </div>
-        <div class="col-md-8">
+        <div class="col-md-9 col-lg-8">
 			<div class="main">
 				<div class="profile-card">
 						<div class="row">

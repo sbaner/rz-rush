@@ -119,7 +119,7 @@
         </div>
       </div>
       <div class="row" id="content">
-        <div class="col-md-2">
+        <div class="col-md-3 col-lg-2">
           <div class="side-bar">
             <div class="team-card">
             
@@ -175,7 +175,7 @@
             </div>
           </div>
         </div>
-        <div class="col-md-8">
+        <div class="col-md-9 col-lg-8">
           <div class="main">
             <h3><?php echo $leaguename;?></h3>
             <p><?php echo $year." ";?>Standings, regular season</p>
