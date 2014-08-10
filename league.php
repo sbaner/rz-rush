@@ -226,9 +226,10 @@
 					$points_against = $teamData['points_against'];
 					$logopath = "uploads/logos/".$teamData['logofile'];
 					
-					$owner_result = mysqli_query($conn, "SELECT * from member WHERE id='$teamowner'");
+					$owner_result = mysqli_query($conn, "SELECT id,username from member WHERE id='$teamowner'");
 					$memberData = mysqli_fetch_array($owner_result, MYSQL_ASSOC);
 					$ownername = $memberData['username'];
+					$ownerid = $memberData['id'];
 					
 					echo "<tr>
                     <td>
@@ -237,7 +238,7 @@
                     </td>
                     <td><a href=\"team.php?teamid=".$teamid."\">".$location."
                     <br />".$teamname."</a></td>
-					<td>".$ownername."</td>
+					<td><a href='profile.php?profileid=".$ownerid."'>".$ownername."</td>
                     <td>".$season_win."</td>
                     <td>".$season_loss."</td>
                     <td>".$season_tie."</td>

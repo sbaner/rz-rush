@@ -53,6 +53,41 @@
 	<link rel="shortcut icon" href="favicon.ico" />
 	<script src="js/jquery-1.11.1.min.js"></script>
 	<script src="js/bootstrap.js"></script>
+	<script>
+	$( document ).ready(function() {
+		$('#resultdiv').hide();
+		$('#searchbox').on('keydown', function(e){
+		
+		var value = $(this).val();
+		if (value.length > 1) {
+				$.ajax({
+				  url: 'search.php',
+				  type: 'POST',
+				  dataType : 'json',
+				  data: {'search': value},
+				  success: function(data) {
+				  $('#resultdiv').html("");
+					$.each(data, function(index,value) {
+						var userid = value[0];
+						var username = value[1];
+						var resultstring = "<a href=\"profile.php?profileid="+userid+"\">"+username+"</a><br>";
+						$('#resultdiv').delay(300).slideDown(100);
+						$('#resultdiv').append(resultstring);
+					});
+				  },
+				  error: function(xhr, desc, err) {
+				  }
+				}); //end ajax 
+			} else {
+				$('#resultdiv').slideUp(100);
+			}
+		});
+		
+		$('#searchbox').on('blur', function(e){
+			$('#resultdiv').delay(500).slideUp(100);
+		});
+	});
+	</script>
     <title>RedZone Rush - <?php echo $username;?></title>
   </head>
   <body>
@@ -63,7 +98,7 @@
             <img class="logo" src="./logo-small.png" />
           </a>
         </div>
-        <div class="col-md-8">
+        <div class="col-md-3 col-sm-7">
           <div class="nav">
             <ul class="nav nav-pills navbar-left">
               <li
@@ -125,8 +160,14 @@
                 <a href="#">Help</a>
               </li>
             </ul>
+			
           </div>
         </div>
+		<div class="col-md-2">
+			<input type="text" id="searchbox" placeholder="Search for a user" class="form-control"/>
+			<div id="resultdiv">
+			</div>
+		</div>
       </div>
       <div class="row" id="content">
         <div class="col-md-3 col-lg-2">

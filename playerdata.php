@@ -18,6 +18,7 @@
 				
 				$data_array = [$name,$position,$health,$rating,$player_height,$weight];
 				echo json_encode($data_array);
+				exit();
 			}
 		}
 	}

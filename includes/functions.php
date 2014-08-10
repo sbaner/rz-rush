@@ -329,7 +329,7 @@ function create_salaries($playerid,$year,$team,$position,$rating) {
 			break;
 		case "T":
 			if ($rating > 77) {
-				$salary = round(8714*pow($rating,2)-1200500*$rating+41384657,-4);
+				$salary = round(3325*exp(.08*$rating),-4);
 				$bonus = round($salary/3,-4);
 			}
 			else {
@@ -339,7 +339,7 @@ function create_salaries($playerid,$year,$team,$position,$rating) {
 			break;
 		case "DE":
 			if ($rating > 75) {
-				$salary = round(9334*pow($rating,2)-1295236*$rating+45245133,-4);
+				$salary = round(3325*exp(.08*$rating),-4);
 				$bonus = round($salary/3,-4);
 			}
 			else {
@@ -349,7 +349,7 @@ function create_salaries($playerid,$year,$team,$position,$rating) {
 			break;
 		case "DT":
 			if ($rating > 75) {
-				$salary = round(9334*pow($rating,2)-1295236*$rating+45245133,-4);
+				$salary = round(3325*exp(.08*$rating),-4);
 				$bonus = round($salary/3,-4);
 			}
 			else {
@@ -389,7 +389,7 @@ function create_salaries($playerid,$year,$team,$position,$rating) {
 			break;
 		case "K":
 			if ($rating > 76) {
-				$salary = round(4781*pow($rating,2)-737820*$rating+29148880,-4);
+				$salary = round(20236*exp(.05*$rating),-4);
 				$bonus = round($salary/3,-4);
 			}
 			else {
@@ -399,7 +399,7 @@ function create_salaries($playerid,$year,$team,$position,$rating) {
 			break;
 		case "P":
 		if ($rating > 76) {
-				$salary = round(4781*pow($rating,2)-737820*$rating+29148880,-4);
+				$salary = round(20236*exp(.05*$rating),-4);
 				$bonus = round($salary/3,-4);
 			}
 			else {

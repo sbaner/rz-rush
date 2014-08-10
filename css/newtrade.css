@@ -1,0 +1,37 @@
+.main {
+	background-color:#DDD;
+	color:#333;
+}
+
+.main h3 {
+	text-transform:none;
+}
+
+.playerbox {
+	margin-top:20px;
+	padding:20px;
+	max-height:300px;
+	min-width:200px;
+}
+
+.mainrow {
+	margin-left:0;
+	margin-right:0;
+}
+
+.tradebox {
+	margin-right:15px;
+}
+
+.playerselect {
+	margin-bottom:20px;
+}
+
+.pickselect {
+	margin-bottom:20px;
+}
+
+textarea {
+	margin-top:15px;
+	margin-bottom:15px;
+}

@@ -26,6 +26,11 @@
 	margin-right:10px;
 }
 
+.tradestatus {
+	float:right;
+	margin-right:20px;
+}
+
 #writemsg {
 	float:right;
 	margin-right:10px;

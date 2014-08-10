@@ -50,7 +50,6 @@
 		mysqli_query($conn,"INSERT INTO `league` (`leaguename`, `frequency`, `salarycap`, `injuries`,`year`,`calendar`) 
 				VALUES ('{$leaguename}', '{$freq}', '{$salary}', '{$injury}','{$year}',1)");
 		if (mysqli_affected_rows($conn) == 1) {
-			echo "League create success!";
 			$leagueid = mysqli_insert_id($conn);
 		} else {
 			echo "League create fail...";
@@ -69,11 +68,187 @@
 			"Heroes","Reapers","Miners","Pirates","Fireballs","Busters","Scorpions","Stingers",
 			"Bullets","Blazers","Champions","Kings","Chasers","Hurricanes","Dragons","Tanks",
 			"Tornadoes","Hawks","Slammers","Legends","Wild","Lightning","Sharpshooters","Commandos");
-		echo "League ".$leagueid." created.<br>";
+		$abbrev = array("NE","NYD","MIA","BUF","CIN","BAL","PIT","CLE",
+			"IND","JAX","HOU","TEN","DEN","KC","SD","OAK",
+			"PHI","DAL","NYC","WAS","GB","CHI","MIN","DET",
+			"ATL","CAR","NO","TB","SEA","SF","STL","ARI");
+		$standing = array(1,2,3,4,1,2,3,4,1,2,3,4,1,2,3,4,1,2,3,4,1,2,3,4,1,2,3,4,1,2,3,4);
 		for ($i = 0; $i < 32; $i++) {
-			mysqli_query($conn,"INSERT INTO `team`(`league`, `division`, `location`, `teamname`,`season_win`,`season_loss`,`total_win`,`total_loss`,`championships`,`division_win`,`division_loss`,`conf_win`,`conf_loss`,`points_for`,`points_against`,`season_tie`,`total_tie`,`logofile`) VALUES ('{$leagueid}', '{$division[$i]}', '{$location[$i]}', '{$teamname[$i]}', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,'helmet.png')");
+			mysqli_query($conn,"INSERT INTO `team`(`league`, `division`, `location`, `teamname`,`abbrev`,`season_win`,`season_loss`,`total_win`,`total_loss`,`championships`,`division_win`,`division_loss`,`conf_win`,`conf_loss`,`points_for`,`points_against`,`season_tie`,`total_tie`,`logofile`,`standing`) VALUES ('{$leagueid}', '{$division[$i]}', '{$location[$i]}', '{$teamname[$i]}', '{$abbrev[$i]}', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,'helmet.png','{$standing[$i]}')");
 		}
 		$last_team = mysqli_insert_id($conn);
+		
+		//Generate Schedule
+		$allteams = range($last_team-31,$last_team);
+			
+		for ($i=0;$i<32;$i++) {
+			$teamno = $allteams[$i];
+			//Create all 256 games (32 teams, 8 home games each)
+			for ($j=0;$j<8;$j++) {
+				mysqli_query($conn,"INSERT INTO `games` (league,year,home) VALUES ($leagueid,$year,$teamno)");
+				if ($i==31 && $j==7) {
+					$reggames = mysqli_insert_id($conn);
+				}
+			}
+			//intra-divisional games (3 home games)
+			$team_result = mysqli_query($conn,"SELECT division,standing FROM team WHERE id=$teamno");
+			$teamData = mysqli_fetch_array($team_result);
+			$division = $teamData['division'];
+			$standing = $teamData['standing'];
+			
+			$divteams_result = mysqli_query($conn,"SELECT id FROM team WHERE league=$leagueid AND division='$division' AND id!=$teamno");
+			while ($divteamData = mysqli_fetch_array($divteams_result)) {
+				$divteam = $divteamData['id'];
+				mysqli_query($conn,"UPDATE `games` SET away=$divteam ,division='$division' WHERE home=$teamno AND away IS NULL LIMIT 1");
+			}
+			
+			$sameconf = "";
+			$difconf = "";
+			$finalgame = "";
+			switch ($division) {
+				case "afc_east":
+					$sameconf = "afc_west";
+					$difconf = "nfc_west";
+					$finalgame = "afc_north";
+					break;
+				case "afc_west":
+					$sameconf = "afc_east";
+					$difconf = "nfc_east";
+					$finalgame = "afc_south";
+					break;
+				case "afc_south":
+					$sameconf = "afc_north";
+					$difconf = "nfc_south";
+					$finalgame = "afc_east";
+					break;
+				case "afc_north":
+					$sameconf = "afc_south";
+					$difconf = "nfc_north";
+					$finalgame = "afc_west";
+					break;
+				case "nfc_east":
+					$sameconf = "nfc_west";
+					$difconf = "afc_west";
+					$finalgame = "nfc_north";
+					break;
+				case "nfc_west":
+					$sameconf = "nfc_east";
+					$difconf = "afc_east";
+					$finalgame = "nfc_south";
+					break;
+				case "nfc_south":
+					$sameconf = "nfc_north";
+					$difconf = "afc_south";
+					$finalgame = "nfc_east";
+					break;
+				case "nfc_north":
+					$sameconf = "nfc_south";
+					$difconf = "afc_north";
+					$finalgame = "nfc_west";
+					break;
+			}
+			
+			//Find games in which team is already scheduled (as away team)
+			$already_result = mysqli_query($conn,"SELECT home FROM games WHERE away=$teamno AND year=$year");
+			$alArray = [];
+			while ($alreadyData = mysqli_fetch_array($already_result)) {
+				$alArray[] = $alreadyData['home'];
+			}
+			
+			//Division in same conference (2 home games)
+			$sameconfcount = 0;
+			$sameconf_result = mysqli_query($conn,"SELECT id FROM team WHERE league=$leagueid AND division='$sameconf'");
+			
+			if (!$sameconf_result) {
+				printf("Error: %s\n", mysqli_error($conn));
+				exit();
+			}
+			while ($sameData = mysqli_fetch_array($sameconf_result)) {
+				$sameconfteam = $sameData['id'];
+				$count_result = mysqli_query($conn,"SELECT id FROM games WHERE division='$division' AND away=$sameconfteam");
+				$count = mysqli_num_rows($count_result);
+				if (!in_array($sameconfteam,$alArray) && $count<2 && $sameconfcount<2) {
+						mysqli_query($conn,"UPDATE `games` SET away=$sameconfteam,division='$division' WHERE year=$year AND home=$teamno AND away IS NULL LIMIT 1");
+						$sameconfcount++;
+				}
+			}
+			
+			//division in other conference (2 home games)
+			
+			$difconfcount = 0;
+			$difconf_result = mysqli_query($conn,"SELECT id FROM team WHERE league=$leagueid AND division='$difconf'");
+			if (!$difconf_result) {
+				printf("Error: %s\n", mysqli_error($conn));
+				exit();
+			}
+			while ($difData = mysqli_fetch_array($difconf_result)) {
+				$difconfteam = $difData['id'];
+				$count_result = mysqli_query($conn,"SELECT id FROM games WHERE division='$division' AND away=$difconfteam");
+				$count = mysqli_num_rows($count_result);
+				if (!in_array($difconfteam,$alArray) && $count<2 && $difconfcount<2) {
+						mysqli_query($conn,"UPDATE `games` SET away=$difconfteam,division='$division' WHERE year=$year AND home=$teamno AND away IS NULL LIMIT 1");
+						$difconfcount++;
+				}
+			}
+			
+			//Final game (1 home game)
+			$final_result = mysqli_query($conn,"SELECT id FROM team WHERE league=$leagueid AND `division`='$finalgame' AND standing='$standing'");
+			while ($finalData = mysqli_fetch_array($final_result)) {
+				$finalteam = $finalData['id'];
+				mysqli_query($conn,"UPDATE `games` SET away=$finalteam,division='$division' WHERE year=$year AND home=$teamno AND away IS NULL LIMIT 1");
+				
+			}
+			
+		}
+		
+		//Assign week
+			$weekArray = range(1,16);
+			shuffle($weekArray);
+			$game_result = mysqli_query($conn,"SELECT id,home,away FROM games WHERE week IS NULL AND year=$year AND league=$leagueid");
+			while ($gameData=mysqli_fetch_array($game_result)) {
+				$id = $gameData['id'];
+				$home = $gameData['home'];
+				$away = $gameData['away'];
+				$excluded = [];
+				
+				$week_query= "SELECT week FROM games WHERE (home=$home OR home=$away OR away=$home OR away=$away) AND week IS NOT NULL";
+				$week_result = mysqli_query($conn,$week_query);
+				// if (!$week_result) {
+				//	echo($week_query."<br>");
+				//	printf("Error: %s\n", mysqli_error($conn));
+				//	exit();
+				// }
+				while ($weekData = mysqli_fetch_array($week_result)) {
+					$excluded[] = $weekData['week'];
+				}
+				foreach($weekArray as $week) {
+					if (!in_array($week,$excluded)) {
+						mysqli_query($conn,"UPDATE games SET week=$week WHERE id=$id");
+						break;
+					}
+				}
+				
+			}
+		
+		//Preseason
+		$preteams = $allteams;
+		shuffle($preteams);
+		$prehome = array_slice($preteams,0,16);
+		$preaway = array_slice($preteams,16,16);
+		
+		for ($week=17;$week<21;$week++) {
+			shuffle($prehome);
+			shuffle($preaway);
+			foreach($prehome as $index => $home) {
+				$away = $preaway[$index];
+				if ($week%2==0) {
+				$prequery = "INSERT INTO games (league,year,week,home,away) VALUES ($leagueid,$year,$week,$home,$away)";
+				} else {
+					$prequery = "INSERT INTO games (league,year,week,home,away) VALUES ($leagueid,$year,$week,$away,$home)";
+				}
+				mysqli_query($conn,$prequery);
+			}
+		}
 		//Generate Players
 		//--Generate QBs
 		genplayers(128,$year,$leagueid,"QB",true);
@@ -111,7 +286,7 @@
 		$draft_round = 1;
 		
 		//--Select QBs: 4 rounds
-		$qb_result = mysqli_query($conn,"SELECT * FROM player WHERE position='QB' ORDER BY overall_now DESC");
+		$qb_result = mysqli_query($conn,"SELECT * FROM player WHERE position='QB' AND league=$leagueid ORDER BY overall_now DESC");
 		for ($k=0; $k<4; $k++) {
 			shuffle($draftorder);
 			for ($i=1; $i<33; $i++) {
@@ -127,7 +302,7 @@
 		}
 		
 		//--Select RBs; 6 rounds
-		$rb_result = mysqli_query($conn,"SELECT * FROM player WHERE position='RB' ORDER BY overall_now DESC");
+		$rb_result = mysqli_query($conn,"SELECT * FROM player WHERE position='RB' AND league=$leagueid ORDER BY overall_now DESC");
 		for ($k=0; $k<6; $k++) {
 			shuffle($draftorder);
 			for ($i=1; $i<33; $i++) {
@@ -143,7 +318,7 @@
 		}
 		
 		//--Select FBs; 2 rounds
-		$fb_result = mysqli_query($conn,"SELECT * FROM player WHERE position='FB' ORDER BY overall_now DESC");
+		$fb_result = mysqli_query($conn,"SELECT * FROM player WHERE position='FB' AND league=$leagueid ORDER BY overall_now DESC");
 		for ($k=0; $k<2; $k++) {
 			shuffle($draftorder);
 			for ($i=1; $i<33; $i++) {
@@ -159,7 +334,7 @@
 		}
 		
 		//--Select WRs; 8 rounds
-		$wr_result = mysqli_query($conn,"SELECT * FROM player WHERE position='WR' ORDER BY overall_now DESC");
+		$wr_result = mysqli_query($conn,"SELECT * FROM player WHERE position='WR' AND league=$leagueid ORDER BY overall_now DESC");
 		for ($k=0; $k<8; $k++) {
 			shuffle($draftorder);
 			for ($i=1; $i<33; $i++) {
@@ -174,7 +349,7 @@
 			$draft_round++;
 		}
 		//--Select TEs; 4 rounds
-		$te_result = mysqli_query($conn,"SELECT * FROM player WHERE position='TE' ORDER BY overall_now DESC");
+		$te_result = mysqli_query($conn,"SELECT * FROM player WHERE position='TE' AND league=$leagueid ORDER BY overall_now DESC");
 		for ($k=0; $k<4; $k++) {
 			shuffle($draftorder);
 			for ($i=1; $i<33; $i++) {
@@ -189,7 +364,7 @@
 			$draft_round++;
 		}
 		//--Select Gs; 6 rounds
-		$g_result = mysqli_query($conn,"SELECT * FROM player WHERE position='G' ORDER BY overall_now DESC");
+		$g_result = mysqli_query($conn,"SELECT * FROM player WHERE position='G' AND league=$leagueid ORDER BY overall_now DESC");
 		for ($k=0; $k<6; $k++) {
 			shuffle($draftorder);
 			for ($i=1; $i<33; $i++) {
@@ -205,7 +380,7 @@
 		}
 		
 		//--Select Cs; 4 rounds
-		$c_result = mysqli_query($conn,"SELECT * FROM player WHERE position='C' ORDER BY overall_now DESC");
+		$c_result = mysqli_query($conn,"SELECT * FROM player WHERE position='C' AND league=$leagueid ORDER BY overall_now DESC");
 		for ($k=0; $k<4; $k++) {
 			shuffle($draftorder);
 			for ($i=1; $i<33; $i++) {
@@ -220,7 +395,7 @@
 			$draft_round++;
 		}
 		//--Select Ts; 6 rounds
-		$t_result = mysqli_query($conn,"SELECT * FROM player WHERE position='T' ORDER BY overall_now DESC");
+		$t_result = mysqli_query($conn,"SELECT * FROM player WHERE position='T' AND league=$leagueid ORDER BY overall_now DESC");
 		for ($k=0; $k<6; $k++) {
 			shuffle($draftorder);
 			for ($i=1; $i<33; $i++) {
@@ -236,7 +411,7 @@
 		}
 		
 		//--Select DEs; 6 rounds
-		$de_result = mysqli_query($conn,"SELECT * FROM player WHERE position='DE' ORDER BY overall_now DESC");
+		$de_result = mysqli_query($conn,"SELECT * FROM player WHERE position='DE' AND league=$leagueid ORDER BY overall_now DESC");
 		for ($k=0; $k<6; $k++) {
 			shuffle($draftorder);
 			for ($i=1; $i<33; $i++) {
@@ -252,7 +427,7 @@
 		}
 		
 		//--Select DTs; 6 rounds
-		$dt_result = mysqli_query($conn,"SELECT * FROM player WHERE position='DT' ORDER BY overall_now DESC");
+		$dt_result = mysqli_query($conn,"SELECT * FROM player WHERE position='DT' AND league=$leagueid ORDER BY overall_now DESC");
 		for ($k=0; $k<6; $k++) {
 			shuffle($draftorder);
 			for ($i=1; $i<33; $i++) {
@@ -268,7 +443,7 @@
 		}
 		
 		//--Select LBs; 8 rounds
-		$lb_result = mysqli_query($conn,"SELECT * FROM player WHERE position='LB' ORDER BY overall_now DESC");
+		$lb_result = mysqli_query($conn,"SELECT * FROM player WHERE position='LB' AND league=$leagueid ORDER BY overall_now DESC");
 		for ($k=0; $k<8; $k++) {
 			shuffle($draftorder);
 			for ($i=1; $i<33; $i++) {
@@ -284,7 +459,7 @@
 		}
 		
 		//--Select CBs; 8 rounds
-		$cb_result = mysqli_query($conn,"SELECT * FROM player WHERE position='CB' ORDER BY overall_now DESC");
+		$cb_result = mysqli_query($conn,"SELECT * FROM player WHERE position='CB' AND league=$leagueid ORDER BY overall_now DESC");
 		for ($k=0; $k<8; $k++) {
 			shuffle($draftorder);
 			for ($i=1; $i<33; $i++) {
@@ -299,7 +474,7 @@
 			$draft_round++;
 		}
 		//--Select Ss; 8 rounds
-		$s_result = mysqli_query($conn,"SELECT * FROM player WHERE position='S' ORDER BY overall_now DESC");
+		$s_result = mysqli_query($conn,"SELECT * FROM player WHERE position='S' AND league=$leagueid ORDER BY overall_now DESC");
 		for ($k=0; $k<8; $k++) {
 			shuffle($draftorder);
 			for ($i=1; $i<33; $i++) {
@@ -314,7 +489,7 @@
 			$draft_round++;
 		}
 		//--Select Ks; 2 rounds
-		$k_result = mysqli_query($conn,"SELECT * FROM player WHERE position='K' ORDER BY overall_now DESC");
+		$k_result = mysqli_query($conn,"SELECT * FROM player WHERE position='K' AND league=$leagueid ORDER BY overall_now DESC");
 		for ($k=0; $k<2; $k++) {
 			shuffle($draftorder);
 			for ($i=1; $i<33; $i++) {
@@ -329,7 +504,7 @@
 			$draft_round++;
 		}
 		//--Select Ps; 2 rounds
-		$p_result = mysqli_query($conn,"SELECT * FROM player WHERE position='P' ORDER BY overall_now DESC");
+		$p_result = mysqli_query($conn,"SELECT * FROM player WHERE position='P' AND league=$leagueid ORDER BY overall_now DESC");
 		for ($k=0; $k<2; $k++) {
 			shuffle($draftorder);
 			for ($i=1; $i<33; $i++) {
@@ -348,6 +523,31 @@
 		$lineupteams = range($last_team-31,$last_team);
 		for ($i=0;$i<32;$i++) {
 			mysqli_query($conn,"INSERT INTO `offlineup` (team,personnel) VALUES ($lineupteams[$i],'all')");
+			mysqli_query($conn,"INSERT INTO `offlineup` (team,personnel) VALUES ($lineupteams[$i],'22')");
+			mysqli_query($conn,"INSERT INTO `offlineup` (team,personnel) VALUES ($lineupteams[$i],'21')");
+			mysqli_query($conn,"INSERT INTO `offlineup` (team,personnel) VALUES ($lineupteams[$i],'20')");
+			mysqli_query($conn,"INSERT INTO `offlineup` (team,personnel) VALUES ($lineupteams[$i],'12')");
+			mysqli_query($conn,"INSERT INTO `offlineup` (team,personnel) VALUES ($lineupteams[$i],'11')");
+			mysqli_query($conn,"INSERT INTO `offlineup` (team,personnel) VALUES ($lineupteams[$i],'10')");
+			mysqli_query($conn,"INSERT INTO `offlineup` (team,personnel) VALUES ($lineupteams[$i],'00')");
+			mysqli_query($conn,"INSERT INTO `offlineup` (team,personnel) VALUES ($lineupteams[$i],'23')");
+			
+			mysqli_query($conn,"INSERT INTO `deflineup` (team,personnel) VALUES ($lineupteams[$i],'all')");
+			mysqli_query($conn,"INSERT INTO `deflineup` (team,personnel) VALUES ($lineupteams[$i],'434')");
+			mysqli_query($conn,"INSERT INTO `deflineup` (team,personnel) VALUES ($lineupteams[$i],'425')");
+			mysqli_query($conn,"INSERT INTO `deflineup` (team,personnel) VALUES ($lineupteams[$i],'344')");
+			mysqli_query($conn,"INSERT INTO `deflineup` (team,personnel) VALUES ($lineupteams[$i],'335')");
+			mysqli_query($conn,"INSERT INTO `deflineup` (team,personnel) VALUES ($lineupteams[$i],'443')");
+			mysqli_query($conn,"INSERT INTO `deflineup` (team,personnel) VALUES ($lineupteams[$i],'353')");
+			mysqli_query($conn,"INSERT INTO `deflineup` (team,personnel) VALUES ($lineupteams[$i],'425n')");
+			mysqli_query($conn,"INSERT INTO `deflineup` (team,personnel) VALUES ($lineupteams[$i],'335n')");
+			mysqli_query($conn,"INSERT INTO `deflineup` (team,personnel) VALUES ($lineupteams[$i],'416')");
+			mysqli_query($conn,"INSERT INTO `deflineup` (team,personnel) VALUES ($lineupteams[$i],'326')");
+			mysqli_query($conn,"INSERT INTO `deflineup` (team,personnel) VALUES ($lineupteams[$i],'317')");
+			mysqli_query($conn,"INSERT INTO `deflineup` (team,personnel) VALUES ($lineupteams[$i],'623')");
+			mysqli_query($conn,"INSERT INTO `deflineup` (team,personnel) VALUES ($lineupteams[$i],'632')");
+			
+			mysqli_query($conn,"INSERT INTO `stlineup` (team) VALUES ($lineupteams[$i])");
 		}
 		
 		
@@ -442,7 +642,7 @@
         </div>
       </div>
       <div class="row" id="content">
-        <div class="col-md-offset-3 col-md-6">
+        <div class="col-lg-offset-3 col-lg-6 col-md-offset-2 col-md-8">
           <div class="main">
 		  <h3>Create League</h3>
             <form class="form-horizontal" method="POST" id="new-league" action="newleague.php" role="form">

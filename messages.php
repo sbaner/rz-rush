@@ -33,6 +33,10 @@
 		}
 	}
 	
+	if(isset($_GET['tab'])) {
+		$tab = $_GET['tab'];
+	}
+	
 	
 ?>
 <!DOCTYPE html>
@@ -49,7 +53,12 @@
 	<script src="js/jquery-1.11.1.min.js"></script>
 	<script src="js/bootstrap.js"></script>
 	<script>
-	$(function() {  
+	$(function() {
+		<?php
+		if(isset($_GET['tab'])){
+			echo "$('a[href=\"#".$tab."\"]').tab('show');";
+		}
+		?>
 		$('.newmessage').click(function(){
 			$(this).removeClass("newmessage");
 		  });
@@ -227,7 +236,6 @@
 				<ul class="nav nav-tabs" role="tablist">
 				  <li class="active"><a href="#received" role="tab" data-toggle="tab">Received</a></li>
 				  <li><a href="#sent" role="tab" data-toggle="tab">Sent</a></li>
-				  <li><a href="#trades" role="tab" data-toggle="tab">Trades</a></li>
 				</ul>
 
 				<!-- Tab panes -->
@@ -412,9 +420,6 @@
 					echo "No sent messages.";
 				  }
 				  ?>
-				  </div>
-				  <div class="tab-pane fade" id="trades">
-				  Not implemented yet...
 				  </div>
 				</div>
 			</div>

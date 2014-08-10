@@ -69,6 +69,30 @@ body, html {
 .nav {
 	font-size:16px;
 	margin-top:10px;
+	display:block;
+	
+}
+
+#searchbox {
+	margin-top:30px;
+	margin-left:10px;
+	margin-right:10px;
+	margin-bottom:0px;
+	max-width:300px;
+}
+
+#resultdiv {
+	width:90%;
+	max-width:400px;
+	background-color:#FFF;
+	padding:10px;
+	z-index:100;
+	position:absolute;
+	margin-right:10px;
+	margin-left:10px;
+	border-color:#eee;
+	border-width:1px;
+	border-style:solid;
 }
 
 .learn-more {
@@ -160,7 +184,7 @@ body {
 	}
 }
 
-@media screen and (max-width: 650px) {
+@media screen and (max-width: 768px) {
 	#content {
 		margin-left:0px;
 		margin-right:0px;
@@ -186,4 +210,9 @@ body {
 		max-width:50vw;
 		display:block;
 	}
+	
+	.nav {
+		margin-left:10px;
+	}
+	
 }

@@ -19,6 +19,10 @@ if (!empty($_GET['leagueid'])) {
 	
 	$fa_result = mysqli_query($conn,"SELECT * FROM player WHERE team=0 AND league=$leagueid");
 	
+	$league_result = mysqli_query($conn,"SELECT year FROM league WHERE id=$leagueid");
+	$leagueData = mysqli_fetch_array($league_result);
+	$year = $leagueData['year'];
+	
 ?>
 <!DOCTYPE html>
 <html>
@@ -141,6 +145,8 @@ if (!empty($_GET['leagueid'])) {
               <p>".$myteamname."</p>
             </a><p>".$myteamrecord."</p></b>";
 			echo "<p>".getWeek($leagueid)."</p>";
+			} else {
+				$myteamid = 0;
 			}
 			?></div>
 			<h3>League Links</h3>
@@ -267,437 +273,100 @@ if (!empty($_GET['leagueid'])) {
                       <div class="row">
                         <div class="col-md-10">
 						<div class="week-header">
-							<h3>Preseason 1</h3>
+							<h3>Preseason Week 1</h3>
 						</div>
-                          <div class="team-result">
-                            <h3>Your Team Result</h3>
-                            <div class="row">
-                              <div class="col-md-2">
-                                <img src="nfl-logos/19.png" />
+                          
+                            
+							<?php
+							if ($myteamid!=0) {
+								$yourgame_result = mysqli_query($conn,"SELECT id FROM games WHERE league=$leagueid AND year=$year AND week=17 AND (home=$myteamid OR away=$myteamid)");
+								$yourgameData = mysqli_fetch_array($yourgame_result);
+								$yourgame = $yourgameData['id'];
+								
+								$yourteam_result = mysqli_query($conn,"SELECT * FROM games WHERE id=$yourgame");
+								$yourteamData = mysqli_fetch_array($yourteam_result);
+								$yghome = $yourteamData['home'];
+								$ygaway = $yourteamData['away'];
+								
+								$yghome_result = mysqli_query($conn,"SELECT location,teamname,abbrev,season_win,season_loss,season_tie,logofile FROM team WHERE id=$yghome");
+								$yghomeData = mysqli_fetch_array($yghome_result);
+								$ygaway_result = mysqli_query($conn,"SELECT location,teamname,abbrev,season_win,season_loss,season_tie,logofile FROM team WHERE id=$ygaway");
+								$ygawayData = mysqli_fetch_array($ygaway_result);
+							echo "
+							<div class='team-result'>
+							<h3>Your Team Result</h3>
+                            <div class='row teamrow'>
+                              <div class='col-md-2'>
+                                <img width='60' src='uploads/logos/".$yghomeData['logofile']."' />
                               </div>
-                              <div class="col-md-6">
+                              <div class='col-md-6'>
                                 <h4>
-                                  <a href="team.php">New York Giants</a>
+                                  <a href='team.php?teamid=".$yghome."'>".$yghomeData['location']." ".$yghomeData['teamname']."</a>
                                 </h4>
                               </div>
-                              <div class="col-md-4">
-                                <h4 class="hidden-score">36</h4>
+                              <div class='col-md-4'>
+                                <h4 class='hidden-score'>".$yourteamData['h_score']."</h4>
                               </div>
                             </div>
-                            <div class="row">
-                              <div class="col-md-2">
-                                <img src="nfl-logos/20.png" />
+                            <div class='row teamrow'>
+                              <div class='col-md-2'>
+                                <img width='60' src='uploads/logos/".$ygawayData['logofile']."' />
                               </div>
-                              <div class="col-md-6">
+                              <div class='col-md-6'>
                                 <h4>
-                                  <a href="team.php">New York Jets</a>
+                                  <a href='team.php?teamid=".$ygaway."'>".$ygawayData['location']." ".$ygawayData['teamname']."</a>
                                 </h4>
                               </div>
-                              <div class="col-md-4">
-                                <h4 class="hidden-score">7</h4>
+                              <div class='col-md-4'>
+                                <h4 class='hidden-score'>".$yourteamData['a_score']."</h4>
                               </div>
                             </div>
-                          </div>
+							</div>";
+							}
+							?>
+                          
                           <div class="all-results">
                             <div class="row">
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
+							<?php
+							$week_result = mysqli_query($conn,"SELECT * FROM games WHERE league=$leagueid AND year=$year AND week=17");
+							$num = 1;
+							while ($weekData = mysqli_fetch_array($week_result)) {
+							$home = $weekData['home'];
+							$away = $weekData['away'];
+							$home_result = mysqli_query($conn,"SELECT location,teamname,abbrev,season_win,season_loss,season_tie FROM team WHERE id=$home");
+							$homeData = mysqli_fetch_array($home_result);
+							$away_result = mysqli_query($conn,"SELECT location,teamname,abbrev,season_win,season_loss,season_tie FROM team WHERE id=$away");
+							$awayData = mysqli_fetch_array($away_result);
+                            echo "<div class='col-md-6'>
+                                <div class='result'>
+                                  <div class='row'>
+                                    <div class='col-md-8'>
                                       <h4>
-                                        <a href="team.php">Team 1</a>
+                                        <a href='team.php?teamid=".$home."'>".$homeData['location']." ".$homeData['teamname']."</a>
                                       </h4>
                                     </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
+                                    <div class='col-md-4'>
+                                      <h4 class='hidden-score'>".$weekData['h_score']."</h4>
                                     </div>
                                   </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
+                                  <div class='row'>
+                                    <div class='col-md-8'>
                                       <h4>
-                                        <a href="team.php">Team 2</a>
+                                        <a href='team.php?teamid=".$away."'>".$awayData['location']." ".$awayData['teamname']."</a>
                                       </h4>
                                     </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
+                                    <div class='col-md-4'>
+                                      <h4 class='hidden-score'>".$weekData['a_score']."</h4>
                                     </div>
                                   </div>
                                 </div>
-                              </div>
-                            </div>
-                            <div class="row">
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                            <div class="row">
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                            <div class="row">
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                            <div class="row">
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                            <div class="row">
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                            <div class="row">
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                            <div class="row">
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
+                              </div>";
+							  if ($num%2==0) {
+								echo "</div><div class='row'>";
+							  }
+							  $num++;
+							  }
+							  ?>
                             </div>
                           </div>
                         </div>
@@ -707,437 +376,99 @@ if (!empty($_GET['leagueid'])) {
                       <div class="row">
                         <div class="col-md-10">
 						<div class="week-header">
-							<h3>Preseason 2</h3>
+							<h3>Preseason Week 2</h3>
 						</div>
-                          <div class="team-result">
-                            <h3>Your Team Result</h3>
-                            <div class="row">
-                              <div class="col-md-2">
-                                <img src="nfl-logos/19.png" />
+                            
+							<?php
+							if ($myteamid!=0) {
+								$yourgame_result = mysqli_query($conn,"SELECT id FROM games WHERE league=$leagueid AND year=$year AND week=18 AND (home=$myteamid OR away=$myteamid)");
+								$yourgameData = mysqli_fetch_array($yourgame_result);
+								$yourgame = $yourgameData['id'];
+								
+								$yourteam_result = mysqli_query($conn,"SELECT * FROM games WHERE id=$yourgame");
+								$yourteamData = mysqli_fetch_array($yourteam_result);
+								$yghome = $yourteamData['home'];
+								$ygaway = $yourteamData['away'];
+								
+								$yghome_result = mysqli_query($conn,"SELECT location,teamname,abbrev,season_win,season_loss,season_tie,logofile FROM team WHERE id=$yghome");
+								$yghomeData = mysqli_fetch_array($yghome_result);
+								$ygaway_result = mysqli_query($conn,"SELECT location,teamname,abbrev,season_win,season_loss,season_tie,logofile FROM team WHERE id=$ygaway");
+								$ygawayData = mysqli_fetch_array($ygaway_result);
+							echo "
+							<div class='team-result'>
+							<h3>Your Team Result</h3>
+                            <div class='row teamrow'>
+                              <div class='col-md-2'>
+                                <img width='60' src='uploads/logos/".$yghomeData['logofile']."' />
                               </div>
-                              <div class="col-md-6">
+                              <div class='col-md-6'>
                                 <h4>
-                                  <a href="team.php">New York Giants</a>
+                                  <a href='team.php?teamid=".$yghome."'>".$yghomeData['location']." ".$yghomeData['teamname']."</a>
                                 </h4>
                               </div>
-                              <div class="col-md-4">
-                                <h4 class="hidden-score">36</h4>
+                              <div class='col-md-4'>
+                                <h4 class='hidden-score'>".$yourteamData['h_score']."</h4>
                               </div>
                             </div>
-                            <div class="row">
-                              <div class="col-md-2">
-                                <img src="nfl-logos/20.png" />
+                            <div class='row teamrow'>
+                              <div class='col-md-2'>
+                                <img width='60' src='uploads/logos/".$ygawayData['logofile']."' />
                               </div>
-                              <div class="col-md-6">
+                              <div class='col-md-6'>
                                 <h4>
-                                  <a href="team.php">New York Jets</a>
+                                  <a href='team.php?teamid=".$ygaway."'>".$ygawayData['location']." ".$ygawayData['teamname']."</a>
                                 </h4>
                               </div>
-                              <div class="col-md-4">
-                                <h4 class="hidden-score">7</h4>
+                              <div class='col-md-4'>
+                                <h4 class='hidden-score'>".$yourteamData['a_score']."</h4>
                               </div>
                             </div>
-                          </div>
+							</div>";
+							}
+							?>
+                          
                           <div class="all-results">
                             <div class="row">
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
+							<?php
+							$week_result = mysqli_query($conn,"SELECT * FROM games WHERE league=$leagueid AND year=$year AND week=18");
+							$num = 1;
+							while ($weekData = mysqli_fetch_array($week_result)) {
+							$home = $weekData['home'];
+							$away = $weekData['away'];
+							$home_result = mysqli_query($conn,"SELECT location,teamname,abbrev,season_win,season_loss,season_tie FROM team WHERE id=$home");
+							$homeData = mysqli_fetch_array($home_result);
+							$away_result = mysqli_query($conn,"SELECT location,teamname,abbrev,season_win,season_loss,season_tie FROM team WHERE id=$away");
+							$awayData = mysqli_fetch_array($away_result);
+                            echo "<div class='col-md-6'>
+                                <div class='result'>
+                                  <div class='row'>
+                                    <div class='col-md-8'>
                                       <h4>
-                                        <a href="team.php">Team 1</a>
+                                        <a href='team.php?teamid=".$home."'>".$homeData['location']." ".$homeData['teamname']."</a>
                                       </h4>
                                     </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
+                                    <div class='col-md-4'>
+                                      <h4 class='hidden-score'>".$weekData['h_score']."</h4>
                                     </div>
                                   </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
+                                  <div class='row'>
+                                    <div class='col-md-8'>
                                       <h4>
-                                        <a href="team.php">Team 2</a>
+                                        <a href='team.php?teamid=".$away."'>".$awayData['location']." ".$awayData['teamname']."</a>
                                       </h4>
                                     </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
+                                    <div class='col-md-4'>
+                                      <h4 class='hidden-score'>".$weekData['a_score']."</h4>
                                     </div>
                                   </div>
                                 </div>
-                              </div>
-                            </div>
-                            <div class="row">
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                            <div class="row">
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                            <div class="row">
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                            <div class="row">
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                            <div class="row">
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                            <div class="row">
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                            <div class="row">
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
+                              </div>";
+							  if ($num%2==0) {
+								echo "</div><div class='row'>";
+							  }
+							  $num++;
+							  }
+							  ?>
                             </div>
                           </div>
                         </div>
@@ -1147,437 +478,100 @@ if (!empty($_GET['leagueid'])) {
                       <div class="row">
                         <div class="col-md-10">
 						<div class="week-header">
-							<h3>Preseason 3</h3>
+							<h3>Preseason Week 3</h3>
 						</div>
-                          <div class="team-result">
-                            <h3>Your Team Result</h3>
-                            <div class="row">
-                              <div class="col-md-2">
-                                <img src="nfl-logos/19.png" />
+                          
+                            
+							<?php
+							if ($myteamid!=0) {
+								$yourgame_result = mysqli_query($conn,"SELECT id FROM games WHERE league=$leagueid AND year=$year AND week=19 AND (home=$myteamid OR away=$myteamid)");
+								$yourgameData = mysqli_fetch_array($yourgame_result);
+								$yourgame = $yourgameData['id'];
+								
+								$yourteam_result = mysqli_query($conn,"SELECT * FROM games WHERE id=$yourgame");
+								$yourteamData = mysqli_fetch_array($yourteam_result);
+								$yghome = $yourteamData['home'];
+								$ygaway = $yourteamData['away'];
+								
+								$yghome_result = mysqli_query($conn,"SELECT location,teamname,abbrev,season_win,season_loss,season_tie,logofile FROM team WHERE id=$yghome");
+								$yghomeData = mysqli_fetch_array($yghome_result);
+								$ygaway_result = mysqli_query($conn,"SELECT location,teamname,abbrev,season_win,season_loss,season_tie,logofile FROM team WHERE id=$ygaway");
+								$ygawayData = mysqli_fetch_array($ygaway_result);
+							echo "
+							<div class='team-result'>
+							<h3>Your Team Result</h3>
+                            <div class='row teamrow'>
+                              <div class='col-md-2'>
+                                <img width='60' src='uploads/logos/".$yghomeData['logofile']."' />
                               </div>
-                              <div class="col-md-6">
+                              <div class='col-md-6'>
                                 <h4>
-                                  <a href="team.php">New York Giants</a>
+                                  <a href='team.php?teamid=".$yghome."'>".$yghomeData['location']." ".$yghomeData['teamname']."</a>
                                 </h4>
                               </div>
-                              <div class="col-md-4">
-                                <h4 class="hidden-score">36</h4>
+                              <div class='col-md-4'>
+                                <h4 class='hidden-score'>".$yourteamData['h_score']."</h4>
                               </div>
                             </div>
-                            <div class="row">
-                              <div class="col-md-2">
-                                <img src="nfl-logos/20.png" />
+                            <div class='row teamrow'>
+                              <div class='col-md-2'>
+                                <img width='60' src='uploads/logos/".$ygawayData['logofile']."' />
                               </div>
-                              <div class="col-md-6">
+                              <div class='col-md-6'>
                                 <h4>
-                                  <a href="team.php">New York Jets</a>
+                                  <a href='team.php?teamid=".$ygaway."'>".$ygawayData['location']." ".$ygawayData['teamname']."</a>
                                 </h4>
                               </div>
-                              <div class="col-md-4">
-                                <h4 class="hidden-score">7</h4>
+                              <div class='col-md-4'>
+                                <h4 class='hidden-score'>".$yourteamData['a_score']."</h4>
                               </div>
                             </div>
-                          </div>
+							</div>";
+							}
+							?>
+                          
                           <div class="all-results">
                             <div class="row">
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
+							<?php
+							$week_result = mysqli_query($conn,"SELECT * FROM games WHERE league=$leagueid AND year=$year AND week=19");
+							$num = 1;
+							while ($weekData = mysqli_fetch_array($week_result)) {
+							$home = $weekData['home'];
+							$away = $weekData['away'];
+							$home_result = mysqli_query($conn,"SELECT location,teamname,abbrev,season_win,season_loss,season_tie FROM team WHERE id=$home");
+							$homeData = mysqli_fetch_array($home_result);
+							$away_result = mysqli_query($conn,"SELECT location,teamname,abbrev,season_win,season_loss,season_tie FROM team WHERE id=$away");
+							$awayData = mysqli_fetch_array($away_result);
+                            echo "<div class='col-md-6'>
+                                <div class='result'>
+                                  <div class='row'>
+                                    <div class='col-md-8'>
                                       <h4>
-                                        <a href="team.php">Team 1</a>
+                                        <a href='team.php?teamid=".$home."'>".$homeData['location']." ".$homeData['teamname']."</a>
                                       </h4>
                                     </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
+                                    <div class='col-md-4'>
+                                      <h4 class='hidden-score'>".$weekData['h_score']."</h4>
                                     </div>
                                   </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
+                                  <div class='row'>
+                                    <div class='col-md-8'>
                                       <h4>
-                                        <a href="team.php">Team 2</a>
+                                        <a href='team.php?teamid=".$away."'>".$awayData['location']." ".$awayData['teamname']."</a>
                                       </h4>
                                     </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
+                                    <div class='col-md-4'>
+                                      <h4 class='hidden-score'>".$weekData['a_score']."</h4>
                                     </div>
                                   </div>
                                 </div>
-                              </div>
-                            </div>
-                            <div class="row">
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                            <div class="row">
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                            <div class="row">
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                            <div class="row">
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                            <div class="row">
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                            <div class="row">
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                            <div class="row">
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
+                              </div>";
+							  if ($num%2==0) {
+								echo "</div><div class='row'>";
+							  }
+							  $num++;
+							  }
+							  ?>
                             </div>
                           </div>
                         </div>
@@ -1587,437 +581,98 @@ if (!empty($_GET['leagueid'])) {
                       <div class="row">
                         <div class="col-md-10">
 						<div class="week-header">
-							<h3>Preseason 4</h3>
+							<h3>Preseason Week 4</h3>
 						</div>
-                          <div class="team-result">
-                            <h3>Your Team Result</h3>
-                            <div class="row">
-                              <div class="col-md-2">
-                                <img src="nfl-logos/19.png" />
+							<?php
+							if ($myteamid!=0) {
+								$yourgame_result = mysqli_query($conn,"SELECT id FROM games WHERE league=$leagueid AND year=$year AND week=20 AND (home=$myteamid OR away=$myteamid)");
+								$yourgameData = mysqli_fetch_array($yourgame_result);
+								$yourgame = $yourgameData['id'];
+								
+								$yourteam_result = mysqli_query($conn,"SELECT * FROM games WHERE id=$yourgame");
+								$yourteamData = mysqli_fetch_array($yourteam_result);
+								$yghome = $yourteamData['home'];
+								$ygaway = $yourteamData['away'];
+								
+								$yghome_result = mysqli_query($conn,"SELECT location,teamname,abbrev,season_win,season_loss,season_tie,logofile FROM team WHERE id=$yghome");
+								$yghomeData = mysqli_fetch_array($yghome_result);
+								$ygaway_result = mysqli_query($conn,"SELECT location,teamname,abbrev,season_win,season_loss,season_tie,logofile FROM team WHERE id=$ygaway");
+								$ygawayData = mysqli_fetch_array($ygaway_result);
+							echo "
+							<div class='team-result'>
+							<h3>Your Team Result</h3>
+                            <div class='row teamrow'>
+                              <div class='col-md-2'>
+                                <img width='60' src='uploads/logos/".$yghomeData['logofile']."' />
                               </div>
-                              <div class="col-md-6">
+                              <div class='col-md-6'>
                                 <h4>
-                                  <a href="team.php">New York Giants</a>
+                                  <a href='team.php?teamid=".$yghome."'>".$yghomeData['location']." ".$yghomeData['teamname']."</a>
                                 </h4>
                               </div>
-                              <div class="col-md-4">
-                                <h4 class="hidden-score">36</h4>
+                              <div class='col-md-4'>
+                                <h4 class='hidden-score'>".$yourteamData['h_score']."</h4>
                               </div>
                             </div>
-                            <div class="row">
-                              <div class="col-md-2">
-                                <img src="nfl-logos/20.png" />
+                            <div class='row teamrow'>
+                              <div class='col-md-2'>
+                                <img width='60' src='uploads/logos/".$ygawayData['logofile']."' />
                               </div>
-                              <div class="col-md-6">
+                              <div class='col-md-6'>
                                 <h4>
-                                  <a href="team.php">New York Jets</a>
+                                  <a href='team.php?teamid=".$ygaway."'>".$ygawayData['location']." ".$ygawayData['teamname']."</a>
                                 </h4>
                               </div>
-                              <div class="col-md-4">
-                                <h4 class="hidden-score">7</h4>
+                              <div class='col-md-4'>
+                                <h4 class='hidden-score'>".$yourteamData['a_score']."</h4>
                               </div>
                             </div>
-                          </div>
+							</div>";
+							}
+							?>
+                          
                           <div class="all-results">
                             <div class="row">
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
+							<?php
+							$week_result = mysqli_query($conn,"SELECT * FROM games WHERE league=$leagueid AND year=$year AND week=20");
+							$num = 1;
+							while ($weekData = mysqli_fetch_array($week_result)) {
+							$home = $weekData['home'];
+							$away = $weekData['away'];
+							$home_result = mysqli_query($conn,"SELECT location,teamname,abbrev,season_win,season_loss,season_tie FROM team WHERE id=$home");
+							$homeData = mysqli_fetch_array($home_result);
+							$away_result = mysqli_query($conn,"SELECT location,teamname,abbrev,season_win,season_loss,season_tie FROM team WHERE id=$away");
+							$awayData = mysqli_fetch_array($away_result);
+                            echo "<div class='col-md-6'>
+                                <div class='result'>
+                                  <div class='row'>
+                                    <div class='col-md-8'>
                                       <h4>
-                                        <a href="team.php">Team 1</a>
+                                        <a href='team.php?teamid=".$home."'>".$homeData['location']." ".$homeData['teamname']."</a>
                                       </h4>
                                     </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
+                                    <div class='col-md-4'>
+                                      <h4 class='hidden-score'>".$weekData['h_score']."</h4>
                                     </div>
                                   </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
+                                  <div class='row'>
+                                    <div class='col-md-8'>
                                       <h4>
-                                        <a href="team.php">Team 2</a>
+                                        <a href='team.php?teamid=".$away."'>".$awayData['location']." ".$awayData['teamname']."</a>
                                       </h4>
                                     </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
+                                    <div class='col-md-4'>
+                                      <h4 class='hidden-score'>".$weekData['a_score']."</h4>
                                     </div>
                                   </div>
                                 </div>
-                              </div>
-                            </div>
-                            <div class="row">
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                            <div class="row">
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                            <div class="row">
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                            <div class="row">
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                            <div class="row">
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                            <div class="row">
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                            <div class="row">
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
+                              </div>";
+							  if ($num%2==0) {
+								echo "</div><div class='row'>";
+							  }
+							  $num++;
+							  }
+							  ?>
                             </div>
                           </div>
                         </div>
@@ -2029,435 +684,98 @@ if (!empty($_GET['leagueid'])) {
 						<div class="week-header">
 							<h3>Week 1</h3>
 						</div>
-                          <div class="team-result">
-                            <h3>Your Team Result</h3>
-                            <div class="row">
-                              <div class="col-md-2">
-                                <img src="nfl-logos/19.png" />
+                          
+                            
+							<?php
+							if ($myteamid!=0) {
+								$yourgame_result = mysqli_query($conn,"SELECT id FROM games WHERE league=$leagueid AND year=$year AND week=1 AND (home=$myteamid OR away=$myteamid)");
+								$yourgameData = mysqli_fetch_array($yourgame_result);
+								$yourgame = $yourgameData['id'];
+								
+								$yourteam_result = mysqli_query($conn,"SELECT * FROM games WHERE id=$yourgame");
+								$yourteamData = mysqli_fetch_array($yourteam_result);
+								$yghome = $yourteamData['home'];
+								$ygaway = $yourteamData['away'];
+								
+								$yghome_result = mysqli_query($conn,"SELECT location,teamname,abbrev,season_win,season_loss,season_tie,logofile FROM team WHERE id=$yghome");
+								$yghomeData = mysqli_fetch_array($yghome_result);
+								$ygaway_result = mysqli_query($conn,"SELECT location,teamname,abbrev,season_win,season_loss,season_tie,logofile FROM team WHERE id=$ygaway");
+								$ygawayData = mysqli_fetch_array($ygaway_result);
+							echo "
+							<div class='team-result'>
+							<h3>Your Team Result</h3>
+                            <div class='row teamrow'>
+                              <div class='col-md-2'>
+                                <img width='60' src='uploads/logos/".$yghomeData['logofile']."' />
                               </div>
-                              <div class="col-md-6">
+                              <div class='col-md-6'>
                                 <h4>
-                                  <a href="team.php">New York Giants</a>
+                                  <a href='team.php?teamid=".$yghome."'>".$yghomeData['location']." ".$yghomeData['teamname']."</a>
                                 </h4>
                               </div>
-                              <div class="col-md-4">
-                                <h4 class="hidden-score">36</h4>
+                              <div class='col-md-4'>
+                                <h4 class='hidden-score'>".$yourteamData['h_score']."</h4>
                               </div>
                             </div>
-                            <div class="row">
-                              <div class="col-md-2">
-                                <img src="nfl-logos/20.png" />
+                            <div class='row teamrow'>
+                              <div class='col-md-2'>
+                                <img width='60' src='uploads/logos/".$ygawayData['logofile']."' />
                               </div>
-                              <div class="col-md-6">
+                              <div class='col-md-6'>
                                 <h4>
-                                  <a href="team.php">New York Jets</a>
+                                  <a href='team.php?teamid=".$ygaway."'>".$ygawayData['location']." ".$ygawayData['teamname']."</a>
                                 </h4>
                               </div>
-                              <div class="col-md-4">
-                                <h4 class="hidden-score">7</h4>
+                              <div class='col-md-4'>
+                                <h4 class='hidden-score'>".$yourteamData['a_score']."</h4>
                               </div>
                             </div>
-                          </div>
+							</div>";
+							}
+							?>
+                          
                           <div class="all-results">
                             <div class="row">
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
+							<?php
+							$week_result = mysqli_query($conn,"SELECT * FROM games WHERE league=$leagueid AND year=$year AND week=1");
+							$num = 1;
+							while ($weekData = mysqli_fetch_array($week_result)) {
+							$home = $weekData['home'];
+							$away = $weekData['away'];
+							$home_result = mysqli_query($conn,"SELECT location,teamname,abbrev,season_win,season_loss,season_tie FROM team WHERE id=$home");
+							$homeData = mysqli_fetch_array($home_result);
+							$away_result = mysqli_query($conn,"SELECT location,teamname,abbrev,season_win,season_loss,season_tie FROM team WHERE id=$away");
+							$awayData = mysqli_fetch_array($away_result);
+                            echo "<div class='col-md-6'>
+                                <div class='result'>
+                                  <div class='row'>
+                                    <div class='col-md-8'>
                                       <h4>
-                                        <a href="team.php">Team 1</a>
+                                        <a href='team.php?teamid=".$home."'>".$homeData['location']." ".$homeData['teamname']."</a>
                                       </h4>
                                     </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
+                                    <div class='col-md-4'>
+                                      <h4 class='hidden-score'>".$weekData['h_score']."</h4>
                                     </div>
                                   </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
+                                  <div class='row'>
+                                    <div class='col-md-8'>
                                       <h4>
-                                        <a href="team.php">Team 2</a>
+                                        <a href='team.php?teamid=".$away."'>".$awayData['location']." ".$awayData['teamname']."</a>
                                       </h4>
                                     </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
+                                    <div class='col-md-4'>
+                                      <h4 class='hidden-score'>".$weekData['a_score']."</h4>
                                     </div>
                                   </div>
                                 </div>
-                              </div>
-                            </div>
-                            <div class="row">
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                            <div class="row">
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                            <div class="row">
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                            <div class="row">
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                            <div class="row">
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                            <div class="row">
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                            <div class="row">
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
+                              </div>";
+							  if ($num%2==0) {
+								echo "</div><div class='row'>";
+							  }
+							  $num++;
+							  }
+							  ?>
                             </div>
                           </div>
                         </div>
@@ -2469,435 +787,96 @@ if (!empty($_GET['leagueid'])) {
 						<div class="week-header">
 							<h3>Week 2</h3>
 						</div>
-                          <div class="team-result">
-                            <h3>Your Team Result</h3>
-                            <div class="row">
-                              <div class="col-md-2">
-                                <img src="nfl-logos/19.png" />
+							<?php
+							if ($myteamid!=0) {
+								$yourgame_result = mysqli_query($conn,"SELECT id FROM games WHERE league=$leagueid AND year=$year AND week=2 AND (home=$myteamid OR away=$myteamid)");
+								$yourgameData = mysqli_fetch_array($yourgame_result);
+								$yourgame = $yourgameData['id'];
+								
+								$yourteam_result = mysqli_query($conn,"SELECT * FROM games WHERE id=$yourgame");
+								$yourteamData = mysqli_fetch_array($yourteam_result);
+								$yghome = $yourteamData['home'];
+								$ygaway = $yourteamData['away'];
+								
+								$yghome_result = mysqli_query($conn,"SELECT location,teamname,abbrev,season_win,season_loss,season_tie,logofile FROM team WHERE id=$yghome");
+								$yghomeData = mysqli_fetch_array($yghome_result);
+								$ygaway_result = mysqli_query($conn,"SELECT location,teamname,abbrev,season_win,season_loss,season_tie,logofile FROM team WHERE id=$ygaway");
+								$ygawayData = mysqli_fetch_array($ygaway_result);
+							echo "
+							<div class='team-result'>
+							<h3>Your Team Result</h3>
+                            <div class='row teamrow'>
+                              <div class='col-md-2'>
+                                <img width='60' src='uploads/logos/".$yghomeData['logofile']."' />
                               </div>
-                              <div class="col-md-6">
+                              <div class='col-md-6'>
                                 <h4>
-                                  <a href="team.php">New York Giants</a>
+                                  <a href='team.php?teamid=".$yghome."'>".$yghomeData['location']." ".$yghomeData['teamname']."</a>
                                 </h4>
                               </div>
-                              <div class="col-md-4">
-                                <h4 class="hidden-score">36</h4>
+                              <div class='col-md-4'>
+                                <h4 class='hidden-score'>".$yourteamData['h_score']."</h4>
                               </div>
                             </div>
-                            <div class="row">
-                              <div class="col-md-2">
-                                <img src="nfl-logos/20.png" />
+                            <div class='row teamrow'>
+                              <div class='col-md-2'>
+                                <img width='60' src='uploads/logos/".$ygawayData['logofile']."' />
                               </div>
-                              <div class="col-md-6">
+                              <div class='col-md-6'>
                                 <h4>
-                                  <a href="team.php">New York Jets</a>
+                                  <a href='team.php?teamid=".$ygaway."'>".$ygawayData['location']." ".$ygawayData['teamname']."</a>
                                 </h4>
                               </div>
-                              <div class="col-md-4">
-                                <h4 class="hidden-score">7</h4>
+                              <div class='col-md-4'>
+                                <h4 class='hidden-score'>".$yourteamData['a_score']."</h4>
                               </div>
                             </div>
-                          </div>
+							</div>";
+							}
+							?>
+                          
                           <div class="all-results">
                             <div class="row">
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
+							<?php
+							$week_result = mysqli_query($conn,"SELECT * FROM games WHERE league=$leagueid AND year=$year AND week=2");
+							$num = 1;
+							while ($weekData = mysqli_fetch_array($week_result)) {
+							$home = $weekData['home'];
+							$away = $weekData['away'];
+							$home_result = mysqli_query($conn,"SELECT location,teamname,abbrev,season_win,season_loss,season_tie FROM team WHERE id=$home");
+							$homeData = mysqli_fetch_array($home_result);
+							$away_result = mysqli_query($conn,"SELECT location,teamname,abbrev,season_win,season_loss,season_tie FROM team WHERE id=$away");
+							$awayData = mysqli_fetch_array($away_result);
+                            echo "<div class='col-md-6'>
+                                <div class='result'>
+                                  <div class='row'>
+                                    <div class='col-md-8'>
                                       <h4>
-                                        <a href="team.php">Team 1</a>
+                                        <a href='team.php?teamid=".$home."'>".$homeData['location']." ".$homeData['teamname']."</a>
                                       </h4>
                                     </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
+                                    <div class='col-md-4'>
+                                      <h4 class='hidden-score'>".$weekData['h_score']."</h4>
                                     </div>
                                   </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
+                                  <div class='row'>
+                                    <div class='col-md-8'>
                                       <h4>
-                                        <a href="team.php">Team 2</a>
+                                        <a href='team.php?teamid=".$away."'>".$awayData['location']." ".$awayData['teamname']."</a>
                                       </h4>
                                     </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
+                                    <div class='col-md-4'>
+                                      <h4 class='hidden-score'>".$weekData['a_score']."</h4>
                                     </div>
                                   </div>
                                 </div>
-                              </div>
-                            </div>
-                            <div class="row">
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                            <div class="row">
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                            <div class="row">
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                            <div class="row">
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                            <div class="row">
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                            <div class="row">
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                            <div class="row">
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
+                              </div>";
+							  if ($num%2==0) {
+								echo "</div><div class='row'>";
+							  }
+							  $num++;
+							  }
+							  ?>
                             </div>
                           </div>
                         </div>
@@ -2909,435 +888,98 @@ if (!empty($_GET['leagueid'])) {
 						<div class="week-header">
 							<h3>Week 3</h3>
 						</div>
-                          <div class="team-result">
-                            <h3>Your Team Result</h3>
-                            <div class="row">
-                              <div class="col-md-2">
-                                <img src="nfl-logos/19.png" />
+                          
+                            
+							<?php
+							if ($myteamid!=0) {
+								$yourgame_result = mysqli_query($conn,"SELECT id FROM games WHERE league=$leagueid AND year=$year AND week=3 AND (home=$myteamid OR away=$myteamid)");
+								$yourgameData = mysqli_fetch_array($yourgame_result);
+								$yourgame = $yourgameData['id'];
+								
+								$yourteam_result = mysqli_query($conn,"SELECT * FROM games WHERE id=$yourgame");
+								$yourteamData = mysqli_fetch_array($yourteam_result);
+								$yghome = $yourteamData['home'];
+								$ygaway = $yourteamData['away'];
+								
+								$yghome_result = mysqli_query($conn,"SELECT location,teamname,abbrev,season_win,season_loss,season_tie,logofile FROM team WHERE id=$yghome");
+								$yghomeData = mysqli_fetch_array($yghome_result);
+								$ygaway_result = mysqli_query($conn,"SELECT location,teamname,abbrev,season_win,season_loss,season_tie,logofile FROM team WHERE id=$ygaway");
+								$ygawayData = mysqli_fetch_array($ygaway_result);
+							echo "
+							<div class='team-result'>
+							<h3>Your Team Result</h3>
+                            <div class='row teamrow'>
+                              <div class='col-md-2'>
+                                <img width='60' src='uploads/logos/".$yghomeData['logofile']."' />
                               </div>
-                              <div class="col-md-6">
+                              <div class='col-md-6'>
                                 <h4>
-                                  <a href="team.php">New York Giants</a>
+                                  <a href='team.php?teamid=".$yghome."'>".$yghomeData['location']." ".$yghomeData['teamname']."</a>
                                 </h4>
                               </div>
-                              <div class="col-md-4">
-                                <h4 class="hidden-score">36</h4>
+                              <div class='col-md-4'>
+                                <h4 class='hidden-score'>".$yourteamData['h_score']."</h4>
                               </div>
                             </div>
-                            <div class="row">
-                              <div class="col-md-2">
-                                <img src="nfl-logos/20.png" />
+                            <div class='row teamrow'>
+                              <div class='col-md-2'>
+                                <img width='60' src='uploads/logos/".$ygawayData['logofile']."' />
                               </div>
-                              <div class="col-md-6">
+                              <div class='col-md-6'>
                                 <h4>
-                                  <a href="team.php">New York Jets</a>
+                                  <a href='team.php?teamid=".$ygaway."'>".$ygawayData['location']." ".$ygawayData['teamname']."</a>
                                 </h4>
                               </div>
-                              <div class="col-md-4">
-                                <h4 class="hidden-score">7</h4>
+                              <div class='col-md-4'>
+                                <h4 class='hidden-score'>".$yourteamData['a_score']."</h4>
                               </div>
                             </div>
-                          </div>
+							</div>";
+							}
+							?>
+                          
                           <div class="all-results">
                             <div class="row">
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
+							<?php
+							$week_result = mysqli_query($conn,"SELECT * FROM games WHERE league=$leagueid AND year=$year AND week=3");
+							$num = 1;
+							while ($weekData = mysqli_fetch_array($week_result)) {
+							$home = $weekData['home'];
+							$away = $weekData['away'];
+							$home_result = mysqli_query($conn,"SELECT location,teamname,abbrev,season_win,season_loss,season_tie FROM team WHERE id=$home");
+							$homeData = mysqli_fetch_array($home_result);
+							$away_result = mysqli_query($conn,"SELECT location,teamname,abbrev,season_win,season_loss,season_tie FROM team WHERE id=$away");
+							$awayData = mysqli_fetch_array($away_result);
+                            echo "<div class='col-md-6'>
+                                <div class='result'>
+                                  <div class='row'>
+                                    <div class='col-md-8'>
                                       <h4>
-                                        <a href="team.php">Team 1</a>
+                                        <a href='team.php?teamid=".$home."'>".$homeData['location']." ".$homeData['teamname']."</a>
                                       </h4>
                                     </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
+                                    <div class='col-md-4'>
+                                      <h4 class='hidden-score'>".$weekData['h_score']."</h4>
                                     </div>
                                   </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
+                                  <div class='row'>
+                                    <div class='col-md-8'>
                                       <h4>
-                                        <a href="team.php">Team 2</a>
+                                        <a href='team.php?teamid=".$away."'>".$awayData['location']." ".$awayData['teamname']."</a>
                                       </h4>
                                     </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
+                                    <div class='col-md-4'>
+                                      <h4 class='hidden-score'>".$weekData['a_score']."</h4>
                                     </div>
                                   </div>
                                 </div>
-                              </div>
-                            </div>
-                            <div class="row">
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                            <div class="row">
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                            <div class="row">
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                            <div class="row">
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                            <div class="row">
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                            <div class="row">
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                            <div class="row">
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
+                              </div>";
+							  if ($num%2==0) {
+								echo "</div><div class='row'>";
+							  }
+							  $num++;
+							  }
+							  ?>
                             </div>
                           </div>
                         </div>
@@ -3349,435 +991,98 @@ if (!empty($_GET['leagueid'])) {
 						<div class="week-header">
 							<h3>Week 4</h3>
 						</div>
-                          <div class="team-result">
-                            <h3>Your Team Result</h3>
-                            <div class="row">
-                              <div class="col-md-2">
-                                <img src="nfl-logos/19.png" />
+                          
+                            
+							<?php
+							if ($myteamid!=0) {
+								$yourgame_result = mysqli_query($conn,"SELECT id FROM games WHERE league=$leagueid AND year=$year AND week=4 AND (home=$myteamid OR away=$myteamid)");
+								$yourgameData = mysqli_fetch_array($yourgame_result);
+								$yourgame = $yourgameData['id'];
+								
+								$yourteam_result = mysqli_query($conn,"SELECT * FROM games WHERE id=$yourgame");
+								$yourteamData = mysqli_fetch_array($yourteam_result);
+								$yghome = $yourteamData['home'];
+								$ygaway = $yourteamData['away'];
+								
+								$yghome_result = mysqli_query($conn,"SELECT location,teamname,abbrev,season_win,season_loss,season_tie,logofile FROM team WHERE id=$yghome");
+								$yghomeData = mysqli_fetch_array($yghome_result);
+								$ygaway_result = mysqli_query($conn,"SELECT location,teamname,abbrev,season_win,season_loss,season_tie,logofile FROM team WHERE id=$ygaway");
+								$ygawayData = mysqli_fetch_array($ygaway_result);
+							echo "
+							<div class='team-result'>
+							<h3>Your Team Result</h3>
+                            <div class='row teamrow'>
+                              <div class='col-md-2'>
+                                <img width='60' src='uploads/logos/".$yghomeData['logofile']."' />
                               </div>
-                              <div class="col-md-6">
+                              <div class='col-md-6'>
                                 <h4>
-                                  <a href="team.php">New York Giants</a>
+                                  <a href='team.php?teamid=".$yghome."'>".$yghomeData['location']." ".$yghomeData['teamname']."</a>
                                 </h4>
                               </div>
-                              <div class="col-md-4">
-                                <h4 class="hidden-score">36</h4>
+                              <div class='col-md-4'>
+                                <h4 class='hidden-score'>".$yourteamData['h_score']."</h4>
                               </div>
                             </div>
-                            <div class="row">
-                              <div class="col-md-2">
-                                <img src="nfl-logos/20.png" />
+                            <div class='row teamrow'>
+                              <div class='col-md-2'>
+                                <img width='60' src='uploads/logos/".$ygawayData['logofile']."' />
                               </div>
-                              <div class="col-md-6">
+                              <div class='col-md-6'>
                                 <h4>
-                                  <a href="team.php">New York Jets</a>
+                                  <a href='team.php?teamid=".$ygaway."'>".$ygawayData['location']." ".$ygawayData['teamname']."</a>
                                 </h4>
                               </div>
-                              <div class="col-md-4">
-                                <h4 class="hidden-score">7</h4>
+                              <div class='col-md-4'>
+                                <h4 class='hidden-score'>".$yourteamData['a_score']."</h4>
                               </div>
                             </div>
-                          </div>
+							</div>";
+							}
+							?>
+                          
                           <div class="all-results">
                             <div class="row">
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
+							<?php
+							$week_result = mysqli_query($conn,"SELECT * FROM games WHERE league=$leagueid AND year=$year AND week=4");
+							$num = 1;
+							while ($weekData = mysqli_fetch_array($week_result)) {
+							$home = $weekData['home'];
+							$away = $weekData['away'];
+							$home_result = mysqli_query($conn,"SELECT location,teamname,abbrev,season_win,season_loss,season_tie FROM team WHERE id=$home");
+							$homeData = mysqli_fetch_array($home_result);
+							$away_result = mysqli_query($conn,"SELECT location,teamname,abbrev,season_win,season_loss,season_tie FROM team WHERE id=$away");
+							$awayData = mysqli_fetch_array($away_result);
+                            echo "<div class='col-md-6'>
+                                <div class='result'>
+                                  <div class='row'>
+                                    <div class='col-md-8'>
                                       <h4>
-                                        <a href="team.php">Team 1</a>
+                                        <a href='team.php?teamid=".$home."'>".$homeData['location']." ".$homeData['teamname']."</a>
                                       </h4>
                                     </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
+                                    <div class='col-md-4'>
+                                      <h4 class='hidden-score'>".$weekData['h_score']."</h4>
                                     </div>
                                   </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
+                                  <div class='row'>
+                                    <div class='col-md-8'>
                                       <h4>
-                                        <a href="team.php">Team 2</a>
+                                        <a href='team.php?teamid=".$away."'>".$awayData['location']." ".$awayData['teamname']."</a>
                                       </h4>
                                     </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
+                                    <div class='col-md-4'>
+                                      <h4 class='hidden-score'>".$weekData['a_score']."</h4>
                                     </div>
                                   </div>
                                 </div>
-                              </div>
-                            </div>
-                            <div class="row">
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                            <div class="row">
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                            <div class="row">
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                            <div class="row">
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                            <div class="row">
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                            <div class="row">
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                            <div class="row">
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
+                              </div>";
+							  if ($num%2==0) {
+								echo "</div><div class='row'>";
+							  }
+							  $num++;
+							  }
+							  ?>
                             </div>
                           </div>
                         </div>
@@ -3789,435 +1094,96 @@ if (!empty($_GET['leagueid'])) {
 						<div class="week-header">
 							<h3>Week 5</h3>
 						</div>
-                          <div class="team-result">
-                            <h3>Your Team Result</h3>
-                            <div class="row">
-                              <div class="col-md-2">
-                                <img src="nfl-logos/19.png" />
+							<?php
+							if ($myteamid!=0) {
+								$yourgame_result = mysqli_query($conn,"SELECT id FROM games WHERE league=$leagueid AND year=$year AND week=5 AND (home=$myteamid OR away=$myteamid)");
+								$yourgameData = mysqli_fetch_array($yourgame_result);
+								$yourgame = $yourgameData['id'];
+								
+								$yourteam_result = mysqli_query($conn,"SELECT * FROM games WHERE id=$yourgame");
+								$yourteamData = mysqli_fetch_array($yourteam_result);
+								$yghome = $yourteamData['home'];
+								$ygaway = $yourteamData['away'];
+								
+								$yghome_result = mysqli_query($conn,"SELECT location,teamname,abbrev,season_win,season_loss,season_tie,logofile FROM team WHERE id=$yghome");
+								$yghomeData = mysqli_fetch_array($yghome_result);
+								$ygaway_result = mysqli_query($conn,"SELECT location,teamname,abbrev,season_win,season_loss,season_tie,logofile FROM team WHERE id=$ygaway");
+								$ygawayData = mysqli_fetch_array($ygaway_result);
+							echo "
+							<div class='team-result'>
+							<h3>Your Team Result</h3>
+                            <div class='row teamrow'>
+                              <div class='col-md-2'>
+                                <img width='60' src='uploads/logos/".$yghomeData['logofile']."' />
                               </div>
-                              <div class="col-md-6">
+                              <div class='col-md-6'>
                                 <h4>
-                                  <a href="team.php">New York Giants</a>
+                                  <a href='team.php?teamid=".$yghome."'>".$yghomeData['location']." ".$yghomeData['teamname']."</a>
                                 </h4>
                               </div>
-                              <div class="col-md-4">
-                                <h4 class="hidden-score">36</h4>
+                              <div class='col-md-4'>
+                                <h4 class='hidden-score'>".$yourteamData['h_score']."</h4>
                               </div>
                             </div>
-                            <div class="row">
-                              <div class="col-md-2">
-                                <img src="nfl-logos/20.png" />
+                            <div class='row teamrow'>
+                              <div class='col-md-2'>
+                                <img width='60' src='uploads/logos/".$ygawayData['logofile']."' />
                               </div>
-                              <div class="col-md-6">
+                              <div class='col-md-6'>
                                 <h4>
-                                  <a href="team.php">New York Jets</a>
+                                  <a href='team.php?teamid=".$ygaway."'>".$ygawayData['location']." ".$ygawayData['teamname']."</a>
                                 </h4>
                               </div>
-                              <div class="col-md-4">
-                                <h4 class="hidden-score">7</h4>
+                              <div class='col-md-4'>
+                                <h4 class='hidden-score'>".$yourteamData['a_score']."</h4>
                               </div>
                             </div>
-                          </div>
+							</div>";
+							}
+							?>
+                          
                           <div class="all-results">
                             <div class="row">
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
+							<?php
+							$week_result = mysqli_query($conn,"SELECT * FROM games WHERE league=$leagueid AND year=$year AND week=5");
+							$num = 1;
+							while ($weekData = mysqli_fetch_array($week_result)) {
+							$home = $weekData['home'];
+							$away = $weekData['away'];
+							$home_result = mysqli_query($conn,"SELECT location,teamname,abbrev,season_win,season_loss,season_tie FROM team WHERE id=$home");
+							$homeData = mysqli_fetch_array($home_result);
+							$away_result = mysqli_query($conn,"SELECT location,teamname,abbrev,season_win,season_loss,season_tie FROM team WHERE id=$away");
+							$awayData = mysqli_fetch_array($away_result);
+                            echo "<div class='col-md-6'>
+                                <div class='result'>
+                                  <div class='row'>
+                                    <div class='col-md-8'>
                                       <h4>
-                                        <a href="team.php">Team 1</a>
+                                        <a href='team.php?teamid=".$home."'>".$homeData['location']." ".$homeData['teamname']."</a>
                                       </h4>
                                     </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
+                                    <div class='col-md-4'>
+                                      <h4 class='hidden-score'>".$weekData['h_score']."</h4>
                                     </div>
                                   </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
+                                  <div class='row'>
+                                    <div class='col-md-8'>
                                       <h4>
-                                        <a href="team.php">Team 2</a>
+                                        <a href='team.php?teamid=".$away."'>".$awayData['location']." ".$awayData['teamname']."</a>
                                       </h4>
                                     </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
+                                    <div class='col-md-4'>
+                                      <h4 class='hidden-score'>".$weekData['a_score']."</h4>
                                     </div>
                                   </div>
                                 </div>
-                              </div>
-                            </div>
-                            <div class="row">
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                            <div class="row">
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                            <div class="row">
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                            <div class="row">
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                            <div class="row">
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                            <div class="row">
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                            <div class="row">
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
+                              </div>";
+							  if ($num%2==0) {
+								echo "</div><div class='row'>";
+							  }
+							  $num++;
+							  }
+							  ?>
                             </div>
                           </div>
                         </div>
@@ -4229,435 +1195,98 @@ if (!empty($_GET['leagueid'])) {
 						<div class="week-header">
 							<h3>Week 6</h3>
 						</div>
-                          <div class="team-result">
-                            <h3>Your Team Result</h3>
-                            <div class="row">
-                              <div class="col-md-2">
-                                <img src="nfl-logos/19.png" />
+                          
+                            
+							<?php
+							if ($myteamid!=0) {
+								$yourgame_result = mysqli_query($conn,"SELECT id FROM games WHERE league=$leagueid AND year=$year AND week=6 AND (home=$myteamid OR away=$myteamid)");
+								$yourgameData = mysqli_fetch_array($yourgame_result);
+								$yourgame = $yourgameData['id'];
+								
+								$yourteam_result = mysqli_query($conn,"SELECT * FROM games WHERE id=$yourgame");
+								$yourteamData = mysqli_fetch_array($yourteam_result);
+								$yghome = $yourteamData['home'];
+								$ygaway = $yourteamData['away'];
+								
+								$yghome_result = mysqli_query($conn,"SELECT location,teamname,abbrev,season_win,season_loss,season_tie,logofile FROM team WHERE id=$yghome");
+								$yghomeData = mysqli_fetch_array($yghome_result);
+								$ygaway_result = mysqli_query($conn,"SELECT location,teamname,abbrev,season_win,season_loss,season_tie,logofile FROM team WHERE id=$ygaway");
+								$ygawayData = mysqli_fetch_array($ygaway_result);
+							echo "
+							<div class='team-result'>
+							<h3>Your Team Result</h3>
+                            <div class='row teamrow'>
+                              <div class='col-md-2'>
+                                <img width='60' src='uploads/logos/".$yghomeData['logofile']."' />
                               </div>
-                              <div class="col-md-6">
+                              <div class='col-md-6'>
                                 <h4>
-                                  <a href="team.php">New York Giants</a>
+                                  <a href='team.php?teamid=".$yghome."'>".$yghomeData['location']." ".$yghomeData['teamname']."</a>
                                 </h4>
                               </div>
-                              <div class="col-md-4">
-                                <h4 class="hidden-score">36</h4>
+                              <div class='col-md-4'>
+                                <h4 class='hidden-score'>".$yourteamData['h_score']."</h4>
                               </div>
                             </div>
-                            <div class="row">
-                              <div class="col-md-2">
-                                <img src="nfl-logos/20.png" />
+                            <div class='row teamrow'>
+                              <div class='col-md-2'>
+                                <img width='60' src='uploads/logos/".$ygawayData['logofile']."' />
                               </div>
-                              <div class="col-md-6">
+                              <div class='col-md-6'>
                                 <h4>
-                                  <a href="team.php">New York Jets</a>
+                                  <a href='team.php?teamid=".$ygaway."'>".$ygawayData['location']." ".$ygawayData['teamname']."</a>
                                 </h4>
                               </div>
-                              <div class="col-md-4">
-                                <h4 class="hidden-score">7</h4>
+                              <div class='col-md-4'>
+                                <h4 class='hidden-score'>".$yourteamData['a_score']."</h4>
                               </div>
                             </div>
-                          </div>
+							</div>";
+							}
+							?>
+                          
                           <div class="all-results">
                             <div class="row">
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
+							<?php
+							$week_result = mysqli_query($conn,"SELECT * FROM games WHERE league=$leagueid AND year=$year AND week=6");
+							$num = 1;
+							while ($weekData = mysqli_fetch_array($week_result)) {
+							$home = $weekData['home'];
+							$away = $weekData['away'];
+							$home_result = mysqli_query($conn,"SELECT location,teamname,abbrev,season_win,season_loss,season_tie FROM team WHERE id=$home");
+							$homeData = mysqli_fetch_array($home_result);
+							$away_result = mysqli_query($conn,"SELECT location,teamname,abbrev,season_win,season_loss,season_tie FROM team WHERE id=$away");
+							$awayData = mysqli_fetch_array($away_result);
+                            echo "<div class='col-md-6'>
+                                <div class='result'>
+                                  <div class='row'>
+                                    <div class='col-md-8'>
                                       <h4>
-                                        <a href="team.php">Team 1</a>
+                                        <a href='team.php?teamid=".$home."'>".$homeData['location']." ".$homeData['teamname']."</a>
                                       </h4>
                                     </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
+                                    <div class='col-md-4'>
+                                      <h4 class='hidden-score'>".$weekData['h_score']."</h4>
                                     </div>
                                   </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
+                                  <div class='row'>
+                                    <div class='col-md-8'>
                                       <h4>
-                                        <a href="team.php">Team 2</a>
+                                        <a href='team.php?teamid=".$away."'>".$awayData['location']." ".$awayData['teamname']."</a>
                                       </h4>
                                     </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
+                                    <div class='col-md-4'>
+                                      <h4 class='hidden-score'>".$weekData['a_score']."</h4>
                                     </div>
                                   </div>
                                 </div>
-                              </div>
-                            </div>
-                            <div class="row">
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                            <div class="row">
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                            <div class="row">
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                            <div class="row">
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                            <div class="row">
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                            <div class="row">
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                            <div class="row">
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
+                              </div>";
+							  if ($num%2==0) {
+								echo "</div><div class='row'>";
+							  }
+							  $num++;
+							  }
+							  ?>
                             </div>
                           </div>
                         </div>
@@ -4669,435 +1298,96 @@ if (!empty($_GET['leagueid'])) {
 						<div class="week-header">
 							<h3>Week 7</h3>
 						</div>
-                          <div class="team-result">
-                            <h3>Your Team Result</h3>
-                            <div class="row">
-                              <div class="col-md-2">
-                                <img src="nfl-logos/19.png" />
+							<?php
+							if ($myteamid!=0) {
+								$yourgame_result = mysqli_query($conn,"SELECT id FROM games WHERE league=$leagueid AND year=$year AND week=7 AND (home=$myteamid OR away=$myteamid)");
+								$yourgameData = mysqli_fetch_array($yourgame_result);
+								$yourgame = $yourgameData['id'];
+								
+								$yourteam_result = mysqli_query($conn,"SELECT * FROM games WHERE id=$yourgame");
+								$yourteamData = mysqli_fetch_array($yourteam_result);
+								$yghome = $yourteamData['home'];
+								$ygaway = $yourteamData['away'];
+								
+								$yghome_result = mysqli_query($conn,"SELECT location,teamname,abbrev,season_win,season_loss,season_tie,logofile FROM team WHERE id=$yghome");
+								$yghomeData = mysqli_fetch_array($yghome_result);
+								$ygaway_result = mysqli_query($conn,"SELECT location,teamname,abbrev,season_win,season_loss,season_tie,logofile FROM team WHERE id=$ygaway");
+								$ygawayData = mysqli_fetch_array($ygaway_result);
+							echo "
+							<div class='team-result'>
+							<h3>Your Team Result</h3>
+                            <div class='row teamrow'>
+                              <div class='col-md-2'>
+                                <img width='60' src='uploads/logos/".$yghomeData['logofile']."' />
                               </div>
-                              <div class="col-md-6">
+                              <div class='col-md-6'>
                                 <h4>
-                                  <a href="team.php">New York Giants</a>
+                                  <a href='team.php?teamid=".$yghome."'>".$yghomeData['location']." ".$yghomeData['teamname']."</a>
                                 </h4>
                               </div>
-                              <div class="col-md-4">
-                                <h4 class="hidden-score">36</h4>
+                              <div class='col-md-4'>
+                                <h4 class='hidden-score'>".$yourteamData['h_score']."</h4>
                               </div>
                             </div>
-                            <div class="row">
-                              <div class="col-md-2">
-                                <img src="nfl-logos/20.png" />
+                            <div class='row teamrow'>
+                              <div class='col-md-2'>
+                                <img width='60' src='uploads/logos/".$ygawayData['logofile']."' />
                               </div>
-                              <div class="col-md-6">
+                              <div class='col-md-6'>
                                 <h4>
-                                  <a href="team.php">New York Jets</a>
+                                  <a href='team.php?teamid=".$ygaway."'>".$ygawayData['location']." ".$ygawayData['teamname']."</a>
                                 </h4>
                               </div>
-                              <div class="col-md-4">
-                                <h4 class="hidden-score">7</h4>
+                              <div class='col-md-4'>
+                                <h4 class='hidden-score'>".$yourteamData['a_score']."</h4>
                               </div>
                             </div>
-                          </div>
+							</div>";
+							}
+							?>
+                          
                           <div class="all-results">
                             <div class="row">
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
+							<?php
+							$week_result = mysqli_query($conn,"SELECT * FROM games WHERE league=$leagueid AND year=$year AND week=7");
+							$num = 1;
+							while ($weekData = mysqli_fetch_array($week_result)) {
+							$home = $weekData['home'];
+							$away = $weekData['away'];
+							$home_result = mysqli_query($conn,"SELECT location,teamname,abbrev,season_win,season_loss,season_tie FROM team WHERE id=$home");
+							$homeData = mysqli_fetch_array($home_result);
+							$away_result = mysqli_query($conn,"SELECT location,teamname,abbrev,season_win,season_loss,season_tie FROM team WHERE id=$away");
+							$awayData = mysqli_fetch_array($away_result);
+                            echo "<div class='col-md-6'>
+                                <div class='result'>
+                                  <div class='row'>
+                                    <div class='col-md-8'>
                                       <h4>
-                                        <a href="team.php">Team 1</a>
+                                        <a href='team.php?teamid=".$home."'>".$homeData['location']." ".$homeData['teamname']."</a>
                                       </h4>
                                     </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
+                                    <div class='col-md-4'>
+                                      <h4 class='hidden-score'>".$weekData['h_score']."</h4>
                                     </div>
                                   </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
+                                  <div class='row'>
+                                    <div class='col-md-8'>
                                       <h4>
-                                        <a href="team.php">Team 2</a>
+                                        <a href='team.php?teamid=".$away."'>".$awayData['location']." ".$awayData['teamname']."</a>
                                       </h4>
                                     </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
+                                    <div class='col-md-4'>
+                                      <h4 class='hidden-score'>".$weekData['a_score']."</h4>
                                     </div>
                                   </div>
                                 </div>
-                              </div>
-                            </div>
-                            <div class="row">
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                            <div class="row">
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                            <div class="row">
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                            <div class="row">
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                            <div class="row">
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                            <div class="row">
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                            <div class="row">
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
+                              </div>";
+							  if ($num%2==0) {
+								echo "</div><div class='row'>";
+							  }
+							  $num++;
+							  }
+							  ?>
                             </div>
                           </div>
                         </div>
@@ -5109,435 +1399,96 @@ if (!empty($_GET['leagueid'])) {
 						<div class="week-header">
 							<h3>Week 8</h3>
 						</div>
-                          <div class="team-result">
-                            <h3>Your Team Result</h3>
-                            <div class="row">
-                              <div class="col-md-2">
-                                <img src="nfl-logos/19.png" />
+							<?php
+							if ($myteamid!=0) {
+								$yourgame_result = mysqli_query($conn,"SELECT id FROM games WHERE league=$leagueid AND year=$year AND week=8 AND (home=$myteamid OR away=$myteamid)");
+								$yourgameData = mysqli_fetch_array($yourgame_result);
+								$yourgame = $yourgameData['id'];
+								
+								$yourteam_result = mysqli_query($conn,"SELECT * FROM games WHERE id=$yourgame");
+								$yourteamData = mysqli_fetch_array($yourteam_result);
+								$yghome = $yourteamData['home'];
+								$ygaway = $yourteamData['away'];
+								
+								$yghome_result = mysqli_query($conn,"SELECT location,teamname,abbrev,season_win,season_loss,season_tie,logofile FROM team WHERE id=$yghome");
+								$yghomeData = mysqli_fetch_array($yghome_result);
+								$ygaway_result = mysqli_query($conn,"SELECT location,teamname,abbrev,season_win,season_loss,season_tie,logofile FROM team WHERE id=$ygaway");
+								$ygawayData = mysqli_fetch_array($ygaway_result);
+							echo "
+							<div class='team-result'>
+							<h3>Your Team Result</h3>
+                            <div class='row teamrow'>
+                              <div class='col-md-2'>
+                                <img width='60' src='uploads/logos/".$yghomeData['logofile']."' />
                               </div>
-                              <div class="col-md-6">
+                              <div class='col-md-6'>
                                 <h4>
-                                  <a href="team.php">New York Giants</a>
+                                  <a href='team.php?teamid=".$yghome."'>".$yghomeData['location']." ".$yghomeData['teamname']."</a>
                                 </h4>
                               </div>
-                              <div class="col-md-4">
-                                <h4 class="hidden-score">36</h4>
+                              <div class='col-md-4'>
+                                <h4 class='hidden-score'>".$yourteamData['h_score']."</h4>
                               </div>
                             </div>
-                            <div class="row">
-                              <div class="col-md-2">
-                                <img src="nfl-logos/20.png" />
+                            <div class='row teamrow'>
+                              <div class='col-md-2'>
+                                <img width='60' src='uploads/logos/".$ygawayData['logofile']."' />
                               </div>
-                              <div class="col-md-6">
+                              <div class='col-md-6'>
                                 <h4>
-                                  <a href="team.php">New York Jets</a>
+                                  <a href='team.php?teamid=".$ygaway."'>".$ygawayData['location']." ".$ygawayData['teamname']."</a>
                                 </h4>
                               </div>
-                              <div class="col-md-4">
-                                <h4 class="hidden-score">7</h4>
+                              <div class='col-md-4'>
+                                <h4 class='hidden-score'>".$yourteamData['a_score']."</h4>
                               </div>
                             </div>
-                          </div>
+							</div>";
+							}
+							?>
+                          
                           <div class="all-results">
                             <div class="row">
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
+							<?php
+							$week_result = mysqli_query($conn,"SELECT * FROM games WHERE league=$leagueid AND year=$year AND week=8");
+							$num = 1;
+							while ($weekData = mysqli_fetch_array($week_result)) {
+							$home = $weekData['home'];
+							$away = $weekData['away'];
+							$home_result = mysqli_query($conn,"SELECT location,teamname,abbrev,season_win,season_loss,season_tie FROM team WHERE id=$home");
+							$homeData = mysqli_fetch_array($home_result);
+							$away_result = mysqli_query($conn,"SELECT location,teamname,abbrev,season_win,season_loss,season_tie FROM team WHERE id=$away");
+							$awayData = mysqli_fetch_array($away_result);
+                            echo "<div class='col-md-6'>
+                                <div class='result'>
+                                  <div class='row'>
+                                    <div class='col-md-8'>
                                       <h4>
-                                        <a href="team.php">Team 1</a>
+                                        <a href='team.php?teamid=".$home."'>".$homeData['location']." ".$homeData['teamname']."</a>
                                       </h4>
                                     </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
+                                    <div class='col-md-4'>
+                                      <h4 class='hidden-score'>".$weekData['h_score']."</h4>
                                     </div>
                                   </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
+                                  <div class='row'>
+                                    <div class='col-md-8'>
                                       <h4>
-                                        <a href="team.php">Team 2</a>
+                                        <a href='team.php?teamid=".$away."'>".$awayData['location']." ".$awayData['teamname']."</a>
                                       </h4>
                                     </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
+                                    <div class='col-md-4'>
+                                      <h4 class='hidden-score'>".$weekData['a_score']."</h4>
                                     </div>
                                   </div>
                                 </div>
-                              </div>
-                            </div>
-                            <div class="row">
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                            <div class="row">
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                            <div class="row">
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                            <div class="row">
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                            <div class="row">
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                            <div class="row">
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                            <div class="row">
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
+                              </div>";
+							  if ($num%2==0) {
+								echo "</div><div class='row'>";
+							  }
+							  $num++;
+							  }
+							  ?>
                             </div>
                           </div>
                         </div>
@@ -5545,439 +1496,100 @@ if (!empty($_GET['leagueid'])) {
                     </div>
                     <div class="tab-pane fade" id="reg9">
                       <div class="row">
-                        <div class="col-md-10">
+						<div class="col-md-10">
 						<div class="week-header">
 							<h3>Week 9</h3>
 						</div>
-                          <div class="team-result">
-                            <h3>Your Team Result</h3>
-                            <div class="row">
-                              <div class="col-md-2">
-                                <img src="nfl-logos/19.png" />
+							<?php
+							if ($myteamid!=0) {
+								$yourgame_result = mysqli_query($conn,"SELECT id FROM games WHERE league=$leagueid AND year=$year AND week=9 AND (home=$myteamid OR away=$myteamid)");
+								$yourgameData = mysqli_fetch_array($yourgame_result);
+								$yourgame = $yourgameData['id'];
+								
+								$yourteam_result = mysqli_query($conn,"SELECT * FROM games WHERE id=$yourgame");
+								$yourteamData = mysqli_fetch_array($yourteam_result);
+								$yghome = $yourteamData['home'];
+								$ygaway = $yourteamData['away'];
+								
+								$yghome_result = mysqli_query($conn,"SELECT location,teamname,abbrev,season_win,season_loss,season_tie,logofile FROM team WHERE id=$yghome");
+								$yghomeData = mysqli_fetch_array($yghome_result);
+								$ygaway_result = mysqli_query($conn,"SELECT location,teamname,abbrev,season_win,season_loss,season_tie,logofile FROM team WHERE id=$ygaway");
+								$ygawayData = mysqli_fetch_array($ygaway_result);
+							echo "
+							<div class='team-result'>
+							<h3>Your Team Result</h3>
+                            <div class='row teamrow'>
+                              <div class='col-md-2'>
+                                <img width='60' src='uploads/logos/".$yghomeData['logofile']."' />
                               </div>
-                              <div class="col-md-6">
+                              <div class='col-md-6'>
                                 <h4>
-                                  <a href="team.php">New York Giants</a>
+                                  <a href='team.php?teamid=".$yghome."'>".$yghomeData['location']." ".$yghomeData['teamname']."</a>
                                 </h4>
                               </div>
-                              <div class="col-md-4">
-                                <h4 class="hidden-score">36</h4>
+                              <div class='col-md-4'>
+                                <h4 class='hidden-score'>".$yourteamData['h_score']."</h4>
                               </div>
                             </div>
-                            <div class="row">
-                              <div class="col-md-2">
-                                <img src="nfl-logos/20.png" />
+                            <div class='row teamrow'>
+                              <div class='col-md-2'>
+                                <img width='60' src='uploads/logos/".$ygawayData['logofile']."' />
                               </div>
-                              <div class="col-md-6">
+                              <div class='col-md-6'>
                                 <h4>
-                                  <a href="team.php">New York Jets</a>
+                                  <a href='team.php?teamid=".$ygaway."'>".$ygawayData['location']." ".$ygawayData['teamname']."</a>
                                 </h4>
                               </div>
-                              <div class="col-md-4">
-                                <h4 class="hidden-score">7</h4>
+                              <div class='col-md-4'>
+                                <h4 class='hidden-score'>".$yourteamData['a_score']."</h4>
                               </div>
                             </div>
-                          </div>
+							</div>";
+							}
+							?>
+                          
                           <div class="all-results">
                             <div class="row">
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
+							<?php
+							$week_result = mysqli_query($conn,"SELECT * FROM games WHERE league=$leagueid AND year=$year AND week=9");
+							$num = 1;
+							while ($weekData = mysqli_fetch_array($week_result)) {
+							$home = $weekData['home'];
+							$away = $weekData['away'];
+							$home_result = mysqli_query($conn,"SELECT location,teamname,abbrev,season_win,season_loss,season_tie FROM team WHERE id=$home");
+							$homeData = mysqli_fetch_array($home_result);
+							$away_result = mysqli_query($conn,"SELECT location,teamname,abbrev,season_win,season_loss,season_tie FROM team WHERE id=$away");
+							$awayData = mysqli_fetch_array($away_result);
+                            echo "<div class='col-md-6'>
+                                <div class='result'>
+                                  <div class='row'>
+                                    <div class='col-md-8'>
                                       <h4>
-                                        <a href="team.php">Team 1</a>
+                                        <a href='team.php?teamid=".$home."'>".$homeData['location']." ".$homeData['teamname']."</a>
                                       </h4>
                                     </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
+                                    <div class='col-md-4'>
+                                      <h4 class='hidden-score'>".$weekData['h_score']."</h4>
                                     </div>
                                   </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
+                                  <div class='row'>
+                                    <div class='col-md-8'>
                                       <h4>
-                                        <a href="team.php">Team 2</a>
+                                        <a href='team.php?teamid=".$away."'>".$awayData['location']." ".$awayData['teamname']."</a>
                                       </h4>
                                     </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
+                                    <div class='col-md-4'>
+                                      <h4 class='hidden-score'>".$weekData['a_score']."</h4>
                                     </div>
                                   </div>
                                 </div>
-                              </div>
-                            </div>
-                            <div class="row">
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                            <div class="row">
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                            <div class="row">
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                            <div class="row">
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                            <div class="row">
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                            <div class="row">
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                            <div class="row">
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
+                              </div>";
+							  if ($num%2==0) {
+								echo "</div><div class='row'>";
+							  }
+							  $num++;
+							  }
+							  ?>
                             </div>
                           </div>
                         </div>
@@ -5985,439 +1597,100 @@ if (!empty($_GET['leagueid'])) {
                     </div>
                     <div class="tab-pane fade" id="reg10">
                       <div class="row">
-                        <div class="col-md-10">
+						<div class="col-md-10">
 						<div class="week-header">
 							<h3>Week 10</h3>
 						</div>
-                          <div class="team-result">
-                            <h3>Your Team Result</h3>
-                            <div class="row">
-                              <div class="col-md-2">
-                                <img src="nfl-logos/19.png" />
+							<?php
+							if ($myteamid!=0) {
+								$yourgame_result = mysqli_query($conn,"SELECT id FROM games WHERE league=$leagueid AND year=$year AND week=10 AND (home=$myteamid OR away=$myteamid)");
+								$yourgameData = mysqli_fetch_array($yourgame_result);
+								$yourgame = $yourgameData['id'];
+								
+								$yourteam_result = mysqli_query($conn,"SELECT * FROM games WHERE id=$yourgame");
+								$yourteamData = mysqli_fetch_array($yourteam_result);
+								$yghome = $yourteamData['home'];
+								$ygaway = $yourteamData['away'];
+								
+								$yghome_result = mysqli_query($conn,"SELECT location,teamname,abbrev,season_win,season_loss,season_tie,logofile FROM team WHERE id=$yghome");
+								$yghomeData = mysqli_fetch_array($yghome_result);
+								$ygaway_result = mysqli_query($conn,"SELECT location,teamname,abbrev,season_win,season_loss,season_tie,logofile FROM team WHERE id=$ygaway");
+								$ygawayData = mysqli_fetch_array($ygaway_result);
+							echo "
+							<div class='team-result'>
+							<h3>Your Team Result</h3>
+                            <div class='row teamrow'>
+                              <div class='col-md-2'>
+                                <img width='60' src='uploads/logos/".$yghomeData['logofile']."' />
                               </div>
-                              <div class="col-md-6">
+                              <div class='col-md-6'>
                                 <h4>
-                                  <a href="team.php">New York Giants</a>
+                                  <a href='team.php?teamid=".$yghome."'>".$yghomeData['location']." ".$yghomeData['teamname']."</a>
                                 </h4>
                               </div>
-                              <div class="col-md-4">
-                                <h4 class="hidden-score">36</h4>
+                              <div class='col-md-4'>
+                                <h4 class='hidden-score'>".$yourteamData['h_score']."</h4>
                               </div>
                             </div>
-                            <div class="row">
-                              <div class="col-md-2">
-                                <img src="nfl-logos/20.png" />
+                            <div class='row teamrow'>
+                              <div class='col-md-2'>
+                                <img width='60' src='uploads/logos/".$ygawayData['logofile']."' />
                               </div>
-                              <div class="col-md-6">
+                              <div class='col-md-6'>
                                 <h4>
-                                  <a href="team.php">New York Jets</a>
+                                  <a href='team.php?teamid=".$ygaway."'>".$ygawayData['location']." ".$ygawayData['teamname']."</a>
                                 </h4>
                               </div>
-                              <div class="col-md-4">
-                                <h4 class="hidden-score">7</h4>
+                              <div class='col-md-4'>
+                                <h4 class='hidden-score'>".$yourteamData['a_score']."</h4>
                               </div>
                             </div>
-                          </div>
+							</div>";
+							}
+							?>
+                          
                           <div class="all-results">
                             <div class="row">
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
+							<?php
+							$week_result = mysqli_query($conn,"SELECT * FROM games WHERE league=$leagueid AND year=$year AND week=10");
+							$num = 1;
+							while ($weekData = mysqli_fetch_array($week_result)) {
+							$home = $weekData['home'];
+							$away = $weekData['away'];
+							$home_result = mysqli_query($conn,"SELECT location,teamname,abbrev,season_win,season_loss,season_tie FROM team WHERE id=$home");
+							$homeData = mysqli_fetch_array($home_result);
+							$away_result = mysqli_query($conn,"SELECT location,teamname,abbrev,season_win,season_loss,season_tie FROM team WHERE id=$away");
+							$awayData = mysqli_fetch_array($away_result);
+                            echo "<div class='col-md-6'>
+                                <div class='result'>
+                                  <div class='row'>
+                                    <div class='col-md-8'>
                                       <h4>
-                                        <a href="team.php">Team 1</a>
+                                        <a href='team.php?teamid=".$home."'>".$homeData['location']." ".$homeData['teamname']."</a>
                                       </h4>
                                     </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
+                                    <div class='col-md-4'>
+                                      <h4 class='hidden-score'>".$weekData['h_score']."</h4>
                                     </div>
                                   </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
+                                  <div class='row'>
+                                    <div class='col-md-8'>
                                       <h4>
-                                        <a href="team.php">Team 2</a>
+                                        <a href='team.php?teamid=".$away."'>".$awayData['location']." ".$awayData['teamname']."</a>
                                       </h4>
                                     </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
+                                    <div class='col-md-4'>
+                                      <h4 class='hidden-score'>".$weekData['a_score']."</h4>
                                     </div>
                                   </div>
                                 </div>
-                              </div>
-                            </div>
-                            <div class="row">
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                            <div class="row">
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                            <div class="row">
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                            <div class="row">
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                            <div class="row">
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                            <div class="row">
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                            <div class="row">
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
+                              </div>";
+							  if ($num%2==0) {
+								echo "</div><div class='row'>";
+							  }
+							  $num++;
+							  }
+							  ?>
                             </div>
                           </div>
                         </div>
@@ -6425,439 +1698,100 @@ if (!empty($_GET['leagueid'])) {
                     </div>
                     <div class="tab-pane fade" id="reg11">
                       <div class="row">
-                        <div class="col-md-10">
+						<div class="col-md-10">
 						<div class="week-header">
 							<h3>Week 11</h3>
 						</div>
-                          <div class="team-result">
-                            <h3>Your Team Result</h3>
-                            <div class="row">
-                              <div class="col-md-2">
-                                <img src="nfl-logos/19.png" />
+							<?php
+							if ($myteamid!=0) {
+								$yourgame_result = mysqli_query($conn,"SELECT id FROM games WHERE league=$leagueid AND year=$year AND week=11 AND (home=$myteamid OR away=$myteamid)");
+								$yourgameData = mysqli_fetch_array($yourgame_result);
+								$yourgame = $yourgameData['id'];
+								
+								$yourteam_result = mysqli_query($conn,"SELECT * FROM games WHERE id=$yourgame");
+								$yourteamData = mysqli_fetch_array($yourteam_result);
+								$yghome = $yourteamData['home'];
+								$ygaway = $yourteamData['away'];
+								
+								$yghome_result = mysqli_query($conn,"SELECT location,teamname,abbrev,season_win,season_loss,season_tie,logofile FROM team WHERE id=$yghome");
+								$yghomeData = mysqli_fetch_array($yghome_result);
+								$ygaway_result = mysqli_query($conn,"SELECT location,teamname,abbrev,season_win,season_loss,season_tie,logofile FROM team WHERE id=$ygaway");
+								$ygawayData = mysqli_fetch_array($ygaway_result);
+							echo "
+							<div class='team-result'>
+							<h3>Your Team Result</h3>
+                            <div class='row teamrow'>
+                              <div class='col-md-2'>
+                                <img width='60' src='uploads/logos/".$yghomeData['logofile']."' />
                               </div>
-                              <div class="col-md-6">
+                              <div class='col-md-6'>
                                 <h4>
-                                  <a href="team.php">New York Giants</a>
+                                  <a href='team.php?teamid=".$yghome."'>".$yghomeData['location']." ".$yghomeData['teamname']."</a>
                                 </h4>
                               </div>
-                              <div class="col-md-4">
-                                <h4 class="hidden-score">36</h4>
+                              <div class='col-md-4'>
+                                <h4 class='hidden-score'>".$yourteamData['h_score']."</h4>
                               </div>
                             </div>
-                            <div class="row">
-                              <div class="col-md-2">
-                                <img src="nfl-logos/20.png" />
+                            <div class='row teamrow'>
+                              <div class='col-md-2'>
+                                <img width='60' src='uploads/logos/".$ygawayData['logofile']."' />
                               </div>
-                              <div class="col-md-6">
+                              <div class='col-md-6'>
                                 <h4>
-                                  <a href="team.php">New York Jets</a>
+                                  <a href='team.php?teamid=".$ygaway."'>".$ygawayData['location']." ".$ygawayData['teamname']."</a>
                                 </h4>
                               </div>
-                              <div class="col-md-4">
-                                <h4 class="hidden-score">7</h4>
+                              <div class='col-md-4'>
+                                <h4 class='hidden-score'>".$yourteamData['a_score']."</h4>
                               </div>
                             </div>
-                          </div>
+							</div>";
+							}
+							?>
+                          
                           <div class="all-results">
                             <div class="row">
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
+							<?php
+							$week_result = mysqli_query($conn,"SELECT * FROM games WHERE league=$leagueid AND year=$year AND week=11");
+							$num = 1;
+							while ($weekData = mysqli_fetch_array($week_result)) {
+							$home = $weekData['home'];
+							$away = $weekData['away'];
+							$home_result = mysqli_query($conn,"SELECT location,teamname,abbrev,season_win,season_loss,season_tie FROM team WHERE id=$home");
+							$homeData = mysqli_fetch_array($home_result);
+							$away_result = mysqli_query($conn,"SELECT location,teamname,abbrev,season_win,season_loss,season_tie FROM team WHERE id=$away");
+							$awayData = mysqli_fetch_array($away_result);
+                            echo "<div class='col-md-6'>
+                                <div class='result'>
+                                  <div class='row'>
+                                    <div class='col-md-8'>
                                       <h4>
-                                        <a href="team.php">Team 1</a>
+                                        <a href='team.php?teamid=".$home."'>".$homeData['location']." ".$homeData['teamname']."</a>
                                       </h4>
                                     </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
+                                    <div class='col-md-4'>
+                                      <h4 class='hidden-score'>".$weekData['h_score']."</h4>
                                     </div>
                                   </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
+                                  <div class='row'>
+                                    <div class='col-md-8'>
                                       <h4>
-                                        <a href="team.php">Team 2</a>
+                                        <a href='team.php?teamid=".$away."'>".$awayData['location']." ".$awayData['teamname']."</a>
                                       </h4>
                                     </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
+                                    <div class='col-md-4'>
+                                      <h4 class='hidden-score'>".$weekData['a_score']."</h4>
                                     </div>
                                   </div>
                                 </div>
-                              </div>
-                            </div>
-                            <div class="row">
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                            <div class="row">
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                            <div class="row">
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                            <div class="row">
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                            <div class="row">
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                            <div class="row">
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                            <div class="row">
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
+                              </div>";
+							  if ($num%2==0) {
+								echo "</div><div class='row'>";
+							  }
+							  $num++;
+							  }
+							  ?>
                             </div>
                           </div>
                         </div>
@@ -6869,435 +1803,98 @@ if (!empty($_GET['leagueid'])) {
 						<div class="week-header">
 							<h3>Week 12</h3>
 						</div>
-                          <div class="team-result">
-                            <h3>Your Team Result</h3>
-                            <div class="row">
-                              <div class="col-md-2">
-                                <img src="nfl-logos/19.png" />
+                          
+                            
+							<?php
+							if ($myteamid!=0) {
+								$yourgame_result = mysqli_query($conn,"SELECT id FROM games WHERE league=$leagueid AND year=$year AND week=12 AND (home=$myteamid OR away=$myteamid)");
+								$yourgameData = mysqli_fetch_array($yourgame_result);
+								$yourgame = $yourgameData['id'];
+								
+								$yourteam_result = mysqli_query($conn,"SELECT * FROM games WHERE id=$yourgame");
+								$yourteamData = mysqli_fetch_array($yourteam_result);
+								$yghome = $yourteamData['home'];
+								$ygaway = $yourteamData['away'];
+								
+								$yghome_result = mysqli_query($conn,"SELECT location,teamname,abbrev,season_win,season_loss,season_tie,logofile FROM team WHERE id=$yghome");
+								$yghomeData = mysqli_fetch_array($yghome_result);
+								$ygaway_result = mysqli_query($conn,"SELECT location,teamname,abbrev,season_win,season_loss,season_tie,logofile FROM team WHERE id=$ygaway");
+								$ygawayData = mysqli_fetch_array($ygaway_result);
+							echo "
+							<div class='team-result'>
+							<h3>Your Team Result</h3>
+                            <div class='row teamrow'>
+                              <div class='col-md-2'>
+                                <img width='60' src='uploads/logos/".$yghomeData['logofile']."' />
                               </div>
-                              <div class="col-md-6">
+                              <div class='col-md-6'>
                                 <h4>
-                                  <a href="team.php">New York Giants</a>
+                                  <a href='team.php?teamid=".$yghome."'>".$yghomeData['location']." ".$yghomeData['teamname']."</a>
                                 </h4>
                               </div>
-                              <div class="col-md-4">
-                                <h4 class="hidden-score">36</h4>
+                              <div class='col-md-4'>
+                                <h4 class='hidden-score'>".$yourteamData['h_score']."</h4>
                               </div>
                             </div>
-                            <div class="row">
-                              <div class="col-md-2">
-                                <img src="nfl-logos/20.png" />
+                            <div class='row teamrow'>
+                              <div class='col-md-2'>
+                                <img width='60' src='uploads/logos/".$ygawayData['logofile']."' />
                               </div>
-                              <div class="col-md-6">
+                              <div class='col-md-6'>
                                 <h4>
-                                  <a href="team.php">New York Jets</a>
+                                  <a href='team.php?teamid=".$ygaway."'>".$ygawayData['location']." ".$ygawayData['teamname']."</a>
                                 </h4>
                               </div>
-                              <div class="col-md-4">
-                                <h4 class="hidden-score">7</h4>
+                              <div class='col-md-4'>
+                                <h4 class='hidden-score'>".$yourteamData['a_score']."</h4>
                               </div>
                             </div>
-                          </div>
+							</div>";
+							}
+							?>
+                          
                           <div class="all-results">
                             <div class="row">
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
+							<?php
+							$week_result = mysqli_query($conn,"SELECT * FROM games WHERE league=$leagueid AND year=$year AND week=12");
+							$num = 1;
+							while ($weekData = mysqli_fetch_array($week_result)) {
+							$home = $weekData['home'];
+							$away = $weekData['away'];
+							$home_result = mysqli_query($conn,"SELECT location,teamname,abbrev,season_win,season_loss,season_tie FROM team WHERE id=$home");
+							$homeData = mysqli_fetch_array($home_result);
+							$away_result = mysqli_query($conn,"SELECT location,teamname,abbrev,season_win,season_loss,season_tie FROM team WHERE id=$away");
+							$awayData = mysqli_fetch_array($away_result);
+                            echo "<div class='col-md-6'>
+                                <div class='result'>
+                                  <div class='row'>
+                                    <div class='col-md-8'>
                                       <h4>
-                                        <a href="team.php">Team 1</a>
+                                        <a href='team.php?teamid=".$home."'>".$homeData['location']." ".$homeData['teamname']."</a>
                                       </h4>
                                     </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
+                                    <div class='col-md-4'>
+                                      <h4 class='hidden-score'>".$weekData['h_score']."</h4>
                                     </div>
                                   </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
+                                  <div class='row'>
+                                    <div class='col-md-8'>
                                       <h4>
-                                        <a href="team.php">Team 2</a>
+                                        <a href='team.php?teamid=".$away."'>".$awayData['location']." ".$awayData['teamname']."</a>
                                       </h4>
                                     </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
+                                    <div class='col-md-4'>
+                                      <h4 class='hidden-score'>".$weekData['a_score']."</h4>
                                     </div>
                                   </div>
                                 </div>
-                              </div>
-                            </div>
-                            <div class="row">
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                            <div class="row">
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                            <div class="row">
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                            <div class="row">
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                            <div class="row">
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                            <div class="row">
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                            <div class="row">
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
+                              </div>";
+							  if ($num%2==0) {
+								echo "</div><div class='row'>";
+							  }
+							  $num++;
+							  }
+							  ?>
                             </div>
                           </div>
                         </div>
@@ -7309,435 +1906,98 @@ if (!empty($_GET['leagueid'])) {
 						<div class="week-header">
 							<h3>Week 13</h3>
 						</div>
-                          <div class="team-result">
-                            <h3>Your Team Result</h3>
-                            <div class="row">
-                              <div class="col-md-2">
-                                <img src="nfl-logos/19.png" />
+                          
+                            
+							<?php
+							if ($myteamid!=0) {
+								$yourgame_result = mysqli_query($conn,"SELECT id FROM games WHERE league=$leagueid AND year=$year AND week=13 AND (home=$myteamid OR away=$myteamid)");
+								$yourgameData = mysqli_fetch_array($yourgame_result);
+								$yourgame = $yourgameData['id'];
+								
+								$yourteam_result = mysqli_query($conn,"SELECT * FROM games WHERE id=$yourgame");
+								$yourteamData = mysqli_fetch_array($yourteam_result);
+								$yghome = $yourteamData['home'];
+								$ygaway = $yourteamData['away'];
+								
+								$yghome_result = mysqli_query($conn,"SELECT location,teamname,abbrev,season_win,season_loss,season_tie,logofile FROM team WHERE id=$yghome");
+								$yghomeData = mysqli_fetch_array($yghome_result);
+								$ygaway_result = mysqli_query($conn,"SELECT location,teamname,abbrev,season_win,season_loss,season_tie,logofile FROM team WHERE id=$ygaway");
+								$ygawayData = mysqli_fetch_array($ygaway_result);
+							echo "
+							<div class='team-result'>
+							<h3>Your Team Result</h3>
+                            <div class='row teamrow'>
+                              <div class='col-md-2'>
+                                <img width='60' src='uploads/logos/".$yghomeData['logofile']."' />
                               </div>
-                              <div class="col-md-6">
+                              <div class='col-md-6'>
                                 <h4>
-                                  <a href="team.php">New York Giants</a>
+                                  <a href='team.php?teamid=".$yghome."'>".$yghomeData['location']." ".$yghomeData['teamname']."</a>
                                 </h4>
                               </div>
-                              <div class="col-md-4">
-                                <h4 class="hidden-score">36</h4>
+                              <div class='col-md-4'>
+                                <h4 class='hidden-score'>".$yourteamData['h_score']."</h4>
                               </div>
                             </div>
-                            <div class="row">
-                              <div class="col-md-2">
-                                <img src="nfl-logos/20.png" />
+                            <div class='row teamrow'>
+                              <div class='col-md-2'>
+                                <img width='60' src='uploads/logos/".$ygawayData['logofile']."' />
                               </div>
-                              <div class="col-md-6">
+                              <div class='col-md-6'>
                                 <h4>
-                                  <a href="team.php">New York Jets</a>
+                                  <a href='team.php?teamid=".$ygaway."'>".$ygawayData['location']." ".$ygawayData['teamname']."</a>
                                 </h4>
                               </div>
-                              <div class="col-md-4">
-                                <h4 class="hidden-score">7</h4>
+                              <div class='col-md-4'>
+                                <h4 class='hidden-score'>".$yourteamData['a_score']."</h4>
                               </div>
                             </div>
-                          </div>
+							</div>";
+							}
+							?>
+                          
                           <div class="all-results">
                             <div class="row">
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
+							<?php
+							$week_result = mysqli_query($conn,"SELECT * FROM games WHERE league=$leagueid AND year=$year AND week=13");
+							$num = 1;
+							while ($weekData = mysqli_fetch_array($week_result)) {
+							$home = $weekData['home'];
+							$away = $weekData['away'];
+							$home_result = mysqli_query($conn,"SELECT location,teamname,abbrev,season_win,season_loss,season_tie FROM team WHERE id=$home");
+							$homeData = mysqli_fetch_array($home_result);
+							$away_result = mysqli_query($conn,"SELECT location,teamname,abbrev,season_win,season_loss,season_tie FROM team WHERE id=$away");
+							$awayData = mysqli_fetch_array($away_result);
+                            echo "<div class='col-md-6'>
+                                <div class='result'>
+                                  <div class='row'>
+                                    <div class='col-md-8'>
                                       <h4>
-                                        <a href="team.php">Team 1</a>
+                                        <a href='team.php?teamid=".$home."'>".$homeData['location']." ".$homeData['teamname']."</a>
                                       </h4>
                                     </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
+                                    <div class='col-md-4'>
+                                      <h4 class='hidden-score'>".$weekData['h_score']."</h4>
                                     </div>
                                   </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
+                                  <div class='row'>
+                                    <div class='col-md-8'>
                                       <h4>
-                                        <a href="team.php">Team 2</a>
+                                        <a href='team.php?teamid=".$away."'>".$awayData['location']." ".$awayData['teamname']."</a>
                                       </h4>
                                     </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
+                                    <div class='col-md-4'>
+                                      <h4 class='hidden-score'>".$weekData['a_score']."</h4>
                                     </div>
                                   </div>
                                 </div>
-                              </div>
-                            </div>
-                            <div class="row">
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                            <div class="row">
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                            <div class="row">
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                            <div class="row">
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                            <div class="row">
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                            <div class="row">
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                            <div class="row">
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
+                              </div>";
+							  if ($num%2==0) {
+								echo "</div><div class='row'>";
+							  }
+							  $num++;
+							  }
+							  ?>
                             </div>
                           </div>
                         </div>
@@ -7745,439 +2005,100 @@ if (!empty($_GET['leagueid'])) {
                     </div>
                     <div class="tab-pane fade" id="reg14">
                       <div class="row">
-                        <div class="col-md-10">
+					  <div class="col-md-10">
 						<div class="week-header">
 							<h3>Week 14</h3>
 						</div>
-                          <div class="team-result">
-                            <h3>Your Team Result</h3>
-                            <div class="row">
-                              <div class="col-md-2">
-                                <img src="nfl-logos/19.png" />
+							<?php
+							if ($myteamid!=0) {
+								$yourgame_result = mysqli_query($conn,"SELECT id FROM games WHERE league=$leagueid AND year=$year AND week=14 AND (home=$myteamid OR away=$myteamid)");
+								$yourgameData = mysqli_fetch_array($yourgame_result);
+								$yourgame = $yourgameData['id'];
+								
+								$yourteam_result = mysqli_query($conn,"SELECT * FROM games WHERE id=$yourgame");
+								$yourteamData = mysqli_fetch_array($yourteam_result);
+								$yghome = $yourteamData['home'];
+								$ygaway = $yourteamData['away'];
+								
+								$yghome_result = mysqli_query($conn,"SELECT location,teamname,abbrev,season_win,season_loss,season_tie,logofile FROM team WHERE id=$yghome");
+								$yghomeData = mysqli_fetch_array($yghome_result);
+								$ygaway_result = mysqli_query($conn,"SELECT location,teamname,abbrev,season_win,season_loss,season_tie,logofile FROM team WHERE id=$ygaway");
+								$ygawayData = mysqli_fetch_array($ygaway_result);
+							echo "
+							<div class='team-result'>
+							<h3>Your Team Result</h3>
+                            <div class='row teamrow'>
+                              <div class='col-md-2'>
+                                <img width='60' src='uploads/logos/".$yghomeData['logofile']."' />
                               </div>
-                              <div class="col-md-6">
+                              <div class='col-md-6'>
                                 <h4>
-                                  <a href="team.php">New York Giants</a>
+                                  <a href='team.php?teamid=".$yghome."'>".$yghomeData['location']." ".$yghomeData['teamname']."</a>
                                 </h4>
                               </div>
-                              <div class="col-md-4">
-                                <h4 class="hidden-score">36</h4>
+                              <div class='col-md-4'>
+                                <h4 class='hidden-score'>".$yourteamData['h_score']."</h4>
                               </div>
                             </div>
-                            <div class="row">
-                              <div class="col-md-2">
-                                <img src="nfl-logos/20.png" />
+                            <div class='row teamrow'>
+                              <div class='col-md-2'>
+                                <img width='60' src='uploads/logos/".$ygawayData['logofile']."' />
                               </div>
-                              <div class="col-md-6">
+                              <div class='col-md-6'>
                                 <h4>
-                                  <a href="team.php">New York Jets</a>
+                                  <a href='team.php?teamid=".$ygaway."'>".$ygawayData['location']." ".$ygawayData['teamname']."</a>
                                 </h4>
                               </div>
-                              <div class="col-md-4">
-                                <h4 class="hidden-score">7</h4>
+                              <div class='col-md-4'>
+                                <h4 class='hidden-score'>".$yourteamData['a_score']."</h4>
                               </div>
                             </div>
-                          </div>
+							</div>";
+							}
+							?>
+                          
                           <div class="all-results">
                             <div class="row">
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
+							<?php
+							$week_result = mysqli_query($conn,"SELECT * FROM games WHERE league=$leagueid AND year=$year AND week=14");
+							$num = 1;
+							while ($weekData = mysqli_fetch_array($week_result)) {
+							$home = $weekData['home'];
+							$away = $weekData['away'];
+							$home_result = mysqli_query($conn,"SELECT location,teamname,abbrev,season_win,season_loss,season_tie FROM team WHERE id=$home");
+							$homeData = mysqli_fetch_array($home_result);
+							$away_result = mysqli_query($conn,"SELECT location,teamname,abbrev,season_win,season_loss,season_tie FROM team WHERE id=$away");
+							$awayData = mysqli_fetch_array($away_result);
+                            echo "<div class='col-md-6'>
+                                <div class='result'>
+                                  <div class='row'>
+                                    <div class='col-md-8'>
                                       <h4>
-                                        <a href="team.php">Team 1</a>
+                                        <a href='team.php?teamid=".$home."'>".$homeData['location']." ".$homeData['teamname']."</a>
                                       </h4>
                                     </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
+                                    <div class='col-md-4'>
+                                      <h4 class='hidden-score'>".$weekData['h_score']."</h4>
                                     </div>
                                   </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
+                                  <div class='row'>
+                                    <div class='col-md-8'>
                                       <h4>
-                                        <a href="team.php">Team 2</a>
+                                        <a href='team.php?teamid=".$away."'>".$awayData['location']." ".$awayData['teamname']."</a>
                                       </h4>
                                     </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
+                                    <div class='col-md-4'>
+                                      <h4 class='hidden-score'>".$weekData['a_score']."</h4>
                                     </div>
                                   </div>
                                 </div>
-                              </div>
-                            </div>
-                            <div class="row">
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                            <div class="row">
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                            <div class="row">
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                            <div class="row">
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                            <div class="row">
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                            <div class="row">
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                            <div class="row">
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
+                              </div>";
+							  if ($num%2==0) {
+								echo "</div><div class='row'>";
+							  }
+							  $num++;
+							  }
+							  ?>
                             </div>
                           </div>
                         </div>
@@ -8189,435 +2110,98 @@ if (!empty($_GET['leagueid'])) {
 						<div class="week-header">
 							<h3>Week 15</h3>
 						</div>
-                          <div class="team-result">
-                            <h3>Your Team Result</h3>
-                            <div class="row">
-                              <div class="col-md-2">
-                                <img src="nfl-logos/19.png" />
+                          
+                            
+							<?php
+							if ($myteamid!=0) {
+								$yourgame_result = mysqli_query($conn,"SELECT id FROM games WHERE league=$leagueid AND year=$year AND week=15 AND (home=$myteamid OR away=$myteamid)");
+								$yourgameData = mysqli_fetch_array($yourgame_result);
+								$yourgame = $yourgameData['id'];
+								
+								$yourteam_result = mysqli_query($conn,"SELECT * FROM games WHERE id=$yourgame");
+								$yourteamData = mysqli_fetch_array($yourteam_result);
+								$yghome = $yourteamData['home'];
+								$ygaway = $yourteamData['away'];
+								
+								$yghome_result = mysqli_query($conn,"SELECT location,teamname,abbrev,season_win,season_loss,season_tie,logofile FROM team WHERE id=$yghome");
+								$yghomeData = mysqli_fetch_array($yghome_result);
+								$ygaway_result = mysqli_query($conn,"SELECT location,teamname,abbrev,season_win,season_loss,season_tie,logofile FROM team WHERE id=$ygaway");
+								$ygawayData = mysqli_fetch_array($ygaway_result);
+							echo "
+							<div class='team-result'>
+							<h3>Your Team Result</h3>
+                            <div class='row teamrow'>
+                              <div class='col-md-2'>
+                                <img width='60' src='uploads/logos/".$yghomeData['logofile']."' />
                               </div>
-                              <div class="col-md-6">
+                              <div class='col-md-6'>
                                 <h4>
-                                  <a href="team.php">New York Giants</a>
+                                  <a href='team.php?teamid=".$yghome."'>".$yghomeData['location']." ".$yghomeData['teamname']."</a>
                                 </h4>
                               </div>
-                              <div class="col-md-4">
-                                <h4 class="hidden-score">36</h4>
+                              <div class='col-md-4'>
+                                <h4 class='hidden-score'>".$yourteamData['h_score']."</h4>
                               </div>
                             </div>
-                            <div class="row">
-                              <div class="col-md-2">
-                                <img src="nfl-logos/20.png" />
+                            <div class='row teamrow'>
+                              <div class='col-md-2'>
+                                <img width='60' src='uploads/logos/".$ygawayData['logofile']."' />
                               </div>
-                              <div class="col-md-6">
+                              <div class='col-md-6'>
                                 <h4>
-                                  <a href="team.php">New York Jets</a>
+                                  <a href='team.php?teamid=".$ygaway."'>".$ygawayData['location']." ".$ygawayData['teamname']."</a>
                                 </h4>
                               </div>
-                              <div class="col-md-4">
-                                <h4 class="hidden-score">7</h4>
+                              <div class='col-md-4'>
+                                <h4 class='hidden-score'>".$yourteamData['a_score']."</h4>
                               </div>
                             </div>
-                          </div>
+							</div>";
+							}
+							?>
+                          
                           <div class="all-results">
                             <div class="row">
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
+							<?php
+							$week_result = mysqli_query($conn,"SELECT * FROM games WHERE league=$leagueid AND year=$year AND week=15");
+							$num = 1;
+							while ($weekData = mysqli_fetch_array($week_result)) {
+							$home = $weekData['home'];
+							$away = $weekData['away'];
+							$home_result = mysqli_query($conn,"SELECT location,teamname,abbrev,season_win,season_loss,season_tie FROM team WHERE id=$home");
+							$homeData = mysqli_fetch_array($home_result);
+							$away_result = mysqli_query($conn,"SELECT location,teamname,abbrev,season_win,season_loss,season_tie FROM team WHERE id=$away");
+							$awayData = mysqli_fetch_array($away_result);
+                            echo "<div class='col-md-6'>
+                                <div class='result'>
+                                  <div class='row'>
+                                    <div class='col-md-8'>
                                       <h4>
-                                        <a href="team.php">Team 1</a>
+                                        <a href='team.php?teamid=".$home."'>".$homeData['location']." ".$homeData['teamname']."</a>
                                       </h4>
                                     </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
+                                    <div class='col-md-4'>
+                                      <h4 class='hidden-score'>".$weekData['h_score']."</h4>
                                     </div>
                                   </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
+                                  <div class='row'>
+                                    <div class='col-md-8'>
                                       <h4>
-                                        <a href="team.php">Team 2</a>
+                                        <a href='team.php?teamid=".$away."'>".$awayData['location']." ".$awayData['teamname']."</a>
                                       </h4>
                                     </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
+                                    <div class='col-md-4'>
+                                      <h4 class='hidden-score'>".$weekData['a_score']."</h4>
                                     </div>
                                   </div>
                                 </div>
-                              </div>
-                            </div>
-                            <div class="row">
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                            <div class="row">
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                            <div class="row">
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                            <div class="row">
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                            <div class="row">
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                            <div class="row">
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                            <div class="row">
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
+                              </div>";
+							  if ($num%2==0) {
+								echo "</div><div class='row'>";
+							  }
+							  $num++;
+							  }
+							  ?>
                             </div>
                           </div>
                         </div>
@@ -8629,435 +2213,96 @@ if (!empty($_GET['leagueid'])) {
 						<div class="week-header">
 							<h3>Week 16</h3>
 						</div>
-                          <div class="team-result">
-                            <h3>Your Team Result</h3>
-                            <div class="row">
-                              <div class="col-md-2">
-                                <img src="nfl-logos/19.png" />
+							<?php
+							if ($myteamid!=0) {
+								$yourgame_result = mysqli_query($conn,"SELECT id FROM games WHERE league=$leagueid AND year=$year AND week=16 AND (home=$myteamid OR away=$myteamid)");
+								$yourgameData = mysqli_fetch_array($yourgame_result);
+								$yourgame = $yourgameData['id'];
+								
+								$yourteam_result = mysqli_query($conn,"SELECT * FROM games WHERE id=$yourgame");
+								$yourteamData = mysqli_fetch_array($yourteam_result);
+								$yghome = $yourteamData['home'];
+								$ygaway = $yourteamData['away'];
+								
+								$yghome_result = mysqli_query($conn,"SELECT location,teamname,abbrev,season_win,season_loss,season_tie,logofile FROM team WHERE id=$yghome");
+								$yghomeData = mysqli_fetch_array($yghome_result);
+								$ygaway_result = mysqli_query($conn,"SELECT location,teamname,abbrev,season_win,season_loss,season_tie,logofile FROM team WHERE id=$ygaway");
+								$ygawayData = mysqli_fetch_array($ygaway_result);
+							echo "
+							<div class='team-result'>
+							<h3>Your Team Result</h3>
+                            <div class='row teamrow'>
+                              <div class='col-md-2'>
+                                <img width='60' src='uploads/logos/".$yghomeData['logofile']."' />
                               </div>
-                              <div class="col-md-6">
+                              <div class='col-md-6'>
                                 <h4>
-                                  <a href="team.php">New York Giants</a>
+                                  <a href='team.php?teamid=".$yghome."'>".$yghomeData['location']." ".$yghomeData['teamname']."</a>
                                 </h4>
                               </div>
-                              <div class="col-md-4">
-                                <h4 class="hidden-score">36</h4>
+                              <div class='col-md-4'>
+                                <h4 class='hidden-score'>".$yourteamData['h_score']."</h4>
                               </div>
                             </div>
-                            <div class="row">
-                              <div class="col-md-2">
-                                <img src="nfl-logos/20.png" />
+                            <div class='row teamrow'>
+                              <div class='col-md-2'>
+                                <img width='60' src='uploads/logos/".$ygawayData['logofile']."' />
                               </div>
-                              <div class="col-md-6">
+                              <div class='col-md-6'>
                                 <h4>
-                                  <a href="team.php">New York Jets</a>
+                                  <a href='team.php?teamid=".$ygaway."'>".$ygawayData['location']." ".$ygawayData['teamname']."</a>
                                 </h4>
                               </div>
-                              <div class="col-md-4">
-                                <h4 class="hidden-score">7</h4>
+                              <div class='col-md-4'>
+                                <h4 class='hidden-score'>".$yourteamData['a_score']."</h4>
                               </div>
                             </div>
-                          </div>
+							</div>";
+							}
+							?>
+                          
                           <div class="all-results">
                             <div class="row">
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
+							<?php
+							$week_result = mysqli_query($conn,"SELECT * FROM games WHERE league=$leagueid AND year=$year AND week=16");
+							$num = 1;
+							while ($weekData = mysqli_fetch_array($week_result)) {
+							$home = $weekData['home'];
+							$away = $weekData['away'];
+							$home_result = mysqli_query($conn,"SELECT location,teamname,abbrev,season_win,season_loss,season_tie FROM team WHERE id=$home");
+							$homeData = mysqli_fetch_array($home_result);
+							$away_result = mysqli_query($conn,"SELECT location,teamname,abbrev,season_win,season_loss,season_tie FROM team WHERE id=$away");
+							$awayData = mysqli_fetch_array($away_result);
+                            echo "<div class='col-md-6'>
+                                <div class='result'>
+                                  <div class='row'>
+                                    <div class='col-md-8'>
                                       <h4>
-                                        <a href="team.php">Team 1</a>
+                                        <a href='team.php?teamid=".$home."'>".$homeData['location']." ".$homeData['teamname']."</a>
                                       </h4>
                                     </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
+                                    <div class='col-md-4'>
+                                      <h4 class='hidden-score'>".$weekData['h_score']."</h4>
                                     </div>
                                   </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
+                                  <div class='row'>
+                                    <div class='col-md-8'>
                                       <h4>
-                                        <a href="team.php">Team 2</a>
+                                        <a href='team.php?teamid=".$away."'>".$awayData['location']." ".$awayData['teamname']."</a>
                                       </h4>
                                     </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
+                                    <div class='col-md-4'>
+                                      <h4 class='hidden-score'>".$weekData['a_score']."</h4>
                                     </div>
                                   </div>
                                 </div>
-                              </div>
-                            </div>
-                            <div class="row">
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                            <div class="row">
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                            <div class="row">
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                            <div class="row">
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                            <div class="row">
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                            <div class="row">
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                            <div class="row">
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                              <div class="col-md-6">
-                                <div class="result">
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 1</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">43</h4>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-8">
-                                      <h4>
-                                        <a href="team.php">Team 2</a>
-                                      </h4>
-                                    </div>
-                                    <div class="col-md-4">
-                                      <h4 class="hidden-score">8</h4>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
+                              </div>";
+							  if ($num%2==0) {
+								echo "</div><div class='row'>";
+							  }
+							  $num++;
+							  }
+							  ?>
                             </div>
                           </div>
                         </div>

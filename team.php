@@ -1,4 +1,5 @@
 <?php
+	require_once('includes/getweek.php');
 	session_start();
 	date_default_timezone_set('America/New_York');
 	if(isset($_SESSION['userID'])) {
@@ -199,6 +200,30 @@
       <div class="row" id="content">
         <div class="col-md-3 col-lg-2">
           <div class="side-bar">
+		  <?php
+		  if (!$own_team) {
+		  $myteam_result = mysqli_query($conn,"SELECT id,division,location,teamname,season_win,season_loss,season_tie,logofile FROM `team` WHERE league=$leagueid AND owner=$userID");
+			if (mysqli_num_rows($myteam_result) != 0) {
+			$myteamData = mysqli_fetch_array($myteam_result, MYSQL_ASSOC);
+			$myteamid = $myteamData['id'];
+			$mydivision = $myteamData['division'];
+			$myteamname = $myteamData['location']." ".$myteamData['teamname'];
+			if ($myteamData['season_tie']==0) {
+				$myteamrecord = $myteamData['season_win']."-".$myteamData['season_loss'];
+			} else {
+				$myteamrecord = $myteamData['season_win']."-".$myteamData['season_loss']."-".$myteamData['season_tie'];
+			}
+			$myteam_logopath = "uploads/logos/".$myteamData['logofile'];
+			echo "<div class=\"team-card\"><h3>My team</h3><a href=\"team.php?teamid=".$myteamid."\">
+              <img src=\"".$myteam_logopath."\" width=\"150\"/>
+            </a> 
+            <b><a href=\"team.php?teamid=".$myteamid."\">
+              <p>".$myteamname."</p>
+            </a><p>".$myteamrecord."</p></b>";
+			echo "<p>".getWeek($leagueid)."</p></div>";	
+			}
+			}
+		  ?>
             <h3>Team Links</h3>
             <div class="nav">
               <ul class="nav nav-pills nav-stacked navbar-left">
@@ -212,14 +237,31 @@
                 <li class="active">
                   <a href="team.php?teamid=<?php echo $teamid;?>">Roster</a>
                 </li>
-				<li>
-                  <a href="league.php?leagueid=<?php echo $leagueid;?>">Standings</a>
-                </li>
+				<?php
+				if($own_team){
+					$newtrade_result = mysqli_query($conn,"SELECT * FROM trades WHERE `status`='0' AND `team_two`=$teamid ORDER BY timestamp DESC");
+					$alltrade_result = mysqli_query($conn,"SELECT * FROM trades WHERE `team_two`=$teamid ORDER BY timestamp DESC");
+					$senttrade_result = mysqli_query($conn,"SELECT * FROM trades WHERE AND `team_one`=$teamid ORDER BY timestamp DESC");
+					echo "<li>
+					  <a href=\"trades.php?teamid=".$teamid."\">Trades ";
+					  if (mysqli_num_rows($newtrade_result) != 0) {
+						$num_unread = mysqli_num_rows($newtrade_result);
+						echo "<span class=\"badge\">".$num_unread."</span>";
+					}
+					echo "</a>
+					</li>";
+				}
+				?>
                 <li>
                   <a href="scores.php?leagueid=<?php echo $leagueid;?>">Scores &amp; Schedule</a>
-                </li><li>
-                  <a href="depthchart.php?teamid=<?php echo $teamid;?>">Depth Chart</a>
                 </li>
+				<?php 
+				if ($own_team) {
+				echo "<li>
+                  <a href=\"depthchart.php?teamid=".$teamid."\">Depth Chart</a>
+                </li>";
+				}
+				?>
                 <li>
                   <a href="#">Playbooks</a>
                 </li>
@@ -267,9 +309,19 @@
 						<div class="col-md-3">
 						<div class="last-col">
 						<?php
-						if (!$own_team && $owner!=0) {
+						$sameleague = false;
+						$sameleague_result = mysqli_query($conn,"SELECT id FROM team WHERE league=$leagueid AND owner=$userID");
+						if (mysqli_num_rows($sameleague_result)==1) {
+							$sameleague = true;
+							$sameleagueData = mysqli_fetch_array($sameleague_result);
+							$sameleagueteam = $sameleagueData['id'];
+						}
+						if (!$own_team && $owner!=0 && $sameleague) {
+							
 							echo "<div class=\"row\">
-												<button type=\"button\" class=\"btn btn-primary\"><span class=\"glyphicon glyphicon-share\"></span> Offer Trade</button>
+							<form action='newtrade.php?teamid=".$sameleagueteam."&and=".$teamid."' method='POST'>
+												<button type=\"submit\" class=\"btn btn-primary\"><span class=\"glyphicon glyphicon-share\"></span> Offer Trade</button>
+												</form>
 											</div>";
 						}
 						?>

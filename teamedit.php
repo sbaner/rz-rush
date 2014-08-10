@@ -14,6 +14,7 @@
 	} else {
 		header('Location: 404.php');
 	}
+	$own_team = false;
 	//Verify user owns team
 	$conn = mysqli_connect('localhost', 'rzrushco_admin', 'rzr_3541', 'rzrushco_main');
 	$team_result = mysqli_query($conn,"SELECT * FROM `team` WHERE id=$teamid");
@@ -41,8 +42,9 @@
 	} else if(isset($_POST['location'])) {
 		$newlocation = mysqli_real_escape_string($conn,$_POST['location']);
 		$newname = mysqli_real_escape_string($conn,$_POST['teamname']);
+		$newabbrev = mysqli_real_escape_string($conn,$_POST['abbrev']);
 		
-		mysqli_query($conn,"UPDATE team SET location='$newlocation',teamname='$newname' WHERE id=$teamid");
+		mysqli_query($conn,"UPDATE team SET location='$newlocation',teamname='$newname',abbrev='$newabbrev' WHERE id=$teamid");
 		
 		header('Location: team.php?teamid='.$teamid);
 	}
@@ -66,9 +68,10 @@
 		function checkForm() {
 			var location = $("#location").val()
 			var teamname = $("#teamname").val();
+			var abbrev = $("#abbrev").val();
 			var button = document.getElementById('signup-button');
 			
-			if (location.length > 0 && teamname.length > 0) {
+			if (location.length > 0 && teamname.length > 0 && abbrev.length > 0) {
 				button.disabled = false;
 			} else {
 				button.disabled = true;
@@ -77,6 +80,7 @@
 		$(document).ready(function () {
 		   $("#location").keyup(checkForm);
 		   $("#teamname").keyup(checkForm);
+		   $("#abbrev").keyup(checkForm);
 		});
 		</script>
     <title>RedZone Rush - Edit Team</title>
@@ -223,6 +227,12 @@
                 <label for="teamname" class="col-sm-2 control-label">Team Name</label>
                 <div class="col-sm-10">
                   <input type="text" class="form-control" id="teamname" name="teamname" placeholder="Team Name (Ex: Giants)"/>
+                </div>
+              </div>
+			  <div class="form-group">
+                <label for="abbrev" class="col-sm-2 control-label">Abbreviation (max 3 char)</label>
+                <div class="col-sm-10">
+                  <input type="text" class="form-control" id="abbrev" name="abbrev" placeholder="Abbreviation (Ex: NYG)" maxlength="3"/>
                 </div>
               </div>
               <div class="form-group">

@@ -262,7 +262,7 @@ switch($position) {
 				}
 			break;
 		case "T":
-				$salary = round(8714*pow($rating,2)-1200500*$rating+41384657,-4);
+				$salary = round(3325*exp(.08*$rating),-4);
 				$bonus = round($salary/3,-4);
 				$discount = pow(1.05,$years-1);
 				$salary = round($salary/$discount,-4);
@@ -298,7 +298,7 @@ switch($position) {
 				}
 			break;
 		case "DE":
-				$salary = round(9334*pow($rating,2)-1295236*$rating+45245133,-4);
+				$salary = round(3325*exp(.08*$rating),-4);
 				$bonus = round($salary/3,-4);
 				$discount = pow(1.05,$years-1);
 				$salary = round($salary/$discount,-4);
@@ -334,7 +334,7 @@ switch($position) {
 				}
 			break;
 		case "DT":
-				$salary = round(9334*pow($rating,2)-1295236*$rating+45245133,-4);
+				$salary = round(3325*exp(.08*$rating),-4);
 				$bonus = round($salary/3,-4);
 				$discount = pow(1.05,$years-1);
 				$salary = round($salary/$discount,-4);
@@ -478,7 +478,7 @@ switch($position) {
 				}
 			break;
 		case "K":
-				$salary = round(4781*pow($rating,2)-737820*$rating+29148880,-4);
+				$salary = round(20236*exp(.05*$rating),-4);
 				$bonus = round($salary/3,-4);
 				$discount = pow(1.05,$years-1);
 				$salary = round($salary/$discount,-4);
@@ -514,7 +514,7 @@ switch($position) {
 				}
 			break;
 		case "P":
-				$salary = round(4781*pow($rating,2)-737820*$rating+29148880,-4);
+				$salary = round(20236*exp(.05*$rating),-4);
 				$bonus = round($salary/3,-4);
 				$discount = pow(1.05,$years-1);
 				$salary = round($salary/$discount,-4);

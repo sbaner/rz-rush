@@ -2,6 +2,7 @@
 	session_start();
 	require_once('includes/functions.php');
 	require_once('includes/getweek.php');
+	require_once('includes/statcalc.php');
 	if(isset($_SESSION['userID'])) {
 		$userID = $_SESSION['userID'];
 		$username = $_SESSION['username'];
@@ -18,17 +19,22 @@ if (!empty($_GET['playerid'])) {
 	$own_team_result = mysqli_query($conn,"SELECT * FROM team WHERE `owner`='$userID'");
 	
 	$player_result = mysqli_query($conn, "SELECT * FROM player WHERE id=$playerid");
-	$playerData = mysqli_fetch_array($player_result);
-	$player_league = $playerData['league'];
-	$player_team = $playerData['team'];
-	$player_name = $playerData['firstname']." ".$playerData['lastname'];
-	$player_position = $playerData['position'];
-	$overall_now = $playerData['overall_now'];
-	$player_height = $playerData['height'];
-	$player_weight = $playerData['weight'];
-	$draft_pos = $playerData['draft_pos'];
-	$draft_round = $playerData['draft_round'];
-	$start_year = $playerData['start_year'];
+	if (mysqli_num_rows($player_result) == 1) {
+		$playerData = mysqli_fetch_array($player_result);
+		$player_league = $playerData['league'];
+		$player_team = $playerData['team'];
+		$player_name = $playerData['firstname']." ".$playerData['lastname'];
+		$player_position = $playerData['position'];
+		$overall_now = $playerData['overall_now'];
+		$player_height = $playerData['height'];
+		$player_weight = $playerData['weight'];
+		$draft_pos = $playerData['draft_pos'];
+		$draft_round = $playerData['draft_round'];
+		$start_year = $playerData['start_year'];
+	} else {
+		header('Location: 404.php');
+		die("No such player");
+	}
 	
 	$league_result = mysqli_query($conn,"SELECT id,leaguename,year FROM league WHERE id=$player_league");
 	$leagueData = mysqli_fetch_array($league_result);
@@ -43,6 +49,8 @@ if (!empty($_GET['playerid'])) {
 		$teamData = mysqli_fetch_array($team_result);
 		$teamname = $teamData['location']." ".$teamData['teamname'];
 	}
+	
+	$hasstats = false;
 	
 	//Retrieve and process POSTed free agent offer
 	if (isset($_POST['offersubmit'])) {
@@ -104,7 +112,9 @@ if (!empty($_GET['playerid'])) {
     <script src="js/jquery-1.11.1.min.js"></script>
     <script src="js/jquery.number.js"></script>
     <script src="js/bootstrap.js"></script>
-	<script>
+	<?php
+	if ($player_team == 0) {
+	echo "<script>
 	$( document ).ready(function() {
 		var years = 0;
 		var totsal = 0;
@@ -115,15 +125,15 @@ if (!empty($_GET['playerid'])) {
 		  url: 'fademand.php',
 		  type: 'POST',
 		  dataType : 'json',
-		  data: {'position': '<?php echo $player_position; ?>', 'rating': '<?php echo $overall_now; ?>', 'exp': '<?php echo $player_exp;?>', 'years': $( "#years	").val()},
+		  data: {'position': '".$player_position,"', 'rating': '".$overall_now."', 'exp': '".$player_exp."', 'years': $( \"#years\").val()},
 		  success: function(data) {
 			years = data.length;
 			
 			$.each(data, function(index, value) {
-				var salelementid = "#salyear"+index;
-				var bonelementid = "#bonyear"+index;
-				var sumelementid = "#sumyear"+index;
-				var totelementid = "#totyear"+index;
+				var salelementid = \"#salyear\"+index;
+				var bonelementid = \"#bonyear\"+index;
+				var sumelementid = \"#sumyear\"+index;
+				var totelementid = \"#totyear\"+index;
 				
 				var salvalue = value[1];
 				var bonvalue = value[2];
@@ -137,18 +147,18 @@ if (!empty($_GET['playerid'])) {
 				$(sumelementid).html(sumvalue);
 				
 				for ( var i = data.length; i < 6; i++ ) {
-					var emptysalid = "#salyear"+i;
-					var emptybonid = "#bonyear"+i;
-					var emptysumid = "#sumyear"+i;
-					$(emptysalid).html("0");
-					$(emptybonid).html("0");
-					$(emptysumid).html("0");
+					var emptysalid = \"#salyear\"+i;
+					var emptybonid = \"#bonyear\"+i;
+					var emptysumid = \"#sumyear\"+i;
+					$(emptysalid).html(\"0\");
+					$(emptybonid).html(\"0\");
+					$(emptysumid).html(\"0\");
 				}
 				
 				for (var j = 0; j < 6; j++) {
-					var sumid = "#sumyear"+j;
-					var totid = "#totyear"+j;
-					var aftid = "#aftyear"+j;
+					var sumid = \"#sumyear\"+j;
+					var totid = \"#totyear\"+j;
+					var aftid = \"#aftyear\"+j;
 					
 					var sumvalue = parseInt($(sumid).html());
 					var totvalue = parseInt($(totid).html());
@@ -161,21 +171,21 @@ if (!empty($_GET['playerid'])) {
 				
 			});
 			$('td.number').number(true);
-			$('td.number').prepend("$");
-			$("#base").attr({
+			$('td.number').prepend(\"$\");
+			$(\"#base\").attr({
 				min: totsal/1000,
 				value: totsal/1000
 			});
-			$("#bonus").attr({
+			$(\"#bonus\").attr({
 				min: totbon/1000,
 				value: totbon/1000
 			});
-			$("#saltext").html(data.length+" year(s), $"+$.number(totsal)+" base,");
-			$("#bontext").html("$"+$.number(totbon)+" guaranteed.");
+			$(\"#saltext\").html(data.length+\" year(s), $\"+$.number(totsal)+\" base,\");
+			$(\"#bontext\").html(\"$\"+$.number(totbon)+\" guaranteed.\");
 		  },
 		  error: function(xhr, desc, err) {
 			console.log(xhr);
-			console.log("Details: " + desc + "\nError:" + err);
+			console.log(\"Details: \" + desc + \"Error:\" + err);
 		  }
 		}); // end ajax call
 		
@@ -186,16 +196,16 @@ if (!empty($_GET['playerid'])) {
 		  url: 'fademand.php',
 		  type: 'POST',
 		  dataType : 'json',
-		  data: {'position': '<?php echo $player_position; ?>', 'rating': '<?php echo $overall_now; ?>', 'exp': '<?php echo $player_exp;?>', 'years': $( "#years	").val()},
+		  data: {'position': '".$player_position,"', 'rating': '".$overall_now."', 'exp': '".$player_exp."', 'years': $( \"#years\").val()},
 		  success: function(data) {
 			totsal = 0;
 			totbon = 0;
 			$.each(data, function(index, value) {
 				years = data.length;
-				var salelementid = "#salyear"+index;
-				var bonelementid = "#bonyear"+index;
-				var sumelementid = "#sumyear"+index;
-				var totelementid = "#totyear"+index;
+				var salelementid = \"#salyear\"+index;
+				var bonelementid = \"#bonyear\"+index;
+				var sumelementid = \"#sumyear\"+index;
+				var totelementid = \"#totyear\"+index;
 				
 				var salvalue = value[1];
 				var bonvalue = value[2];
@@ -213,24 +223,24 @@ if (!empty($_GET['playerid'])) {
 				
 			});
 			for ( var i = data.length; i < 6; i++ ) {
-					var emptysalid = "#salyear"+i;
-					var emptybonid = "#bonyear"+i;
-					var emptysumid = "#sumyear"+i;
-					$(emptysalid).html("0");
-					$(emptybonid).html("0");
-					$(emptysumid).html("0");
+					var emptysalid = \"#salyear\"+i;
+					var emptybonid = \"#bonyear\"+i;
+					var emptysumid = \"#sumyear\"+i;
+					$(emptysalid).html(\"0\");
+					$(emptybonid).html(\"0\");
+					$(emptysumid).html(\"0\");
 				}
 				
 				for (var j = 0; j < 6; j++) {
-					var sumid = "#sumyear"+j;
-					var totid = "#totyear"+j;
-					var aftid = "#aftyear"+j;
+					var sumid = \"#sumyear\"+j;
+					var totid = \"#totyear\"+j;
+					var aftid = \"#aftyear\"+j;
 					
 					var sumvalue = $(sumid).html();
 					var totvalue = $(totid).html();
 					
-					var sum =  sumvalue.replace(/[^0-9\.]/g, "");
-					var tot =  totvalue.replace(/[^0-9\.]/g, "");
+					var sum =  sumvalue.replace(/[^0-9\.]/g, \"\");
+					var tot =  totvalue.replace(/[^0-9\.]/g, \"\");
 					
 					var sumint = parseInt(sum);
 					var totint = parseInt(tot);
@@ -238,21 +248,21 @@ if (!empty($_GET['playerid'])) {
 					$(aftid).html(aftvalue);
 				}
 			$('td.number').number(true);
-			$('td.number').prepend("$");
-			$("#base").attr({
+			$('td.number').prepend(\"$\");
+			$(\"#base\").attr({
 				min: totsal/1000,
 				value: totsal/1000
 			});
-			$("#bonus").attr({
+			$(\"#bonus\").attr({
 				min: totbon/1000,
 				value: totbon/1000
 			});
-			$("#saltext").html(data.length+" year(s), $"+$.number(totsal)+" base,");
-			$("#bontext").html("$"+$.number(totbon)+" guaranteed.");
+			$(\"#saltext\").html(data.length+\" year(s), $\"+$.number(totsal)+\" base,\");
+			$(\"#bontext\").html(\"$\"+$.number(totbon)+\" guaranteed.\");
 		  },
 		  error: function(xhr, desc, err) {
 			console.log(xhr);
-			console.log("Details: " + desc + "\nError:" + err);
+			console.log(\"Details: \" + desc + \"Error:\" + err);
 		  }
 		}); // end ajax call
 	  });
@@ -264,27 +274,27 @@ if (!empty($_GET['playerid'])) {
 					var change = newbase - totsal/1000;
 					var yearlychange = Math.floor(change / years);
 					for (var k = 0; k < years; k++) {
-						var salelementid = "#salyear"+k;
-						var bonelementid = "#bonyear"+k;
-						var sumelementid = "#sumyear"+k;
+						var salelementid = \"#salyear\"+k;
+						var bonelementid = \"#bonyear\"+k;
+						var sumelementid = \"#sumyear\"+k;
 						var newvalue = salArray[k] + yearlychange*1000;
 						$(salelementid).html(newvalue);
 						
-						var bonus = parseInt($(bonelementid).html().replace(/[^0-9\.]/g, ""));
+						var bonus = parseInt($(bonelementid).html().replace(/[^0-9\.]/g, \"\"));
 						var newsum = bonus+newvalue;
 						$(sumelementid).html(newsum);
 						
 					}
 					for (var j = 0; j < 6; j++) {
-					var sumid = "#sumyear"+j;
-					var totid = "#totyear"+j;
-					var aftid = "#aftyear"+j;
+					var sumid = \"#sumyear\"+j;
+					var totid = \"#totyear\"+j;
+					var aftid = \"#aftyear\"+j;
 					
 					var sumvalue = $(sumid).html();
 					var totvalue = $(totid).html();
 					
-					var sum =  sumvalue.replace(/[^0-9\.]/g, "");
-					var tot =  totvalue.replace(/[^0-9\.]/g, "");
+					var sum =  sumvalue.replace(/[^0-9\.]/g, \"\");
+					var tot =  totvalue.replace(/[^0-9\.]/g, \"\");
 					
 					var sumint = parseInt(sum);
 					var totint = parseInt(tot);
@@ -292,9 +302,9 @@ if (!empty($_GET['playerid'])) {
 					$(aftid).html(aftvalue);
 				}
 				}
-				$("#saltext").html(years+" year(s), $"+$.number(newbase*1000)+" base,");
+				$(\"#saltext\").html(years+\" year(s), $\"+$.number(newbase*1000)+\" base,\");
 				$('td.number').number(true);
-				$('td.number').prepend("$");
+				$('td.number').prepend(\"$\");
 				
 			 });
 			 
@@ -304,26 +314,26 @@ if (!empty($_GET['playerid'])) {
 					var change = newbonus - totbon/1000;
 					var yearlychange = Math.floor(change / years);
 					for (var m = 0; m < years; m++) {
-						var salelementid = "#salyear"+m;
-						var bonelementid = "#bonyear"+m;
-						var sumelementid = "#sumyear"+m;
+						var salelementid = \"#salyear\"+m;
+						var bonelementid = \"#bonyear\"+m;
+						var sumelementid = \"#sumyear\"+m;
 						var newvalue = bonArray[m] + yearlychange*1000;
 						$(bonelementid).html(newvalue);
 						
-						var salary = parseInt($(salelementid).html().replace(/[^0-9\.]/g, ""));
+						var salary = parseInt($(salelementid).html().replace(/[^0-9\.]/g, \"\"));
 						var newsum = salary+newvalue;
 						$(sumelementid).html(newsum);
 					}
 					for (var j = 0; j < 6; j++) {
-					var sumid = "#sumyear"+j;
-					var totid = "#totyear"+j;
-					var aftid = "#aftyear"+j;
+					var sumid = \"#sumyear\"+j;
+					var totid = \"#totyear\"+j;
+					var aftid = \"#aftyear\"+j;
 					
 					var sumvalue = $(sumid).html();
 					var totvalue = $(totid).html();
 					
-					var sum =  sumvalue.replace(/[^0-9\.]/g, "");
-					var tot =  totvalue.replace(/[^0-9\.]/g, "");
+					var sum =  sumvalue.replace(/[^0-9\.]/g, \"\");
+					var tot =  totvalue.replace(/[^0-9\.]/g, \"\");
 					
 					var sumint = parseInt(sum);
 					var totint = parseInt(tot);
@@ -331,12 +341,14 @@ if (!empty($_GET['playerid'])) {
 					$(aftid).html(aftvalue);
 				}
 				}
-				$("#bontext").html("$"+$.number(newbonus*1000)+" guaranteed.");
+				$(\"#bontext\").html(\"$\"+$.number(newbonus*1000)+\" guaranteed.\");
 				$('td.number').number(true);
-				$('td.number').prepend("$");
+				$('td.number').prepend(\"$\");
 			 }); 
 	});
-	</script>
+	</script>";
+	}
+	?>
     <title>RedZone Rush</title>
   </head>
   <body>
@@ -412,7 +424,7 @@ if (!empty($_GET['playerid'])) {
         </div>
       </div>
       <div class="row" id="content">
-        <div class="col-md-2">
+        <div class="col-md-3 col-lg-2">
           <div class="side-bar">
             <div class="team-card">
             <?php 
@@ -439,7 +451,7 @@ if (!empty($_GET['playerid'])) {
 			?></div>
           </div>
         </div>
-        <div class="col-md-8">
+        <div class="col-md-9 col-lg-8">
 		<ol class="breadcrumb">
 		<?php
 			echo "<li><a href=\"league.php?leagueid=".$player_league."\">".$leaguename."</a></li>";
@@ -510,10 +522,705 @@ if (!empty($_GET['playerid'])) {
               </ul>
               <!-- Tab panes -->
               <div class="tab-content">
-                <div class="tab-pane active" id="careerstats">Stats go here</div>
-                <div class="tab-pane" id="gamelogs">Game Logs go here</div>
-                <div class="tab-pane" id="progression">
-                  <div class="container">
+                <div class="tab-pane active fade in" id="careerstats">
+				<?php
+					$cstats_result = mysqli_query($conn,"SELECT player FROM `stats` WHERE player=$playerid ORDER BY year DESC");
+					if (mysqli_num_rows($cstats_result)!=0) {
+						$hasstats = true;
+					}
+				?>
+					<ul class="nav nav-tabs categories" role="tablist">
+						<li class="active">
+						  <a href="#c_passing" role="tab" data-toggle="tab">Passing</a>
+						</li>
+						<li>
+						  <a href="#c_rushing" role="tab" data-toggle="tab">Rushing</a>
+						</li>
+						<li>
+						  <a href="#c_receiving" role="tab" data-toggle="tab">Receiving</a>
+						</li>
+						<li>
+						  <a href="#c_blocking" role="tab" data-toggle="tab">Blocking</a>
+						</li>
+						<li>
+						  <a href="#c_tackling" role="tab" data-toggle="tab">Tackling</a>
+						</li>
+						<li>
+						  <a href="#c_pdefense" role="tab" data-toggle="tab">Pass Defense</a>
+						</li>
+						<li>
+						  <a href="#c_kicking" role="tab" data-toggle="tab">Kicking</a>
+						</li>
+						<li>
+						  <a href="#c_punting" role="tab" data-toggle="tab">Punting</a>
+						</li>
+						<li>
+						  <a href="#c_returning" role="tab" data-toggle="tab">Returning</a>
+						</li>
+					</ul>
+					<div class="tab-content">
+						<div class="tab-pane statspane active" id="c_passing">
+							<div class="table-responsive">
+								<table class="table ">
+									<thead>
+										<th width="5%">Year</th>
+										<th width="5%">Team</th>
+										<th width="5%">Games</th>
+										<th width="5%">Snaps</th>
+										<th>Comp</th>
+										<th>Att</th>
+										<th>Comp %</th>
+										<th>Yds</th>
+										<th>Yds/Att</th>
+										<th>Long</th>
+										<th>TD</th>
+										<th>Int</th>
+										<th>Sck</th>
+										<th>Sck Yd</th>
+										<th>Rate</th>
+										<th>ANY/A</th>
+										<th>Fum</th>
+										<th>Fum Lost</th>
+									</thead>
+									<tbody>
+									<?php
+										if ($hasstats) {
+											$cpassing_result = mysqli_query($conn,"SELECT year,team,abbrev,games,snaps,fum,fum_lost,pass_cmp,pass_att,pass_yds,pass_long,pass_td,pass_int,pass_sck,pass_scky FROM `stats` WHERE player=$playerid ORDER BY year DESC");
+											while ($cpassingData = mysqli_fetch_array($cpassing_result)) {
+												
+												echo "<tr>";
+												echo "<td>".$cpassingData['year']."</td>";
+												echo "<td><a href='team.php?teamid=".$cpassingData['team']."'>".$cpassingData['abbrev']."</td>";
+												echo "<td>".$cpassingData['games']."</td>";
+												echo "<td>".$cpassingData['snaps']."</td>";
+												echo "<td>".$cpassingData['pass_cmp']."</td>";
+												echo "<td>".$cpassingData['pass_att']."</td>";
+												$comppercent = round($cpassingData['pass_cmp']/$cpassingData['pass_att']*100,1);
+												echo "<td>".$comppercent."</td>";
+												echo "<td>".$cpassingData['pass_yds']."</td>";
+												$ydsperatt = round($cpassingData['pass_yds']/$cpassingData['pass_att'],1);
+												echo "<td>".$ydsperatt."</td>";
+												echo "<td>".$cpassingData['pass_long']."</td>";
+												echo "<td>".$cpassingData['pass_td']."</td>";
+												echo "<td>".$cpassingData['pass_int']."</td>";
+												echo "<td>".$cpassingData['pass_sck']."</td>";
+												echo "<td>".$cpassingData['pass_scky']."</td>";
+												$passerrating = round(passerRating($cpassingData['pass_att'],$cpassingData['pass_cmp'],$cpassingData['pass_yds'],$cpassingData['pass_td'],$cpassingData['pass_int']),1);
+												$anya = round(anya($cpassingData['pass_att'],$cpassingData['pass_yds'],$cpassingData['pass_td'],$cpassingData['pass_int'],$cpassingData['pass_sck'],$cpassingData['pass_scky']),1);
+												echo "<td>".$passerrating."</td>";
+												echo "<td>".$anya."</td>";
+												echo "<td>".$cpassingData['fum']."</td>";
+												echo "<td>".$cpassingData['fum_lost']."</td>";
+												echo "</tr>";
+											}
+										}
+									?>
+									</tbody>
+								</table>
+							</div>
+						</div>
+						<div class="tab-pane statspane" id="c_rushing">
+							<div class="table-responsive">
+								<table class="table ">
+									<thead>
+										<th width="5%">Year</th>
+										<th width="5%">Team</th>
+										<th width="5%">Games</th>
+										<th width="5%">Snaps</th>
+										<th>Att</th>
+										<th>Yds</th>
+										<th>Yds/Att</th>
+										<th>Long</th>
+										<th>TD</th>
+										<th>Fum</th>
+										<th>Fum Lost</th>
+									</thead>
+									<tbody>
+										<?php
+										if ($hasstats) {
+											$crushing_result = mysqli_query($conn,"SELECT year,team,abbrev,games,snaps,fum,fum_lost,rush_att,rush_yds,rush_td,rush_long FROM `stats` WHERE player=$playerid ORDER BY year DESC");
+											while ($crushingData = mysqli_fetch_array($crushing_result)) {
+												
+												echo "<tr>";
+												echo "<td>".$crushingData['year']."</td>";
+												echo "<td><a href='team.php?teamid=".$crushingData['team']."'>".$crushingData['abbrev']."</td>";
+												echo "<td>".$crushingData['games']."</td>";
+												echo "<td>".$crushingData['snaps']."</td>";
+												echo "<td>".$crushingData['rush_att']."</td>";
+												echo "<td>".$crushingData['rush_yds']."</td>";
+												$rushypc = round($crushingData['rush_yds']/$crushingData['rush_att'],1);
+												echo "<td>".$rushypc."</td>";
+												echo "<td>".$crushingData['rush_long']."</td>";
+												echo "<td>".$crushingData['rush_td']."</td>";
+												echo "<td>".$crushingData['fum']."</td>";
+												echo "<td>".$crushingData['fum_lost']."</td>";
+												echo "</tr>";
+											}
+										}
+									?>
+									</tbody>
+								</table>
+							</div>
+						</div>
+						<div class="tab-pane statspane" id="c_receiving">
+							<div class="table-responsive">
+								<table class="table ">
+									<thead>
+										<th width="5%">Year</th>
+										<th width="5%">Team</th>
+										<th width="5%">Games</th>
+										<th width="5%">Snaps</th>
+										<th>Rec</th>
+										<th>Tgts</th>
+										<th>Catch %</th>
+										<th>Yds</th>
+										<th>YAC</th>
+										<th>Yds/Rec</th>
+										<th>YAC/Rec</th>
+										<th>Long</th>
+										<th>TD</th>
+										<th>Fum</th>
+										<th>Fum Lost</th>
+									</thead>
+									<tbody>
+										<?php
+										if ($hasstats) {
+											$creceiving_result = mysqli_query($conn,"SELECT year,team,abbrev,games,snaps,fum,fum_lost,rec,rec_tgt,rec_yds,rec_td,rec_long,rec_yac FROM `stats` WHERE player=$playerid ORDER BY year DESC");
+											while ($creceivingData = mysqli_fetch_array($creceiving_result)) {
+												
+												echo "<tr>";
+												echo "<td>".$creceivingData['year']."</td>";
+												echo "<td><a href='team.php?teamid=".$creceivingData['team']."'>".$creceivingData['abbrev']."</td>";
+												echo "<td>".$creceivingData['games']."</td>";
+												echo "<td>".$creceivingData['snaps']."</td>";
+												echo "<td>".$creceivingData['rec']."</td>";
+												echo "<td>".$creceivingData['rec_tgt']."</td>";
+												$catchpercent = round($creceivingData['rec']/$creceivingData['rec_tgt']*100,1);
+												echo "<td>".$catchpercent."</td>";
+												echo "<td>".$creceivingData['rec_yds']."</td>";
+												echo "<td>".$creceivingData['rec_yac']."</td>";
+												$ydsperrec = round($creceivingData['rec_yds']/$creceivingData['rec'],1);
+												$yacperrec = round($creceivingData['rec_yac']/$creceivingData['rec'],1);
+												echo "<td>".$ydsperrec."</td>";
+												echo "<td>".$yacperrec."</td>";
+												echo "<td>".$creceivingData['rec_long']."</td>";
+												echo "<td>".$creceivingData['rec_td']."</td>";
+												echo "<td>".$creceivingData['fum']."</td>";
+												echo "<td>".$creceivingData['fum_lost']."</td>";
+												echo "</tr>";
+											}
+										}
+									?>
+									</tbody>
+								</table>
+							</div>
+						</div>
+						<div class="tab-pane statspane" id="c_blocking">
+							<div class="table-responsive">
+								<table class="table ">
+									<thead>
+										<th width="5%">Year</th>
+										<th width="5%">Team</th>
+										<th width="5%">Games</th>
+										<th width="5%">Snaps</th>
+										<th width="15%">Sacks Allowed</th>
+										<th width="10%">Rush Yds</th>
+										<th width="10%">Rush Att</th>
+										<th>Rush YPC</th>
+									</thead>
+									<tbody>
+										<?php
+										if ($hasstats) {
+											$cblocking_result = mysqli_query($conn,"SELECT year,team,abbrev,games,snaps,sckallow,ol_rushatt,ol_rushyds FROM `stats` WHERE player=$playerid ORDER BY year DESC");
+											while ($cblockingData = mysqli_fetch_array($cblocking_result)) {
+												
+												echo "<tr>";
+												echo "<td>".$cblockingData['year']."</td>";
+												echo "<td><a href='team.php?teamid=".$cblockingData['team']."'>".$cblockingData['abbrev']."</td>";
+												echo "<td>".$cblockingData['games']."</td>";
+												echo "<td>".$cblockingData['snaps']."</td>";
+												echo "<td>".$cblockingData['sckallow']."</td>";
+												echo "<td>".$cblockingData['ol_rushyds']."</td>";
+												echo "<td>".$cblockingData['ol_rushatt']."</td>";
+												$olrushypc = round($cblockingData['ol_rushyds']/$cblockingData['ol_rushatt'],1);
+												echo "<td>".$olrushypc."</td>";
+												echo "</tr>";
+											}
+										}
+									?>
+									</tbody>
+								</table>
+							</div>
+						</div>
+						<div class="tab-pane statspane" id="c_tackling">
+							<div class="table-responsive">
+								<table class="table ">
+									<thead>
+										<th width="5%">Year</th>
+										<th width="5%">Team</th>
+										<th width="5%">Games</th>
+										<th>Run Snaps</th>
+										<th>Pass Snaps</th>
+										<th>Tackles</th>
+										<th>Missed Tackles</th>
+										<th>Sacks</th>
+										<th>Sack Yds</th>
+										<th>Tck for Loss</th>
+										<th>Forced Fum</th>
+										<th>Fum Yds</th>
+										<th>Fum TD</th>
+									</thead>
+									<tbody>
+										<?php
+											if ($hasstats) {
+												$ctackling_result = mysqli_query($conn,"SELECT year,team,abbrev,games,runsnaps,passsnaps,tackles,miss_tck,sack,sack_yds,tfl,ff,f_yds,f_td FROM `stats` WHERE player=$playerid ORDER BY year DESC");
+												while ($ctacklingData = mysqli_fetch_array($ctackling_result)) {
+													
+													echo "<tr>";
+													echo "<td>".$ctacklingData['year']."</td>";
+													echo "<td><a href='team.php?teamid=".$ctacklingData['team']."'>".$ctacklingData['abbrev']."</td>";
+													echo "<td>".$ctacklingData['games']."</td>";
+													echo "<td>".$ctacklingData['runsnaps']."</td>";
+													echo "<td>".$ctacklingData['passsnaps']."</td>";
+													echo "<td>".$ctacklingData['tackles']."</td>";
+													echo "<td>".$ctacklingData['miss_tck']."</td>";
+													echo "<td>".$ctacklingData['sack']."</td>";
+													echo "<td>".$ctacklingData['sack_yds']."</td>";
+													echo "<td>".$ctacklingData['tfl']."</td>";
+													echo "<td>".$ctacklingData['ff']."</td>";
+													echo "<td>".$ctacklingData['f_yds']."</td>";
+													echo "<td>".$ctacklingData['f_td']."</td>";
+													echo "</tr>";
+												}
+											}
+										?>
+									</tbody>
+								</table>
+							</div>
+						</div><div class="tab-pane statspane" id="c_pdefense">
+							<div class="table-responsive">
+								<table class="table ">
+									<thead>
+										<th width="5%">Year</th>
+										<th width="5%">Team</th>
+										<th width="5%">Games</th>
+										<th>Run Snaps</th>
+										<th>Pass Snaps</th>
+										<th>Targets</th>
+										<th>Rec Allowed</th>
+										<th>Yds Allowed</th>
+										<th>TD Allowed</th>
+										<th>Pass Def</th>
+										<th>Int</th>
+										<th>Int Yds</th>
+										<th>Int TD</th>
+										<th>Rating Against</th>
+									</thead>
+									<tbody>
+										<?php
+											if ($hasstats) {
+												$cpdefense_result = mysqli_query($conn,"SELECT year,team,abbrev,games,runsnaps,passsnaps,pass_tgt,rec_alwd,recyds_alwd,td_alwd,pdef,`int`,int_yds,int_td FROM `stats` WHERE player=$playerid ORDER BY year DESC");
+												while ($cpdefenseData = mysqli_fetch_array($cpdefense_result)) {
+													
+													echo "<tr>";
+													echo "<td>".$cpdefenseData['year']."</td>";
+													echo "<td><a href='team.php?teamid=".$cpdefenseData['team']."'>".$cpdefenseData['abbrev']."</td>";
+													echo "<td>".$cpdefenseData['games']."</td>";
+													echo "<td>".$cpdefenseData['runsnaps']."</td>";
+													echo "<td>".$cpdefenseData['passsnaps']."</td>";
+													echo "<td>".$cpdefenseData['pass_tgt']."</td>";
+													echo "<td>".$cpdefenseData['rec_alwd']."</td>";
+													echo "<td>".$cpdefenseData['recyds_alwd']."</td>";
+													echo "<td>".$cpdefenseData['td_alwd']."</td>";
+													echo "<td>".$cpdefenseData['pdef']."</td>";
+													echo "<td>".$cpdefenseData['int']."</td>";
+													echo "<td>".$cpdefenseData['int_yds']."</td>";
+													echo "<td>".$cpdefenseData['int_td']."</td>";
+													$ratingagainst = round(passerRating($cpdefenseData['pass_tgt'],$cpdefenseData['rec_alwd'],$cpdefenseData['recyds_alwd'],$cpdefenseData['td_alwd'],$cpdefenseData['int']),1);
+													echo "<td>".$ratingagainst."</td>";
+													echo "</tr>";
+												}
+											}
+										?>
+									</tbody>
+								</table>
+							</div>
+						</div>
+						<div class="tab-pane statspane" id="c_kicking">
+							<div class="table-responsive">
+								<table class="table ">
+									<thead>
+										<th width="5%">Year</th>
+										<th width="5%">Team</th>
+										<th width="5%">Games</th>
+										<th>XP Made</th>
+										<th>XP Att</th>
+										<th>XP %</th>
+										<th>FG Made</th>
+										<th>FG Att</th>
+										<th>FG %</th>
+										<th>Long</th>
+										<th>Pnts</th>
+									</thead>
+									<tbody>
+										<?php
+											if ($hasstats) {
+												$ckicking_result = mysqli_query($conn,"SELECT year,team,abbrev,games,xpa,xpm,fga,fgm,fg_long,fg_pnts FROM `stats` WHERE player=$playerid ORDER BY year DESC");
+												while ($ckickingData = mysqli_fetch_array($ckicking_result)) {
+													
+													echo "<tr>";
+													echo "<td>".$ckickingData['year']."</td>";
+													echo "<td><a href='team.php?teamid=".$ckickingData['team']."'>".$ckickingData['abbrev']."</td>";
+													echo "<td>".$ckickingData['games']."</td>";
+													echo "<td>".$ckickingData['xpm']."</td>";
+													echo "<td>".$ckickingData['xpa']."</td>";
+													$xppercent = round($ckickingData['xpm']/$ckickingData['xpa']*100,1);
+													echo "<td>".$xppercent."</td>";
+													echo "<td>".$ckickingData['fgm']."</td>";
+													echo "<td>".$ckickingData['fga']."</td>";
+													$fgpercent = round($ckickingData['fgm']/$ckickingData['fga']*100,1);
+													echo "<td>".$fgpercent."</td>";
+													echo "<td>".$ckickingData['fg_long']."</td>";
+													echo "<td>".$ckickingData['fg_pnts']."</td>";
+													echo "</tr>";
+												}
+											}
+										?>
+									</tbody>
+								</table>
+							</div>
+						</div>
+						<div class="tab-pane statspane" id="c_punting">
+							<div class="table-responsive">
+								<table class="table ">
+									<thead>
+										<th width="5%">Year</th>
+										<th width="5%">Team</th>
+										<th width="5%">Games</th>
+										<th>Punts</th>
+										<th>Yds</th>
+										<th>Net Yds</th>
+										<th>Yds/Punt</th>
+										<th>Net Yds/Punt</th>
+										<th>Long</th>
+										<th>In 20</th>
+										<th>Touchbacks</th>
+									</thead>
+									<tbody>
+										<?php
+											if ($hasstats) {
+												$cpunting_result = mysqli_query($conn,"SELECT year,team,abbrev,games,punts,punt_yds,punt_net,punt_long,punt_in20,punt_tb FROM `stats` WHERE player=$playerid ORDER BY year DESC");
+												while ($cpuntingData = mysqli_fetch_array($cpunting_result)) {
+													
+													echo "<tr>";
+													echo "<td>".$cpuntingData['year']."</td>";
+													echo "<td><a href='team.php?teamid=".$cpuntingData['team']."'>".$cpuntingData['abbrev']."</td>";
+													echo "<td>".$cpuntingData['games']."</td>";
+													echo "<td>".$cpuntingData['punts']."</td>";
+													echo "<td>".$cpuntingData['punt_yds']."</td>";
+													echo "<td>".$cpuntingData['punt_net']."</td>";
+													$ydsperpunt = round($cpuntingData['punt_yds']/$cpuntingData['punts'],1);
+													$netydsperpunt = round($cpuntingData['punt_net']/$cpuntingData['punts'],1);
+													echo "<td>".$ydsperpunt."</td>";
+													echo "<td>".$netydsperpunt."</td>";
+													echo "<td>".$cpuntingData['punt_long']."</td>";
+													echo "<td>".$cpuntingData['punt_in20']."</td>";
+													echo "<td>".$cpuntingData['punt_tb']."</td>";
+													echo "</tr>";
+												}
+											}
+										?>
+									</tbody>
+								</table>
+							</div>
+						</div>
+						<div class="tab-pane statspane" id="c_returning">
+							<div class="table-responsive">
+								<table class="table ">
+									<thead>
+										<th width="5%">Year</th>
+										<th width="5%">Team</th>
+										<th width="5%">Games</th>
+										<th>Kick Ret</th>
+										<th>KR Yds</th>
+										<th>Yds/KR</th>
+										<th>KR Long</th>
+										<th>KR TD</th>
+										<th>Punt Ret</th>
+										<th>PR Yds</th>
+										<th>Yds/PR</th>
+										<th>PR Long</th>
+										<th>PR TD</th>
+									</thead>
+									<tbody>
+										<?php
+											if ($hasstats) {
+												$creturning_result = mysqli_query($conn,"SELECT year,team,abbrev,games,kret,kret_yds,kret_long,kret_td,pret,pret_yds,pret_long,pret_td FROM `stats` WHERE player=$playerid ORDER BY year DESC");
+												while ($creturningData = mysqli_fetch_array($creturning_result)) {
+													
+													echo "<tr>";
+													echo "<td>".$creturningData['year']."</td>";
+													echo "<td><a href='team.php?teamid=".$creturningData['team']."'>".$creturningData['abbrev']."</td>";
+													echo "<td>".$creturningData['games']."</td>";
+													echo "<td>".$creturningData['kret']."</td>";
+													echo "<td>".$creturningData['kret_yds']."</td>";
+													$ydsperkr = round($creturningData['kret_yds']/$creturningData['kret'],1);
+													echo "<td>".$ydsperkr."</td>";
+													echo "<td>".$creturningData['kret_long'];
+													echo "<td>".$creturningData['kret_td'];
+													echo "<td>".$creturningData['pret']."</td>";
+													echo "<td>".$creturningData['pret_yds']."</td>";
+													$ydsperpr = round($creturningData['pret_yds']/$creturningData['pret'],1);
+													echo "<td>".$ydsperpr."</td>";
+													echo "<td>".$creturningData['pret_long'];
+													echo "<td>".$creturningData['pret_td'];
+													echo "</tr>";
+												}
+											}
+										?>
+									</tbody>
+								</table>
+							</div>
+						</div>
+					</div>
+				</div>
+                <div class="tab-pane fade" id="gamelogs">
+					<ul class="nav nav-tabs categories" role="tablist">
+						<li class="active">
+						  <a href="#gl_passing" role="tab" data-toggle="tab">Passing</a>
+						</li>
+						<li>
+						  <a href="#gl_rushing" role="tab" data-toggle="tab">Rushing</a>
+						</li>
+						<li>
+						  <a href="#gl_receiving" role="tab" data-toggle="tab">Receiving</a>
+						</li>
+						<li>
+						  <a href="#gl_blocking" role="tab" data-toggle="tab">Blocking</a>
+						</li>
+						<li>
+						  <a href="#gl_tackling" role="tab" data-toggle="tab">Tackling</a>
+						</li>
+						<li>
+						  <a href="#gl_pdefense" role="tab" data-toggle="tab">Pass Defense</a>
+						</li>
+						<li>
+						  <a href="#gl_kicking" role="tab" data-toggle="tab">Kicking</a>
+						</li>
+						<li>
+						  <a href="#gl_punting" role="tab" data-toggle="tab">Punting</a>
+						</li>
+						<li>
+						  <a href="#gl_returning" role="tab" data-toggle="tab">Returning</a>
+						</li>
+					</ul>
+					<div class="tab-content">
+						<div class="tab-pane statspane active" id="gl_passing">
+							<div class="table-responsive">
+								<table class="table ">
+									<thead>
+										<th width="5%">Year</th>
+										<th width="5%">Team</th>
+										<th width="5%">Games</th>
+										<th width="5%">Snaps</th>
+										<th>Comp</th>
+										<th>Att</th>
+										<th>Comp %</th>
+										<th>Yds</th>
+										<th>Yds/Att</th>
+										<th>Long</th>
+										<th>TD</th>
+										<th>Int</th>
+										<th>Sck</th>
+										<th>Sck Yd</th>
+										<th>Rate</th>
+										<th>ANYA</th>
+										<th>Fum</th>
+										<th>Fum Lost</th>
+									</thead>
+									<tbody>
+									</tbody>
+								</table>
+							</div>
+						</div>
+						<div class="tab-pane statspane" id="gl_rushing">
+							<div class="table-responsive">
+								<table class="table ">
+									<thead>
+										<th width="5%">Year</th>
+										<th width="5%">Team</th>
+										<th width="5%">Games</th>
+										<th width="5%">Snaps</th>
+										<th>Att</th>
+										<th>Yds</th>
+										<th>Yds/Att</th>
+										<th>Long</th>
+										<th>TD</th>
+										<th>Fum</th>
+										<th>Fum Lost</th>
+									</thead>
+									<tbody>
+									</tbody>
+								</table>
+							</div>
+						</div>
+						<div class="tab-pane statspane" id="gl_receiving">
+							<div class="table-responsive">
+								<table class="table ">
+									<thead>
+										<th>Year</th>
+										<th>Team</th>
+										<th>Games</th>
+										<th>Snaps</th>
+										<th>Rec</th>
+										<th>Tgts</th>
+										<th>Yds</th>
+										<th>YAC</th>
+										<th>Yds/Rec</th>
+										<th>YAC/Rec</th>
+										<th>Long</th>
+										<th>TD</th>
+										<th>Fum</th>
+										<th>Fum Lost</th>
+									</thead>
+									<tbody>
+									</tbody>
+								</table>
+							</div>
+						</div>
+						<div class="tab-pane statspane" id="gl_blocking">
+							<div class="table-responsive">
+								<table class="table ">
+									<thead>
+										<th>Year</th>
+										<th>Team</th>
+										<th>Games</th>
+										<th>Snaps</th>
+										<th>Sacks Allowed</th>
+										<th>Rush Yds</th>
+										<th>Rush Att</th>
+										<th>Rush YPC</th>
+									</thead>
+									<tbody>
+									</tbody>
+								</table>
+							</div>
+						</div>
+						<div class="tab-pane statspane" id="gl_tackling">
+							<div class="table-responsive">
+								<table class="table ">
+									<thead>
+										<th>Year</th>
+										<th>Team</th>
+										<th>Games</th>
+										<th>Snaps</th>
+										<th>Tackles</th>
+										<th>Missed Tackles</th>
+										<th>Sacks</th>
+										<th>Sack Yds</th>
+										<th>Tck for Loss</th>
+										<th>Forced Fum</th>
+										<th>Fum Yds</th>
+										<th>Fum TD</th>
+									</thead>
+									<tbody>
+									</tbody>
+								</table>
+							</div>
+						</div><div class="tab-pane statspane" id="gl_pdefense">
+							<div class="table-responsive">
+								<table class="table ">
+									<thead>
+										<th>Year</th>
+										<th>Team</th>
+										<th>Games</th>
+										<th>Snaps</th>
+										<th>Targets</th>
+										<th>Rec Allowed</th>
+										<th>TD Allowed</th>
+										<th>Pass Def</th>
+										<th>Int</th>
+										<th>Int Yds</th>
+										<th>Int TD</th>
+										<th>Rating Against</th>
+									</thead>
+									<tbody>
+									</tbody>
+								</table>
+							</div>
+						</div>
+						<div class="tab-pane statspane" id="gl_kicking">
+							<div class="table-responsive">
+								<table class="table ">
+									<thead>
+										<th>Year</th>
+										<th>Team</th>
+										<th>Games</th>
+										<th>XP Made</th>
+										<th>XP Att</th>
+										<th>XP %</th>
+										<th>FG Made</th>
+										<th>FG Att</th>
+										<th>FG %</th>
+										<th>Long</th>
+										<th>Pnts</th>
+										<th>Kickoffs</th>
+										<th>Kickoff Yds</th>
+										<th>Yds/KO</th>
+										<th>Touchbacks</th>
+									</thead>
+									<tbody>
+									</tbody>
+								</table>
+							</div>
+						</div>
+						<div class="tab-pane statspane" id="gl_punting">
+							<div class="table-responsive">
+								<table class="table ">
+									<thead>
+										<th>Year</th>
+										<th>Team</th>
+										<th>Games</th>
+										<th>Punts</th>
+										<th>Yds</th>
+										<th>Net Yds</th>
+										<th>Yds/Punt</th>
+										<th>Net Yds/Punt</th>
+										<th>Long</th>
+										<th>In 20</th>
+										<th>Touchbacks</th>
+									</thead>
+									<tbody>
+									</tbody>
+								</table>
+							</div>
+						</div>
+						<div class="tab-pane statspane" id="gl_returning">
+							<div class="table-responsive">
+								<table class="table ">
+									<thead>
+										<th>Year</th>
+										<th>Team</th>
+										<th>Games</th>
+										<th>Kick Ret</th>
+										<th>KR Yds</th>
+										<th>Yds/KR</th>
+										<th>KR Long</th>
+										<th>KR TD</th>
+										<th>Punt Ret</th>
+										<th>PR Yds</th>
+										<th>Yds/PR</th>
+										<th>PR Long</th>
+										<th>PR TD</th>
+									</thead>
+									<tbody>
+									</tbody>
+								</table>
+							</div>
+						</div>
+					</div>
+				</div>
+                <div class="tab-pane fade" id="progression">
                     <div class="row">
                       <div class="col-md-9">
                         <div class="progression">
@@ -573,7 +1280,6 @@ if (!empty($_GET['playerid'])) {
                         </div>
                       </div>
                     </div>
-                  </div>
                 </div>
 				
               </div>
@@ -648,7 +1354,7 @@ if (!empty($_GET['playerid'])) {
 					echo "<form class=\"form-horizontal\" action=\"player.php?playerid=".$playerid."\" method=\"POST\" id=\"faoffer\" name=\"faoffer\" role=\"form\">
 					<div class=\"row\">
 					
-						<div class=\"col-md-5\">
+						<div class=\"col-md-7\">
 							<div class=\"form-group\">
 								<label for=\"base\" class=\"col-md-5 control-label\">Base Contract Value: </label>
 								<div class=\"col-md-6\">
@@ -660,10 +1366,10 @@ if (!empty($_GET['playerid'])) {
 								</div>
 							</div>
 						</div>
-						<div class=\"col-md-4\">
+						<div class=\"col-md-7\">
 							<div class=\"form-group\">
-								<label for=\"bonus\" class=\"col-md-4 control-label\">Guaranteed: </label>
-								<div class=\"col-md-7\">
+								<label for=\"bonus\" class=\"col-md-5 control-label\">Guaranteed: </label>
+								<div class=\"col-md-6\">
 									<div class=\"input-group\">
 										<span class=\"input-group-addon\">$</span>
 										<input type=\"number\" class=\"form-control\" id=\"bonus\" name=\"bonus\"  />
@@ -674,11 +1380,11 @@ if (!empty($_GET['playerid'])) {
 						</div>
 					</div>
 					<div class=\"row\">
-						<div class=\"col-md-5\">
-							<div class=\"col-sm-2 col-sm-offset-3\">
+						<div class=\"col-md-7\">
+							<div class=\"col-md-5 control-label\">
 								<b>Years: </b>
 							</div>
-							<div class=\"col-sm-5\">
+							<div class=\"col-md-6\">
 								<select class=\"form-control\" name=\"years\" id=\"years\">
 									<option selected>1</option>
 									<option>2</option>
@@ -691,10 +1397,10 @@ if (!empty($_GET['playerid'])) {
 						</div>
 					</div>
 					<div class=\"row\" id=\"salarytext\">
-							<div class=\"col-sm-2\">
-								<b>Offered contract: </b>
+							<div class=\"col-md-3\">
+								<b style=\"float: right;\">Offered contract: </b>
 							</div>
-							<div class=\"col-sm-8\">
+							<div class=\"col-md-8\">
 							<span id=\"saltext\">
 							</span>
 							<span id=\"bontext\">

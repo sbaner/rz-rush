@@ -43,7 +43,7 @@
 	color:#000;
 }
 
-.stats .tab-pane {
+.stats > .tab-pane {
 	padding:10px;
 }
 
@@ -64,6 +64,26 @@
 .salaryinput {
 	padding-left:0;
 	padding-right:0;
+}
+
+thead {
+	color:#333;
+	background-color:#DDD;
+	font-size:12px;
+}
+
+tbody {
+	background-color:#FFF;
+	color:#333;
+}
+
+.statspane {
+	padding-top:10px;
+}
+
+ul.nav.nav-tabs.categories {
+background-color: #FFF;
+font-size: 14px;
 }
 
 #salarytext {

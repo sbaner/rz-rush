@@ -44,7 +44,7 @@ if (mysqli_num_rows($checkUser) > 0) {
 		die();
 	}
 	$query = "INSERT INTO member ( username, password, email, salt, signup, premium, last_login, ipaddress )
-			VALUES ( '$username', '$password', '$email', '$salt', '$signupdate', 'n', '$signupdate','$ipaddress' );";
+			VALUES ( '$username', '$password', '$email', '$salt', '$signupdate', 'y', '$signupdate','$ipaddress' );";
 	mysqli_query($conn, $query);
 	if (mysqli_affected_rows($conn) == 1) {
 		$result = "success";

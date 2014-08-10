@@ -9,6 +9,7 @@
 
 .playerrow {
 	margin-top:20px;
+	min-width:100%
 }
 
 .borderless tbody tr td, .borderless thead tr th {
@@ -17,25 +18,52 @@
 
 .playerbox {
 	margin-top:20px;
-	background-color:#f5f5f5;
 	padding:20px;
+	max-height:300px;
 }
 
-.stacktable.large-only { display: table; }
-.stacktable.small-only { display: none; }
 
-@media (max-width: 800px) {
-  .stacktable.large-only { display: none; }
-  .stacktable.small-only { 
-	display: table;
-	}
-	
-	.stacktable.small-only tr {
-		margin-bottom:10px;
-		padding:5px;
-	}
+
+#depth {
+	margin-left:0;
+	margin-right:0;
+}
+.selected  .active a{
+	font-weight:bold;
+}
+.liheader {
+	margin-bottom:5x;
+	margin-left:5px;
+	margin-top:5px;
 }
 
+.liheader  ul > li {
+	margin-bottom:10px;
+}
+.packageselect {
+	background-color:#f5f5f5;
+	padding:5px;
+	margin-bottom:10px;
+}
+
+.sidelist li > a {
+color: #004078;
+font-weight:bold;
+}
+
+.sidelist li > ul li a {
+	color: #428bca;
+	font-weight:normal;
+}
+
+
+#packages {
+	list-style-type: none;
+	padding:0; margin:0;
+}
+#packages ul{
+	list-style-type: none;
+}
 .st-key {
 	margin-right:10px;
 }
@@ -65,6 +93,10 @@
 	.playerbox {
 		position:fixed;
 		width:inherit;
+	}
+	
+	#depth {
+		padding-right:100px;
 	}
 	
 }

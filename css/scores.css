@@ -44,6 +44,9 @@
 	border-bottom-color:white;
 }
 
+.teamrow {
+	padding-bottom:15px;
+}
 
 #all-scores a {
 	color:white;
@@ -66,8 +69,10 @@
 .result {
 	background-color:#BBB;
 	padding:10px;
-	margin-right:10px;
+	margin-left:5px;
+	margin-right:5px;
 	margin-bottom:10px;
+	min-height:140px;
 }
 
 .result .col-md-6 {
