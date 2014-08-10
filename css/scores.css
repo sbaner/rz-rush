@@ -47,7 +47,18 @@
 .teamrow {
 	padding-bottom:15px;
 }
+select {
+	margin-bottom:10px;
+}
 
+.smallhelm {
+	transform: translateY(20%);
+}
+
+.selectdiv {
+	padding-left:25px;
+	padding-right:25px;
+}
 #all-scores a {
 	color:white;
 }

@@ -39,7 +39,6 @@ if (isset($_POST['changeprofpic']) || isset($_POST['changelogo'])){
 	}
 	 $imgsize = $_FILES['upload_file']['size'];	
 	 $imgtype = $_FILES['upload_file']['type'];
-	 $member_id = $_SESSION['member_id'];
  
 	if ($imgtype == "image/jpeg" || $imgtype == "image/png") {
   
