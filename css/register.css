@@ -24,8 +24,27 @@ body {
 	background-image:url('background.jpg');
 	background-repeat:no-repeat;
 	height:85vh;
-	width:100vw;
 }
 #formcheck {
 	float:right;
+}
+
+#to {
+	margin-bottom:0;
+}
+
+#resultdiv {
+	margin-left:2px;
+	width:30%;
+	padding:0;
+}
+
+.userrow {
+	padding:10px;
+	margin-left:0;
+	width:100%;
+	
+}
+.userrow:hover {
+	background-color: #EEE;
 }

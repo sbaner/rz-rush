@@ -35,7 +35,7 @@
 	
 	//Retrieve POST data and update
 	if(isset($_POST['delete-button'])) {
-		mysqli_query($conn,"UPDATE team SET owner=0,total_win=0,total_loss=0,championships=0,total_tie=0,logofile='helmet.png',owndate='' WHERE id=$teamid");
+		mysqli_query($conn,"UPDATE team SET owner=0,total_win=0,total_loss=0,championships=0,total_tie=0,logofile='helmet.png',owndate='',seasons=0 WHERE id=$teamid");
 		$timestamp = date("Y")."-".date("m")."-".date("d")." ".date("g").":".date("i")." ".date("A");
 		mysqli_query($conn,"INSERT INTO leagueactivity (league,team,member,action,timestamp) VALUES ($leagueid,$teamid,$userID,'dropped','$timestamp')");
 		header('Location: team.php?teamid='.$teamid);
@@ -48,6 +48,9 @@
 		
 		header('Location: team.php?teamid='.$teamid);
 	}
+	
+	//Tutorial
+	mysqli_query($conn,"UPDATE tutorial SET profile='1',teamselect='1',league='1',team='1',teamedit='1' WHERE member=$userID");
 	
 	
 ?>
@@ -151,14 +154,14 @@
 				<a href="allusers.php">Users</a>
 			  </li>
               <li>
-                <a href="#">Help</a>
+                <a href="/help" target="_blank">Help</a>
               </li>
             </ul>
           </div>
         </div>
       </div>
       <div class="row" id="content">
-        <div class="col-md-3 col-lg-2">
+        <div class="col-sm-3 col-lg-2">
           <div class="side-bar">
             <div class="team-card">
             <?php 
@@ -213,7 +216,7 @@
 			<button type="submit" class="btn btn-primary">Log out</button>
 		</form>
         </div>
-        <div class="col-md-offset-1 col-md-6">
+        <div class="col-md-offset-1 col-sm-9 col-md-6">
           <div class="main">
 		  <h3>Edit Team</h3>
             <form class="form-horizontal" method="POST" id="edit-team" action="teamedit.php?teamid=<?php echo $teamid;?>" role="form">
@@ -238,7 +241,23 @@
               <div class="form-group">
                 <div class="col-sm-offset-2 col-sm-10">
                   <button type="submit" class="btn btn-primary" id="signup-button" disabled>Update Info</button>
-                  <button type="submit" class="btn btn-danger" id="delete-button" name="delete-button" onclick="return confirm('Really delete this team? All historical data will be lost and you will no longer control this team.');">Delete Team</button>
+                  <button type="button" class="btn btn-danger" data-toggle='modal' data-target='#confdel'>Delete Team</button>
+				  <div class='modal fade' id='confdel' tabindex='-1' role='dialog' aria-labelledby='ConfirmDelete' aria-hidden='true'>
+					  <div class='modal-dialog modal-sm'>
+						<div class='modal-content'>
+						  <div class='modal-header'>
+							<button type='button' class='close' data-dismiss='modal'><span aria-hidden='true'>&times;</span><span class='sr-only'>Close</span></button>
+							<h4 class='modal-title' id='cutModalLabel'>Confirm action</h4>
+						  </div>
+						  <div class='modal-body'>
+							Delete this team? All historical data will be lost and you will no longer control this team.
+						  </div>
+						  <div class='modal-footer'>
+							<button type="submit" class="btn btn-danger" id="delete-button" name="delete-button">Delete Team</button>
+						  </div>
+						</div>
+					  </div>
+					</div>
                 </div>
               </div>
             </form>

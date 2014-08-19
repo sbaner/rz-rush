@@ -18,7 +18,7 @@ if (!empty($_GET['playerid'])) {
 	$conn = mysqli_connect('localhost', 'rzrushco_admin', 'rzr_3541', 'rzrushco_main');
 	$own_team_result = mysqli_query($conn,"SELECT * FROM team WHERE `owner`='$userID'");
 	
-	$player_result = mysqli_query($conn, "SELECT * FROM player WHERE id=$playerid");
+	$player_result = mysqli_query($conn, "SELECT player.*,attributes.* FROM player INNER JOIN attributes ON attributes.player=player.id WHERE player.id=$playerid ORDER BY attributes.year LIMIT 1");
 	if (mysqli_num_rows($player_result) == 1) {
 		$playerData = mysqli_fetch_array($player_result);
 		$player_league = $playerData['league'];
@@ -417,41 +417,41 @@ if (!empty($_GET['playerid'])) {
 				<a href="allusers.php">Users</a>
 			  </li>
               <li>
-                <a href="#">Help</a>
+                <a href="/help" target="_blank">Help</a>
               </li>
             </ul>
           </div>
         </div>
       </div>
       <div class="row" id="content">
-        <div class="col-md-3 col-lg-2">
-          <div class="side-bar">
-            <div class="team-card">
+        <div class="col-sm-3 col-lg-2">
             <?php 
 			$myteam_result = mysqli_query($conn,"SELECT id,division,location,teamname,season_win,season_loss,season_tie,logofile FROM `team` WHERE league=$player_league AND owner=$userID");
 			if (mysqli_num_rows($myteam_result) != 0) {
-			$myteamData = mysqli_fetch_array($myteam_result, MYSQL_ASSOC);
-			$myteamid = $myteamData['id'];
-			$mydivision = $myteamData['division'];
-			$myteamname = $myteamData['location']." ".$myteamData['teamname'];
-			if ($myteamData['season_tie']==0) {
-				$myteamrecord = $myteamData['season_win']."-".$myteamData['season_loss'];
-			} else {
-				$myteamrecord = $myteamData['season_win']."-".$myteamData['season_loss']."-".$myteamData['season_tie'];
+				$myteamData = mysqli_fetch_array($myteam_result, MYSQL_ASSOC);
+				$myteamid = $myteamData['id'];
+				$mydivision = $myteamData['division'];
+				$myteamname = $myteamData['location']." ".$myteamData['teamname'];
+				if ($myteamData['season_tie']==0) {
+					$myteamrecord = $myteamData['season_win']."-".$myteamData['season_loss'];
+				} else {
+					$myteamrecord = $myteamData['season_win']."-".$myteamData['season_loss']."-".$myteamData['season_tie'];
+				}
+				$myteam_logopath = "uploads/logos/".$myteamData['logofile'];
+				echo "<div class=\"side-bar\">
+            <div class=\"team-card\"><h3>My team</h3><a href=\"team.php?teamid=".$myteamid."\">
+				  <img src=\"".$myteam_logopath."\" width=\"150\"/>
+				</a> 
+				<b><a href=\"team.php?teamid=".$myteamid."\">
+				  <p>".$myteamname."</p>
+				</a><p>".$myteamrecord."</p></b>";
+				echo "<p>".getWeek($player_league)."</p></div>
+          </div>";	
 			}
-			$myteam_logopath = "uploads/logos/".$myteamData['logofile'];
-			echo "<h3>My team</h3><a href=\"team.php?teamid=".$myteamid."\">
-              <img src=\"".$myteam_logopath."\" width=\"150\"/>
-            </a> 
-            <b><a href=\"team.php?teamid=".$myteamid."\">
-              <p>".$myteamname."</p>
-            </a><p>".$myteamrecord."</p></b>";
-			echo "<p>".getWeek($player_league)."</p>";	
-			}
-			?></div>
-          </div>
+			?>
+			
         </div>
-        <div class="col-md-9 col-lg-8">
+        <div class="col-sm-9 col-lg-8">
 		<ol class="breadcrumb">
 		<?php
 			echo "<li><a href=\"league.php?leagueid=".$player_league."\">".$leaguename."</a></li>";
@@ -465,9 +465,8 @@ if (!empty($_GET['playerid'])) {
 		</ol>
           <div class="main">
             <div class="player-header">
-              <div class="container">
                 <div class="row">
-                  <div class="col-md-2">
+                  <div class="col-md-2 col-sm-3">
                     <div class="first-col">
                       <h3 class="name"><?php echo $player_name; ?></h3>
                       <h4 class="position"><?php
@@ -481,7 +480,7 @@ if (!empty($_GET['playerid'])) {
 					  ?></h4>
                     </div>
                   </div>
-                  <div class="col-md-3">
+                  <div class="col-sm-3">
                     <div class="sec-col">
                       <h4>
                         <b>Player Info</b>
@@ -497,7 +496,7 @@ if (!empty($_GET['playerid'])) {
                       <p>Experience: <?php echo $player_exp; ?></p>
                     </div>
                   </div>
-                  <div class="col-md-5">
+                  <div class="col-sm-5">
                     <div class="third-col">
                       <h4>
                         <b>Awards</b>
@@ -505,7 +504,6 @@ if (!empty($_GET['playerid'])) {
                     </div>
                   </div>
                 </div>
-              </div>
             </div>
             <div class="stats">
               <!-- Nav tabs -->
@@ -517,7 +515,7 @@ if (!empty($_GET['playerid'])) {
                   <a href="#gamelogs" role="tab" data-toggle="tab">Game Logs</a>
                 </li>
                 <li>
-                  <a href="#progression" role="tab" data-toggle="tab">Player Progression</a>
+                  <a href="#atts" role="tab" data-toggle="tab">Attributes</a>
                 </li>
               </ul>
               <!-- Tab panes -->
@@ -1220,63 +1218,1250 @@ if (!empty($_GET['playerid'])) {
 						</div>
 					</div>
 				</div>
-                <div class="tab-pane fade" id="progression">
+                <div class="tab-pane fade" id="atts">
                     <div class="row">
                       <div class="col-md-9">
-                        <div class="progression">
-                            <div class="row">
-                              <div class="col-md-1"><p>Overall:</p></div>
-							  <div class="col-md-1"><p>80</p></div>
-                              <div class="col-md-10">
-                                <div class="progress">
-                                  <div class="progress-bar" role="progressbar" aria-valuenow="60" aria-valuemin="0"
-                                  aria-valuemax="100" style="width: 60%;">60</div>
-                                  <div class="progress-bar progress-bar-success" role="progressbar" aria-valuenow="20"
-                                  aria-valuemin="0" aria-valuemax="100" style="width: 20%">+20</div>
-                                </div>
-                              </div>
-							  
-                            </div>
-                            <div class="row">
-                              <div class="col-md-1"><p>Accuracy:</p></div>
-							  <div class="col-md-1"><p>94</p></div>
-                              <div class="col-md-10">
-                                <div class="progress">
-                                  <div class="progress-bar" role="progressbar" aria-valuenow="80" aria-valuemin="0"
-                                  aria-valuemax="100" style="width: 80%;">87</div>
-                                  <div class="progress-bar progress-bar-success" role="progressbar" aria-valuenow="7"
-                                  aria-valuemin="0" aria-valuemax="100" style="width: 7%">+7</div>
-                                </div>
-                              </div>
-							  
-                            </div>
-                            <div class="row">
-                              <div class="col-md-1"><p>Speed:</p></div>
-                              <div class="col-md-1"><p>36</p></div>
-							  <div class="col-md-10">
-                                <div class="progress">
-                                  <div class="progress-bar" role="progressbar" aria-valuenow="36" aria-valuemin="0"
-                                  aria-valuemax="100" style="width: 36%;">36</div>
-                                  <div class="progress-bar progress-bar-success" role="progressbar" aria-valuenow="0"
-                                  aria-valuemin="0" aria-valuemax="100" style="width: 0%">
-                                    <span class="sr-only">+0</span>
-                                  </div>
-                                </div>
-                              </div>
-							  
-                            </div>
-                            <div class="row">
-                              <div class="col-md-1"><p>Strength:</p></div>
-							  <div class="col-md-1"><p>59</p></div>
-                              <div class="col-md-10">
-                                <div class="progress">
-                                  <div class="progress-bar" role="progressbar" aria-valuenow="46" aria-valuemin="0"
-                                  aria-valuemax="100" style="width: 46%;">46</div>
-                                  <div class="progress-bar progress-bar-success" role="progressbar" aria-valuenow="13"
-                                  aria-valuemin="0" aria-valuemax="100" style="width: 13%">+13</div>
-                                </div>
-                              </div>
-                            </div>
+                        <div class="attributes">
+						<?php
+						$showarray = [];
+						switch($player_position) {
+							case "QB":
+								$showarray = ["elusive","fw","read","pocket","throw_pow","throw_acc","clutch","leadership","durability","toughness"];
+								break;
+							case "RB":
+								$showarray = ["strength","speed","burst","carrying","hands","elusive","read","pass_block","durability","toughness"];
+								break;
+							case "FB":
+								$showarray = ["strength","speed","burst","carrying","hands","read","pass_block","run_block","durability","toughness"];
+								break;
+							case "WR":
+								$showarray = ["strength","speed","burst","carrying","hands","elusive","route","jump","durability","toughness"];
+								break;
+							case "TE":
+								$showarray = ["strength","speed","burst","carrying","hands","elusive","read","pass_block","run_block","route","jump","durability","toughness"];
+								break;
+							case "T":
+								$showarray = ["strength","burst","fw","read","pass_block","run_block","durability","toughness"];
+								break;
+							case "G":
+								$showarray = ["strength","burst","fw","read","pass_block","run_block","durability","toughness"];
+								break;
+							case "C":
+								$showarray = ["strength","burst","fw","read","pass_block","run_block","leadership","durability","toughness"];
+								break;
+							case "DE":
+								$showarray = ["strength","speed","burst","fw","read","block_shed","tackling","durability","toughness"];
+								break;
+							case "DT":
+								$showarray = ["strength","speed","burst","fw","read","block_shed","tackling","durability","toughness"];
+								break;
+							case "LB":
+								$showarray = ["strength","speed","burst","read","block_shed","coverage","tackling","leadership","durability","toughness"];
+								break;
+							case "CB":
+								$showarray = ["strength","speed","burst","hands","read","jump","block_shed","coverage","tackling","durability","toughness"];
+								break;
+							case "S":
+								$showarray = ["strength","speed","read","block_shed","coverage","tackling","leadership","durability","toughness"];
+								break;
+							case "K":
+								$showarray = ["kick_pow","kick_acc","clutch"];
+								break;
+							case "P":
+								$showarray = ["hands","kick_pow","punt_acc"];
+								break;
+						}
+						?>
+							<table class="table">
+							<?php
+								$last_year = $league_year - 1;
+								$progression_result = mysqli_query($conn,"SELECT * FROM attributes WHERE player=$playerid AND year=$last_year");
+								if (mysqli_num_rows($progression_result)!=0) {
+									$progressionData = mysqli_fetch_array($progression_result);
+									$progress = true;
+								} else {
+									$progress = false;
+								}
+							?>
+									<thead>
+									<tr>
+										<?php
+										$overall_now = $playerData['overall_now'];
+										if ($progress) {
+											$overall_then = $progressionData['overall_now'];
+											$overall_growth = $overall_now-$overall_then;
+										}
+										echo "<th width='30%'>Rating</td>
+										<th>".$overall_now."</td>
+										<th>";
+										if ($progress) { 
+											echo "<div class='progress-bar' role='progressbar' aria-valuenow='".$overall_then."' aria-valuemin='0'
+											aria-valuemax='100' style='width: ".$overall_then."%;'>".$overall_then."</div>";
+											if ($overall_growth > 0) {
+												echo "<div class='progress-bar progress-bar-success' role='progressbar' aria-valuenow='".$overall_growth."'
+												aria-valuemin='0' aria-valuemax='100' style='width: ".$overall_growth."%'>+".$overall_growth."</div></td>";
+											}
+										} else {
+											echo "<div class='progress-bar' role='progressbar' aria-valuenow='".$overall_now."' aria-valuemin='0'
+											aria-valuemax='100' style='width: ".$overall_now."%;'>".$overall_now."</div>";	
+										}
+										?>
+									</tr>
+									</thead>
+									<tbody>
+									<tr>
+										<?php
+										if (in_array("strength",$showarray)) {
+											$strength_now = $playerData['strength_now'];
+											if ($progress) {
+												$strength_then = $progressionData['strength_now'];
+												$strength_growth = $strength_now-$strength_then;
+											}
+											echo "<td>Strength</td>
+											<td>".$strength_now."</td>
+											<td>";
+											if ($progress) { 
+												echo "<div class='progress-bar' role='progressbar' aria-valuenow='".$strength_then."' aria-valuemin='0'
+												aria-valuemax='100' style='width: ".$strength_then."%;'>".$strength_then."</div>";
+												if ($strength_growth > 0) {
+													echo "<div class='progress-bar progress-bar-success' role='progressbar' aria-valuenow='".$strength_growth."'
+													aria-valuemin='0' aria-valuemax='100' style='width: ".$strength_growth."%'>+".$strength_growth."</div></td>";
+												}
+											} else {
+												echo "<div class='progress-bar' role='progressbar' aria-valuenow='".$strength_now."' aria-valuemin='0'
+												aria-valuemax='100' style='width: ".$strength_now."%;'>".$strength_now."</div>";	
+											}
+										}
+										?>
+									</tr>
+									<tr>
+										<?php
+										if (in_array("speed",$showarray)) {
+										$speed_now = $playerData['speed_now'];
+										if ($progress) {
+											$speed_then = $progressionData['speed_now'];
+											$speed_growth = $speed_now-$speed_then;
+										}
+										echo "<td>Speed</td>
+										<td>".$speed_now."</td>
+										<td>";
+										if ($progress) { 
+											echo "<div class='progress-bar' role='progressbar' aria-valuenow='".$speed_then."' aria-valuemin='0'
+											aria-valuemax='100' style='width: ".$speed_then."%;'>".$speed_then."</div>";
+											if ($speed_growth > 0) {
+												echo "<div class='progress-bar progress-bar-success' role='progressbar' aria-valuenow='".$speed_growth."'
+												aria-valuemin='0' aria-valuemax='100' style='width: ".$speed_growth."%'>+".$speed_growth."</div></td>";
+											}
+										} else {
+											echo "<div class='progress-bar' role='progressbar' aria-valuenow='".$speed_now."' aria-valuemin='0'
+											aria-valuemax='100' style='width: ".$speed_now."%;'>".$speed_now."</div>";	
+										}
+										}
+										?>
+									</tr>
+									<tr>
+										<?php
+										if (in_array("burst",$showarray)) {
+										$burst_now = $playerData['burst_now'];
+										if ($progress) {
+											$burst_then = $progressionData['burst_now'];
+											$burst_growth = $burst_now-$burst_then;
+										}
+										echo "<td width='15%'>Burst</td>
+										<td>".$burst_now."</td>
+										<td>";
+										if ($progress) { 
+											echo "<div class='progress-bar' role='progressbar' aria-valuenow='".$burst_then."' aria-valuemin='0'
+											aria-valuemax='100' style='width: ".$burst_then."%;'>".$burst_then."</div>";
+											if ($burst_growth > 0) {
+												echo "<div class='progress-bar progress-bar-success' role='progressbar' aria-valuenow='".$burst_growth."'
+												aria-valuemin='0' aria-valuemax='100' style='width: ".$burst_growth."%'>+".$burst_growth."</div></td>";
+											}
+										} else {
+											echo "<div class='progress-bar' role='progressbar' aria-valuenow='".$burst_now."' aria-valuemin='0'
+											aria-valuemax='100' style='width: ".$burst_now."%;'>".$burst_now."</div>";	
+										}
+										}
+										?>
+									</tr>
+									<tr>
+										<?php
+										if (in_array("carry",$showarray)) {
+										$carry_now = $playerData['carry_now'];
+										if ($progress) {
+											$carry_then = $progressionData['carry_now'];
+											$carry_growth = $carry_now-$carry_then;
+										}
+										echo "<td>Ball Carrying</td>
+										<td>".$carry_now."</td>
+										<td>";
+										if ($progress) { 
+											echo "<div class='progress-bar' role='progressbar' aria-valuenow='".$carry_then."' aria-valuemin='0'
+											aria-valuemax='100' style='width: ".$carry_then."%;'>".$carry_then."</div>";
+											if ($carry_growth > 0) {
+												echo "<div class='progress-bar progress-bar-success' role='progressbar' aria-valuenow='".$carry_growth."'
+												aria-valuemin='0' aria-valuemax='100' style='width: ".$carry_growth."%'>+".$carry_growth."</div></td>";
+											}
+										} else {
+											echo "<div class='progress-bar' role='progressbar' aria-valuenow='".$carry_now."' aria-valuemin='0'
+											aria-valuemax='100' style='width: ".$carry_now."%;'>".$carry_now."</div>";	
+										}
+										}
+										?>
+									</tr>
+									<tr>
+										<?php
+										if (in_array("hands",$showarray)) {
+										$hands_now = $playerData['hands_now'];
+										if ($progress) {
+											$hands_then = $progressionData['hands_now'];
+											$hands_growth = $hands_now-$hands_then;
+										}
+										echo "<td>Hands</td>
+										<td>".$hands_now."</td>
+										<td>";
+										if ($progress) { 
+											echo "<div class='progress-bar' role='progressbar' aria-valuenow='".$hands_then."' aria-valuemin='0'
+											aria-valuemax='100' style='width: ".$hands_then."%;'>".$hands_then."</div>";
+											if ($hands_growth > 0) {
+												echo "<div class='progress-bar progress-bar-success' role='progressbar' aria-valuenow='".$hands_growth."'
+												aria-valuemin='0' aria-valuemax='100' style='width: ".$hands_growth."%'>+".$hands_growth."</div></td>";
+											}
+										} else {
+											echo "<div class='progress-bar' role='progressbar' aria-valuenow='".$hands_now."' aria-valuemin='0'
+											aria-valuemax='100' style='width: ".$hands_now."%;'>".$hands_now."</div>";	
+										}
+										}
+										?>
+									</tr>
+									<tr>
+										<?php
+										if (in_array("elusive",$showarray)) {
+										$elusive_now = $playerData['elusive_now'];
+										if ($progress) {
+											$elusive_then = $progressionData['elusive_now'];
+											$elusive_growth = $elusive_now-$elusive_then;
+										}
+										echo "<td>Elusiveness</td>
+										<td>".$elusive_now."</td>
+										<td>";
+										if ($progress) { 
+											echo "<div class='progress-bar' role='progressbar' aria-valuenow='".$elusive_then."' aria-valuemin='0'
+											aria-valuemax='100' style='width: ".$elusive_then."%;'>".$elusive_then."</div>";
+											if ($elusive_growth > 0) {
+												echo "<div class='progress-bar progress-bar-success' role='progressbar' aria-valuenow='".$elusive_growth."'
+												aria-valuemin='0' aria-valuemax='100' style='width: ".$elusive_growth."%'>+".$elusive_growth."</div></td>";
+											}
+										} else {
+											echo "<div class='progress-bar' role='progressbar' aria-valuenow='".$elusive_now."' aria-valuemin='0'
+											aria-valuemax='100' style='width: ".$elusive_now."%;'>".$elusive_now."</div>";	
+										}
+										}
+										?>
+									</tr>
+									<tr>
+										<?php
+										if (in_array("fw",$showarray)) {
+										$fw_now = $playerData['fw_now'];
+										if ($progress) {
+											$fw_then = $progressionData['fw_now'];
+											$fw_growth = $fw_now-$fw_then;
+										}
+										echo "<td>Footwork</td>
+										<td>".$fw_now."</td>
+										<td>";
+										if ($progress) { 
+											echo "<div class='progress-bar' role='progressbar' aria-valuenow='".$fw_then."' aria-valuemin='0'
+											aria-valuemax='100' style='width: ".$fw_then."%;'>".$fw_then."</div>";
+											if ($fw_growth > 0) {
+												echo "<div class='progress-bar progress-bar-success' role='progressbar' aria-valuenow='".$fw_growth."'
+												aria-valuemin='0' aria-valuemax='100' style='width: ".$fw_growth."%'>+".$fw_growth."</div></td>";
+											}
+										} else {
+											echo "<div class='progress-bar' role='progressbar' aria-valuenow='".$fw_now."' aria-valuemin='0'
+											aria-valuemax='100' style='width: ".$fw_now."%;'>".$fw_now."</div>";	
+										}
+										}
+										?>
+									</tr>
+									<tr>
+										<?php
+										if (in_array("read",$showarray)) {
+										$read_now = $playerData['read_now'];
+										if ($progress) {
+											$read_then = $progressionData['read_now'];
+											$read_growth = $read_now-$read_then;
+										}
+										echo "<td>Read Opposition</td>
+										<td>".$read_now."</td>
+										<td>";
+										if ($progress) { 
+											echo "<div class='progress-bar' role='progressbar' aria-valuenow='".$read_then."' aria-valuemin='0'
+											aria-valuemax='100' style='width: ".$read_then."%;'>".$read_then."</div>";
+											if ($read_growth > 0) {
+												echo "<div class='progress-bar progress-bar-success' role='progressbar' aria-valuenow='".$read_growth."'
+												aria-valuemin='0' aria-valuemax='100' style='width: ".$read_growth."%'>+".$read_growth."</div></td>";
+											}
+										} else {
+											echo "<div class='progress-bar' role='progressbar' aria-valuenow='".$read_now."' aria-valuemin='0'
+											aria-valuemax='100' style='width: ".$read_now."%;'>".$read_now."</div>";	
+										}
+										}
+										?>
+									</tr>
+									<tr>
+										<?php
+										if (in_array("pocket",$showarray)) {
+										$pocket_now = $playerData['pocket_now'];
+										if ($progress) {
+											$pocket_then = $progressionData['pocket_now'];
+											$pocket_growth = $pocket_now-$pocket_then;
+										}
+										echo "<td>Pocket Presence</td>
+										<td>".$pocket_now."</td>
+										<td>";
+										if ($progress) { 
+											echo "<div class='progress-bar' role='progressbar' aria-valuenow='".$pocket_then."' aria-valuemin='0'
+											aria-valuemax='100' style='width: ".$pocket_then."%;'>".$pocket_then."</div>";
+											if ($pocket_growth > 0) {
+												echo "<div class='progress-bar progress-bar-success' role='progressbar' aria-valuenow='".$pocket_growth."'
+												aria-valuemin='0' aria-valuemax='100' style='width: ".$pocket_growth."%'>+".$pocket_growth."</div></td>";
+											}
+										} else {
+											echo "<div class='progress-bar' role='progressbar' aria-valuenow='".$pocket_now."' aria-valuemin='0'
+											aria-valuemax='100' style='width: ".$pocket_now."%;'>".$pocket_now."</div>";	
+										}
+										}
+										?>
+									</tr>
+									<tr>
+										<?php
+										if (in_array("throw_pow",$showarray)) {
+										$throw_pow_now = $playerData['throw_pow_now'];
+										if ($progress) {
+											$throw_pow_then = $progressionData['throw_pow_now'];
+											$throw_pow_growth = $throw_pow_now-$throw_pow_then;
+										}
+										echo "<td>Throwing Power</td>
+										<td>".$throw_pow_now."</td>
+										<td>";
+										if ($progress) { 
+											echo "<div class='progress-bar' role='progressbar' aria-valuenow='".$throw_pow_then."' aria-valuemin='0'
+											aria-valuemax='100' style='width: ".$throw_pow_then."%;'>".$throw_pow_then."</div>";
+											if ($throw_pow_growth > 0) {
+												echo "<div class='progress-bar progress-bar-success' role='progressbar' aria-valuenow='".$throw_pow_growth."'
+												aria-valuemin='0' aria-valuemax='100' style='width: ".$throw_pow_growth."%'>+".$throw_pow_growth."</div></td>";
+											}
+										} else {
+											echo "<div class='progress-bar' role='progressbar' aria-valuenow='".$throw_pow_now."' aria-valuemin='0'
+											aria-valuemax='100' style='width: ".$throw_pow_now."%;'>".$throw_pow_now."</div>";	
+										}
+										}
+										?>
+									</tr>
+									<tr>
+										<?php
+										if (in_array("throw_acc",$showarray)) {
+										$throw_acc_now = $playerData['throw_acc_now'];
+										if ($progress) {
+											$throw_acc_then = $progressionData['throw_acc_now'];
+											$throw_acc_growth = $throw_acc_now-$throw_acc_then;
+										}
+										echo "<td>Throwing Accuracy</td>
+										<td>".$throw_acc_now."</td>
+										<td>";
+										if ($progress) { 
+											echo "<div class='progress-bar' role='progressbar' aria-valuenow='".$throw_acc_then."' aria-valuemin='0'
+											aria-valuemax='100' style='width: ".$throw_acc_then."%;'>".$throw_acc_then."</div>";
+											if ($throw_acc_growth > 0) {
+												echo "<div class='progress-bar progress-bar-success' role='progressbar' aria-valuenow='".$throw_acc_growth."'
+												aria-valuemin='0' aria-valuemax='100' style='width: ".$throw_acc_growth."%'>+".$throw_acc_growth."</div></td>";
+											}
+										} else {
+											echo "<div class='progress-bar' role='progressbar' aria-valuenow='".$throw_acc_now."' aria-valuemin='0'
+											aria-valuemax='100' style='width: ".$throw_acc_now."%;'>".$throw_acc_now."</div>";	
+										}
+										}
+										?>
+									</tr>
+									<tr>
+										<?php
+										if (in_array("pass_block",$showarray)) {
+										$pass_block_now = $playerData['pass_block_now'];
+										if ($progress) {
+											$pass_block_then = $progressionData['pass_block_now'];
+											$pass_block_growth = $pass_block_now-$pass_block_then;
+										}
+										echo "<td>Pass Blocking</td>
+										<td>".$pass_block_now."</td>
+										<td>";
+										if ($progress) { 
+											echo "<div class='progress-bar' role='progressbar' aria-valuenow='".$pass_block_then."' aria-valuemin='0'
+											aria-valuemax='100' style='width: ".$pass_block_then."%;'>".$pass_block_then."</div>";
+											if ($pass_block_growth > 0) {
+												echo "<div class='progress-bar progress-bar-success' role='progressbar' aria-valuenow='".$pass_block_growth."'
+												aria-valuemin='0' aria-valuemax='100' style='width: ".$pass_block_growth."%'>+".$pass_block_growth."</div></td>";
+											}
+										} else {
+											echo "<div class='progress-bar' role='progressbar' aria-valuenow='".$pass_block_now."' aria-valuemin='0'
+											aria-valuemax='100' style='width: ".$pass_block_now."%;'>".$pass_block_now."</div>";	
+										}
+										}
+										?>
+									</tr>
+									<tr>
+										<?php
+										if (in_array("run_block",$showarray)) {
+										$run_block_now = $playerData['run_block_now'];
+										if ($progress) {
+											$run_block_then = $progressionData['run_block_now'];
+											$run_block_growth = $run_block_now-$run_block_then;
+										}
+										echo "<td>Run Blocking</td>
+										<td>".$run_block_now."</td>
+										<td>";
+										if ($progress) { 
+											echo "<div class='progress-bar' role='progressbar' aria-valuenow='".$run_block_then."' aria-valuemin='0'
+											aria-valuemax='100' style='width: ".$run_block_then."%;'>".$run_block_then."</div>";
+											if ($run_block_growth > 0) {
+												echo "<div class='progress-bar progress-bar-success' role='progressbar' aria-valuenow='".$run_block_growth."'
+												aria-valuemin='0' aria-valuemax='100' style='width: ".$run_block_growth."%'>+".$run_block_growth."</div></td>";
+											}
+										} else {
+											echo "<div class='progress-bar' role='progressbar' aria-valuenow='".$run_block_now."' aria-valuemin='0'
+											aria-valuemax='100' style='width: ".$run_block_now."%;'>".$run_block_now."</div>";	
+										}
+										}
+										?>
+									</tr>
+									<tr>
+										<?php
+										if (in_array("route",$showarray)) {
+										$route_now = $playerData['route_now'];
+										if ($progress) {
+											$route_then = $progressionData['route_now'];
+											$route_growth = $route_now-$route_then;
+										}
+										echo "<td>Route Running</td>
+										<td>".$route_now."</td>
+										<td>";
+										if ($progress) { 
+											echo "<div class='progress-bar' role='progressbar' aria-valuenow='".$route_then."' aria-valuemin='0'
+											aria-valuemax='100' style='width: ".$route_then."%;'>".$route_then."</div>";
+											if ($route_growth > 0) {
+												echo "<div class='progress-bar progress-bar-success' role='progressbar' aria-valuenow='".$route_growth."'
+												aria-valuemin='0' aria-valuemax='100' style='width: ".$route_growth."%'>+".$route_growth."</div></td>";
+											}
+										} else {
+											echo "<div class='progress-bar' role='progressbar' aria-valuenow='".$route_now."' aria-valuemin='0'
+											aria-valuemax='100' style='width: ".$route_now."%;'>".$route_now."</div>";	
+										}
+										}
+										?>
+									</tr>
+									<tr>
+										<?php
+										if (in_array("jump",$showarray)) {
+										$jump_now = $playerData['jump_now'];
+										if ($progress) {
+											$jump_then = $progressionData['jump_now'];
+											$jump_growth = $jump_now-$jump_then;
+										}
+										echo "<td>Jumping</td>
+										<td>".$jump_now."</td>
+										<td>";
+										if ($progress) { 
+											echo "<div class='progress-bar' role='progressbar' aria-valuenow='".$jump_then."' aria-valuemin='0'
+											aria-valuemax='100' style='width: ".$jump_then."%;'>".$jump_then."</div>";
+											if ($jump_growth > 0) {
+												echo "<div class='progress-bar progress-bar-success' role='progressbar' aria-valuenow='".$jump_growth."'
+												aria-valuemin='0' aria-valuemax='100' style='width: ".$jump_growth."%'>+".$jump_growth."</div></td>";
+											}
+										} else {
+											echo "<div class='progress-bar' role='progressbar' aria-valuenow='".$jump_now."' aria-valuemin='0'
+											aria-valuemax='100' style='width: ".$jump_now."%;'>".$jump_now."</div>";	
+										}
+										}
+										?>
+									</tr>
+									<tr>
+										<?php
+										if (in_array("block_shed",$showarray)) {
+										$block_shed_now = $playerData['block_shed_now'];
+										if ($progress) {
+											$block_shed_then = $progressionData['block_shed_now'];
+											$block_shed_growth = $block_shed_now-$block_shed_then;
+										}
+										echo "<td>Block Shedding</td>
+										<td>".$block_shed_now."</td>
+										<td>";
+										if ($progress) { 
+											echo "<div class='progress-bar' role='progressbar' aria-valuenow='".$block_shed_then."' aria-valuemin='0'
+											aria-valuemax='100' style='width: ".$block_shed_then."%;'>".$block_shed_then."</div>";
+											if ($block_shed_growth > 0) {
+												echo "<div class='progress-bar progress-bar-success' role='progressbar' aria-valuenow='".$block_shed_growth."'
+												aria-valuemin='0' aria-valuemax='100' style='width: ".$block_shed_growth."%'>+".$block_shed_growth."</div></td>";
+											}
+										} else {
+											echo "<div class='progress-bar' role='progressbar' aria-valuenow='".$block_shed_now."' aria-valuemin='0'
+											aria-valuemax='100' style='width: ".$block_shed_now."%;'>".$block_shed_now."</div>";	
+										}
+										}
+										?>
+									</tr>
+									<tr>
+										<?php
+										if (in_array("coverage",$showarray)) {
+										$coverage_now = $playerData['coverage_now'];
+										if ($progress) {
+											$coverage_then = $progressionData['coverage_now'];
+											$coverage_growth = $coverage_now-$coverage_then;
+										}
+										echo "<td>Pass Coverage</td>
+										<td>".$coverage_now."</td>
+										<td>";
+										if ($progress) { 
+											echo "<div class='progress-bar' role='progressbar' aria-valuenow='".$coverage_then."' aria-valuemin='0'
+											aria-valuemax='100' style='width: ".$coverage_then."%;'>".$coverage_then."</div>";
+											if ($coverage_growth > 0) {
+												echo "<div class='progress-bar progress-bar-success' role='progressbar' aria-valuenow='".$coverage_growth."'
+												aria-valuemin='0' aria-valuemax='100' style='width: ".$coverage_growth."%'>+".$coverage_growth."</div></td>";
+											}
+										} else {
+											echo "<div class='progress-bar' role='progressbar' aria-valuenow='".$coverage_now."' aria-valuemin='0'
+											aria-valuemax='100' style='width: ".$coverage_now."%;'>".$coverage_now."</div>";	
+										}
+										}
+										?>
+									</tr>
+									<tr>
+										<?php
+										if (in_array("tackling",$showarray)) {
+										$tackling_now = $playerData['tackling_now'];
+										if ($progress) {
+											$tackling_then = $progressionData['tackling_now'];
+											$tackling_growth = $tackling_now-$tackling_then;
+										}
+										echo "<td>Tackling</td>
+										<td>".$tackling_now."</td>
+										<td>";
+										if ($progress) { 
+											echo "<div class='progress-bar' role='progressbar' aria-valuenow='".$tackling_then."' aria-valuemin='0'
+											aria-valuemax='100' style='width: ".$tackling_then."%;'>".$tackling_then."</div>";
+											if ($tackling_growth > 0) {
+												echo "<div class='progress-bar progress-bar-success' role='progressbar' aria-valuenow='".$tackling_growth."'
+												aria-valuemin='0' aria-valuemax='100' style='width: ".$tackling_growth."%'>+".$tackling_growth."</div></td>";
+											}
+										} else {
+											echo "<div class='progress-bar' role='progressbar' aria-valuenow='".$tackling_now."' aria-valuemin='0'
+											aria-valuemax='100' style='width: ".$tackling_now."%;'>".$tackling_now."</div>";	
+										}
+										}
+										?>
+									</tr>
+									<tr>
+										<?php
+										if (in_array("kick_pow",$showarray)) {
+										$kick_pow_now = $playerData['kick_pow_now'];
+										if ($progress) {
+											$kick_pow_then = $progressionData['kick_pow_now'];
+											$kick_pow_growth = $kick_pow_now-$kick_pow_then;
+										}
+										echo "<td>Kicking Power</td>
+										<td>".$kick_pow_now."</td>
+										<td>";
+										if ($progress) { 
+											echo "<div class='progress-bar' role='progressbar' aria-valuenow='".$kick_pow_then."' aria-valuemin='0'
+											aria-valuemax='100' style='width: ".$kick_pow_then."%;'>".$kick_pow_then."</div>";
+											if ($kick_pow_growth > 0) {
+												echo "<div class='progress-bar progress-bar-success' role='progressbar' aria-valuenow='".$kick_pow_growth."'
+												aria-valuemin='0' aria-valuemax='100' style='width: ".$kick_pow_growth."%'>+".$kick_pow_growth."</div></td>";
+											}
+										} else {
+											echo "<div class='progress-bar' role='progressbar' aria-valuenow='".$kick_pow_now."' aria-valuemin='0'
+											aria-valuemax='100' style='width: ".$kick_pow_now."%;'>".$kick_pow_now."</div>";	
+										}
+										}
+										?>
+									</tr>
+									<tr>
+										<?php
+										if (in_array("kick_acc",$showarray)) {
+										$kick_acc_now = $playerData['kick_acc_now'];
+										if ($progress) {
+											$kick_acc_then = $progressionData['kick_acc_now'];
+											$kick_acc_growth = $kick_acc_now-$kick_acc_then;
+										}
+										echo "<td>Kicking Accuracy</td>
+										<td>".$kick_acc_now."</td>
+										<td>";
+										if ($progress) { 
+											echo "<div class='progress-bar' role='progressbar' aria-valuenow='".$kick_acc_then."' aria-valuemin='0'
+											aria-valuemax='100' style='width: ".$kick_acc_then."%;'>".$kick_acc_then."</div>";
+											if ($kick_acc_growth > 0) {
+												echo "<div class='progress-bar progress-bar-success' role='progressbar' aria-valuenow='".$kick_acc_growth."'
+												aria-valuemin='0' aria-valuemax='100' style='width: ".$kick_acc_growth."%'>+".$kick_acc_growth."</div></td>";
+											}
+										} else {
+											echo "<div class='progress-bar' role='progressbar' aria-valuenow='".$kick_acc_now."' aria-valuemin='0'
+											aria-valuemax='100' style='width: ".$kick_acc_now."%;'>".$kick_acc_now."</div>";	
+										}
+										}
+										?>
+									</tr>
+									<tr>
+										<?php
+										if (in_array("punt_acc",$showarray)) {
+										$punt_acc_now = $playerData['punt_acc_now'];
+										if ($progress) {
+											$punt_acc_then = $progressionData['punt_acc_now'];
+											$punt_acc_growth = $punt_acc_now-$punt_acc_then;
+										}
+										echo "<td>Punting Accuracy</td>
+										<td>".$punt_acc_now."</td>
+										<td>";
+										if ($progress) { 
+											echo "<div class='progress-bar' role='progressbar' aria-valuenow='".$punt_acc_then."' aria-valuemin='0'
+											aria-valuemax='100' style='width: ".$punt_acc_then."%;'>".$punt_acc_then."</div>";
+											if ($punt_acc_growth > 0) {
+												echo "<div class='progress-bar progress-bar-success' role='progressbar' aria-valuenow='".$punt_acc_growth."'
+												aria-valuemin='0' aria-valuemax='100' style='width: ".$punt_acc_growth."%'>+".$punt_acc_growth."</div></td>";
+											}
+										} else {
+											echo "<div class='progress-bar' role='progressbar' aria-valuenow='".$punt_acc_now."' aria-valuemin='0'
+											aria-valuemax='100' style='width: ".$punt_acc_now."%;'>".$punt_acc_now."</div>";	
+										}
+										}
+										?>
+									</tr>
+									<tr>
+										<?php
+										if (in_array("clutch",$showarray)) {
+										$clutch = $playerData['clutch'];
+										echo "<td>Clutch</td>
+										<td>".$clutch."</td>
+										<td>";
+										
+										echo "<div class='progress-bar progress-bar-info' role='progressbar' aria-valuenow='".$clutch."' aria-valuemin='0'
+										aria-valuemax='100' style='width: ".$clutch."%;'>".$clutch."</div>";	
+										}
+										?>
+									</tr>
+									<tr>
+										<?php
+										if (in_array("leadership",$showarray)) {
+										$leadership = $playerData['leadership'];
+										echo "<td>Leadership</td>
+										<td>".$leadership."</td>
+										<td>";
+										
+										echo "<div class='progress-bar progress-bar-info' role='progressbar' aria-valuenow='".$leadership."' aria-valuemin='0'
+										aria-valuemax='100' style='width: ".$leadership."%;'>".$leadership."</div>";	
+										}
+										?>
+									</tr>
+									<tr>
+										<?php
+										if (in_array("durability",$showarray)) {
+										$durability = $playerData['durability'];
+										echo "<td>Durability</td>
+										<td>".$durability."</td>
+										<td>";
+										
+										echo "<div class='progress-bar progress-bar-info' role='progressbar' aria-valuenow='".$durability."' aria-valuemin='0'
+										aria-valuemax='100' style='width: ".$durability."%;'>".$durability."</div>";	
+										}
+										?>
+									</tr>
+									<tr>
+										<?php
+										if (in_array("toughness",$showarray)) {
+										$toughness = $playerData['toughness'];
+										echo "<td>Toughness</td>
+										<td>".$toughness."</td>
+										<td>";
+										
+										echo "<div class='progress-bar progress-bar-info' role='progressbar' aria-valuenow='".$toughness."' aria-valuemin='0'
+										aria-valuemax='100' style='width: ".$toughness."%;'>".$toughness."</div>";	
+										}
+										?>
+									</tr>
+								</tbody>
+							</table>
+							<div class="panel panel-default">
+								<div class="panel-heading">
+								  <h4 class="panel-title">
+									<a data-toggle="collapse" data-parent="#accordion" href="#allatts">
+									  Click to view all attributes
+									</a>
+								  </h4>
+								</div>
+								<div id="allatts" class="panel-collapse collapse">
+									<div class="panel-body">
+										<table class="table">
+											<thead>
+											<tr>
+												<?php
+												$overall_now = $playerData['overall_now'];
+												if ($progress) {
+													$overall_then = $progressionData['overall_now'];
+													$overall_growth = $overall_now-$overall_then;
+												}
+												echo "<th width='30%'>Overall</td>
+												<th>".$overall_now."</td>
+												<th>";
+												if ($progress) { 
+													echo "<div class='progress-bar' role='progressbar' aria-valuenow='".$overall_then."' aria-valuemin='0'
+													aria-valuemax='100' style='width: ".$overall_then."%;'>".$overall_then."</div>";
+													if ($overall_growth > 0) {
+														echo "<div class='progress-bar progress-bar-success' role='progressbar' aria-valuenow='".$overall_growth."'
+														aria-valuemin='0' aria-valuemax='100' style='width: ".$overall_growth."%'>+".$overall_growth."</div></td>";
+													}
+												} else {
+													echo "<div class='progress-bar' role='progressbar' aria-valuenow='".$overall_now."' aria-valuemin='0'
+													aria-valuemax='100' style='width: ".$overall_now."%;'>".$overall_now."</div>";	
+												}
+												?>
+											</tr>
+											</thead>
+											<tbody>
+											<tr>
+												<?php
+												$strength_now = $playerData['strength_now'];
+												if ($progress) {
+													$strength_then = $progressionData['strength_now'];
+													$strength_growth = $strength_now-$strength_then;
+												}
+												echo "<td>Strength</td>
+												<td>".$strength_now."</td>
+												<td>";
+												if ($progress) { 
+													echo "<div class='progress-bar' role='progressbar' aria-valuenow='".$strength_then."' aria-valuemin='0'
+													aria-valuemax='100' style='width: ".$strength_then."%;'>".$strength_then."</div>";
+													if ($strength_growth > 0) {
+														echo "<div class='progress-bar progress-bar-success' role='progressbar' aria-valuenow='".$strength_growth."'
+														aria-valuemin='0' aria-valuemax='100' style='width: ".$strength_growth."%'>+".$strength_growth."</div></td>";
+													}
+												} else {
+													echo "<div class='progress-bar' role='progressbar' aria-valuenow='".$strength_now."' aria-valuemin='0'
+													aria-valuemax='100' style='width: ".$strength_now."%;'>".$strength_now."</div>";	
+												}
+												?>
+											</tr>
+											<tr>
+												<?php
+												$speed_now = $playerData['speed_now'];
+												if ($progress) {
+													$speed_then = $progressionData['speed_now'];
+													$speed_growth = $speed_now-$speed_then;
+												}
+												echo "<td>Speed</td>
+												<td>".$speed_now."</td>
+												<td>";
+												if ($progress) { 
+													echo "<div class='progress-bar' role='progressbar' aria-valuenow='".$speed_then."' aria-valuemin='0'
+													aria-valuemax='100' style='width: ".$speed_then."%;'>".$speed_then."</div>";
+													if ($speed_growth > 0) {
+														echo "<div class='progress-bar progress-bar-success' role='progressbar' aria-valuenow='".$speed_growth."'
+														aria-valuemin='0' aria-valuemax='100' style='width: ".$speed_growth."%'>+".$speed_growth."</div></td>";
+													}
+												} else {
+													echo "<div class='progress-bar' role='progressbar' aria-valuenow='".$speed_now."' aria-valuemin='0'
+													aria-valuemax='100' style='width: ".$speed_now."%;'>".$speed_now."</div>";	
+												}
+												?>
+											</tr>
+											<tr>
+												<?php
+												$burst_now = $playerData['burst_now'];
+												if ($progress) {
+													$burst_then = $progressionData['burst_now'];
+													$burst_growth = $burst_now-$burst_then;
+												}
+												echo "<td width='15%'>Burst</td>
+												<td>".$burst_now."</td>
+												<td>";
+												if ($progress) { 
+													echo "<div class='progress-bar' role='progressbar' aria-valuenow='".$burst_then."' aria-valuemin='0'
+													aria-valuemax='100' style='width: ".$burst_then."%;'>".$burst_then."</div>";
+													if ($burst_growth > 0) {
+														echo "<div class='progress-bar progress-bar-success' role='progressbar' aria-valuenow='".$burst_growth."'
+														aria-valuemin='0' aria-valuemax='100' style='width: ".$burst_growth."%'>+".$burst_growth."</div></td>";
+													}
+												} else {
+													echo "<div class='progress-bar' role='progressbar' aria-valuenow='".$burst_now."' aria-valuemin='0'
+													aria-valuemax='100' style='width: ".$burst_now."%;'>".$burst_now."</div>";	
+												}
+												?>
+											</tr>
+											<tr>
+												<?php
+												$carry_now = $playerData['carry_now'];
+												if ($progress) {
+													$carry_then = $progressionData['carry_now'];
+													$carry_growth = $carry_now-$carry_then;
+												}
+												echo "<td>Ball Carrying</td>
+												<td>".$carry_now."</td>
+												<td>";
+												if ($progress) { 
+													echo "<div class='progress-bar' role='progressbar' aria-valuenow='".$carry_then."' aria-valuemin='0'
+													aria-valuemax='100' style='width: ".$carry_then."%;'>".$carry_then."</div>";
+													if ($carry_growth > 0) {
+														echo "<div class='progress-bar progress-bar-success' role='progressbar' aria-valuenow='".$carry_growth."'
+														aria-valuemin='0' aria-valuemax='100' style='width: ".$carry_growth."%'>+".$carry_growth."</div></td>";
+													}
+												} else {
+													echo "<div class='progress-bar' role='progressbar' aria-valuenow='".$carry_now."' aria-valuemin='0'
+													aria-valuemax='100' style='width: ".$carry_now."%;'>".$carry_now."</div>";	
+												}
+												?>
+											</tr>
+											<tr>
+												<?php
+												$hands_now = $playerData['hands_now'];
+												if ($progress) {
+													$hands_then = $progressionData['hands_now'];
+													$hands_growth = $hands_now-$hands_then;
+												}
+												echo "<td>Hands</td>
+												<td>".$hands_now."</td>
+												<td>";
+												if ($progress) { 
+													echo "<div class='progress-bar' role='progressbar' aria-valuenow='".$hands_then."' aria-valuemin='0'
+													aria-valuemax='100' style='width: ".$hands_then."%;'>".$hands_then."</div>";
+													if ($hands_growth > 0) {
+														echo "<div class='progress-bar progress-bar-success' role='progressbar' aria-valuenow='".$hands_growth."'
+														aria-valuemin='0' aria-valuemax='100' style='width: ".$hands_growth."%'>+".$hands_growth."</div></td>";
+													}
+												} else {
+													echo "<div class='progress-bar' role='progressbar' aria-valuenow='".$hands_now."' aria-valuemin='0'
+													aria-valuemax='100' style='width: ".$hands_now."%;'>".$hands_now."</div>";	
+												}
+												?>
+											</tr>
+											<tr>
+												<?php
+												$elusive_now = $playerData['elusive_now'];
+												if ($progress) {
+													$elusive_then = $progressionData['elusive_now'];
+													$elusive_growth = $elusive_now-$elusive_then;
+												}
+												echo "<td>Elusiveness</td>
+												<td>".$elusive_now."</td>
+												<td>";
+												if ($progress) { 
+													echo "<div class='progress-bar' role='progressbar' aria-valuenow='".$elusive_then."' aria-valuemin='0'
+													aria-valuemax='100' style='width: ".$elusive_then."%;'>".$elusive_then."</div>";
+													if ($elusive_growth > 0) {
+														echo "<div class='progress-bar progress-bar-success' role='progressbar' aria-valuenow='".$elusive_growth."'
+														aria-valuemin='0' aria-valuemax='100' style='width: ".$elusive_growth."%'>+".$elusive_growth."</div></td>";
+													}
+												} else {
+													echo "<div class='progress-bar' role='progressbar' aria-valuenow='".$elusive_now."' aria-valuemin='0'
+													aria-valuemax='100' style='width: ".$elusive_now."%;'>".$elusive_now."</div>";	
+												}
+												?>
+											</tr>
+											<tr>
+												<?php
+												$fw_now = $playerData['fw_now'];
+												if ($progress) {
+													$fw_then = $progressionData['fw_now'];
+													$fw_growth = $fw_now-$fw_then;
+												}
+												echo "<td>Footwork</td>
+												<td>".$fw_now."</td>
+												<td>";
+												if ($progress) { 
+													echo "<div class='progress-bar' role='progressbar' aria-valuenow='".$fw_then."' aria-valuemin='0'
+													aria-valuemax='100' style='width: ".$fw_then."%;'>".$fw_then."</div>";
+													if ($fw_growth > 0) {
+														echo "<div class='progress-bar progress-bar-success' role='progressbar' aria-valuenow='".$fw_growth."'
+														aria-valuemin='0' aria-valuemax='100' style='width: ".$fw_growth."%'>+".$fw_growth."</div></td>";
+													}
+												} else {
+													echo "<div class='progress-bar' role='progressbar' aria-valuenow='".$fw_now."' aria-valuemin='0'
+													aria-valuemax='100' style='width: ".$fw_now."%;'>".$fw_now."</div>";	
+												}
+												?>
+											</tr>
+											<tr>
+												<?php
+												$read_now = $playerData['read_now'];
+												if ($progress) {
+													$read_then = $progressionData['read_now'];
+													$read_growth = $read_now-$read_then;
+												}
+												echo "<td>Read Opposition</td>
+												<td>".$read_now."</td>
+												<td>";
+												if ($progress) { 
+													echo "<div class='progress-bar' role='progressbar' aria-valuenow='".$read_then."' aria-valuemin='0'
+													aria-valuemax='100' style='width: ".$read_then."%;'>".$read_then."</div>";
+													if ($read_growth > 0) {
+														echo "<div class='progress-bar progress-bar-success' role='progressbar' aria-valuenow='".$read_growth."'
+														aria-valuemin='0' aria-valuemax='100' style='width: ".$read_growth."%'>+".$read_growth."</div></td>";
+													}
+												} else {
+													echo "<div class='progress-bar' role='progressbar' aria-valuenow='".$read_now."' aria-valuemin='0'
+													aria-valuemax='100' style='width: ".$read_now."%;'>".$read_now."</div>";	
+												}
+												?>
+											</tr>
+											<tr>
+												<?php
+												$pocket_now = $playerData['pocket_now'];
+												if ($progress) {
+													$pocket_then = $progressionData['pocket_now'];
+													$pocket_growth = $pocket_now-$pocket_then;
+												}
+												echo "<td>Pocket Presence</td>
+												<td>".$pocket_now."</td>
+												<td>";
+												if ($progress) { 
+													echo "<div class='progress-bar' role='progressbar' aria-valuenow='".$pocket_then."' aria-valuemin='0'
+													aria-valuemax='100' style='width: ".$pocket_then."%;'>".$pocket_then."</div>";
+													if ($pocket_growth > 0) {
+														echo "<div class='progress-bar progress-bar-success' role='progressbar' aria-valuenow='".$pocket_growth."'
+														aria-valuemin='0' aria-valuemax='100' style='width: ".$pocket_growth."%'>+".$pocket_growth."</div></td>";
+													}
+												} else {
+													echo "<div class='progress-bar' role='progressbar' aria-valuenow='".$pocket_now."' aria-valuemin='0'
+													aria-valuemax='100' style='width: ".$pocket_now."%;'>".$pocket_now."</div>";	
+												}
+												?>
+											</tr>
+											<tr>
+												<?php
+												$throw_pow_now = $playerData['throw_pow_now'];
+												if ($progress) {
+													$throw_pow_then = $progressionData['throw_pow_now'];
+													$throw_pow_growth = $throw_pow_now-$throw_pow_then;
+												}
+												echo "<td>Throwing Power</td>
+												<td>".$throw_pow_now."</td>
+												<td>";
+												if ($progress) { 
+													echo "<div class='progress-bar' role='progressbar' aria-valuenow='".$throw_pow_then."' aria-valuemin='0'
+													aria-valuemax='100' style='width: ".$throw_pow_then."%;'>".$throw_pow_then."</div>";
+													if ($throw_pow_growth > 0) {
+														echo "<div class='progress-bar progress-bar-success' role='progressbar' aria-valuenow='".$throw_pow_growth."'
+														aria-valuemin='0' aria-valuemax='100' style='width: ".$throw_pow_growth."%'>+".$throw_pow_growth."</div></td>";
+													}
+												} else {
+													echo "<div class='progress-bar' role='progressbar' aria-valuenow='".$throw_pow_now."' aria-valuemin='0'
+													aria-valuemax='100' style='width: ".$throw_pow_now."%;'>".$throw_pow_now."</div>";	
+												}
+												?>
+											</tr>
+											<tr>
+												<?php
+												$throw_acc_now = $playerData['throw_acc_now'];
+												if ($progress) {
+													$throw_acc_then = $progressionData['throw_acc_now'];
+													$throw_acc_growth = $throw_acc_now-$throw_acc_then;
+												}
+												echo "<td>Throwing Accuracy</td>
+												<td>".$throw_acc_now."</td>
+												<td>";
+												if ($progress) { 
+													echo "<div class='progress-bar' role='progressbar' aria-valuenow='".$throw_acc_then."' aria-valuemin='0'
+													aria-valuemax='100' style='width: ".$throw_acc_then."%;'>".$throw_acc_then."</div>";
+													if ($throw_acc_growth > 0) {
+														echo "<div class='progress-bar progress-bar-success' role='progressbar' aria-valuenow='".$throw_acc_growth."'
+														aria-valuemin='0' aria-valuemax='100' style='width: ".$throw_acc_growth."%'>+".$throw_acc_growth."</div></td>";
+													}
+												} else {
+													echo "<div class='progress-bar' role='progressbar' aria-valuenow='".$throw_acc_now."' aria-valuemin='0'
+													aria-valuemax='100' style='width: ".$throw_acc_now."%;'>".$throw_acc_now."</div>";	
+												}
+												?>
+											</tr>
+											<tr>
+												<?php
+												$pass_block_now = $playerData['pass_block_now'];
+												if ($progress) {
+													$pass_block_then = $progressionData['pass_block_now'];
+													$pass_block_growth = $pass_block_now-$pass_block_then;
+												}
+												echo "<td>Pass Blocking</td>
+												<td>".$pass_block_now."</td>
+												<td>";
+												if ($progress) { 
+													echo "<div class='progress-bar' role='progressbar' aria-valuenow='".$pass_block_then."' aria-valuemin='0'
+													aria-valuemax='100' style='width: ".$pass_block_then."%;'>".$pass_block_then."</div>";
+													if ($pass_block_growth > 0) {
+														echo "<div class='progress-bar progress-bar-success' role='progressbar' aria-valuenow='".$pass_block_growth."'
+														aria-valuemin='0' aria-valuemax='100' style='width: ".$pass_block_growth."%'>+".$pass_block_growth."</div></td>";
+													}
+												} else {
+													echo "<div class='progress-bar' role='progressbar' aria-valuenow='".$pass_block_now."' aria-valuemin='0'
+													aria-valuemax='100' style='width: ".$pass_block_now."%;'>".$pass_block_now."</div>";	
+												}
+												?>
+											</tr>
+											<tr>
+												<?php
+												$run_block_now = $playerData['run_block_now'];
+												if ($progress) {
+													$run_block_then = $progressionData['run_block_now'];
+													$run_block_growth = $run_block_now-$run_block_then;
+												}
+												echo "<td>Run Blocking</td>
+												<td>".$run_block_now."</td>
+												<td>";
+												if ($progress) { 
+													echo "<div class='progress-bar' role='progressbar' aria-valuenow='".$run_block_then."' aria-valuemin='0'
+													aria-valuemax='100' style='width: ".$run_block_then."%;'>".$run_block_then."</div>";
+													if ($run_block_growth > 0) {
+														echo "<div class='progress-bar progress-bar-success' role='progressbar' aria-valuenow='".$run_block_growth."'
+														aria-valuemin='0' aria-valuemax='100' style='width: ".$run_block_growth."%'>+".$run_block_growth."</div></td>";
+													}
+												} else {
+													echo "<div class='progress-bar' role='progressbar' aria-valuenow='".$run_block_now."' aria-valuemin='0'
+													aria-valuemax='100' style='width: ".$run_block_now."%;'>".$run_block_now."</div>";	
+												}
+												?>
+											</tr>
+											<tr>
+												<?php
+												$route_now = $playerData['route_now'];
+												if ($progress) {
+													$route_then = $progressionData['route_now'];
+													$route_growth = $route_now-$route_then;
+												}
+												echo "<td>Route Running</td>
+												<td>".$route_now."</td>
+												<td>";
+												if ($progress) { 
+													echo "<div class='progress-bar' role='progressbar' aria-valuenow='".$route_then."' aria-valuemin='0'
+													aria-valuemax='100' style='width: ".$route_then."%;'>".$route_then."</div>";
+													if ($route_growth > 0) {
+														echo "<div class='progress-bar progress-bar-success' role='progressbar' aria-valuenow='".$route_growth."'
+														aria-valuemin='0' aria-valuemax='100' style='width: ".$route_growth."%'>+".$route_growth."</div></td>";
+													}
+												} else {
+													echo "<div class='progress-bar' role='progressbar' aria-valuenow='".$route_now."' aria-valuemin='0'
+													aria-valuemax='100' style='width: ".$route_now."%;'>".$route_now."</div>";	
+												}
+												?>
+											</tr>
+											<tr>
+												<?php
+												$jump_now = $playerData['jump_now'];
+												if ($progress) {
+													$jump_then = $progressionData['jump_now'];
+													$jump_growth = $jump_now-$jump_then;
+												}
+												echo "<td>Jumping</td>
+												<td>".$jump_now."</td>
+												<td>";
+												if ($progress) { 
+													echo "<div class='progress-bar' role='progressbar' aria-valuenow='".$jump_then."' aria-valuemin='0'
+													aria-valuemax='100' style='width: ".$jump_then."%;'>".$jump_then."</div>";
+													if ($jump_growth > 0) {
+														echo "<div class='progress-bar progress-bar-success' role='progressbar' aria-valuenow='".$jump_growth."'
+														aria-valuemin='0' aria-valuemax='100' style='width: ".$jump_growth."%'>+".$jump_growth."</div></td>";
+													}
+												} else {
+													echo "<div class='progress-bar' role='progressbar' aria-valuenow='".$jump_now."' aria-valuemin='0'
+													aria-valuemax='100' style='width: ".$jump_now."%;'>".$jump_now."</div>";	
+												}
+												?>
+											</tr>
+											<tr>
+												<?php
+												$block_shed_now = $playerData['block_shed_now'];
+												if ($progress) {
+													$block_shed_then = $progressionData['block_shed_now'];
+													$block_shed_growth = $block_shed_now-$block_shed_then;
+												}
+												echo "<td>Block Shedding</td>
+												<td>".$block_shed_now."</td>
+												<td>";
+												if ($progress) { 
+													echo "<div class='progress-bar' role='progressbar' aria-valuenow='".$block_shed_then."' aria-valuemin='0'
+													aria-valuemax='100' style='width: ".$block_shed_then."%;'>".$block_shed_then."</div>";
+													if ($block_shed_growth > 0) {
+														echo "<div class='progress-bar progress-bar-success' role='progressbar' aria-valuenow='".$block_shed_growth."'
+														aria-valuemin='0' aria-valuemax='100' style='width: ".$block_shed_growth."%'>+".$block_shed_growth."</div></td>";
+													}
+												} else {
+													echo "<div class='progress-bar' role='progressbar' aria-valuenow='".$block_shed_now."' aria-valuemin='0'
+													aria-valuemax='100' style='width: ".$block_shed_now."%;'>".$block_shed_now."</div>";	
+												}
+												?>
+											</tr>
+											<tr>
+												<?php
+												$coverage_now = $playerData['coverage_now'];
+												if ($progress) {
+													$coverage_then = $progressionData['coverage_now'];
+													$coverage_growth = $coverage_now-$coverage_then;
+												}
+												echo "<td>Pass Coverage</td>
+												<td>".$coverage_now."</td>
+												<td>";
+												if ($progress) { 
+													echo "<div class='progress-bar' role='progressbar' aria-valuenow='".$coverage_then."' aria-valuemin='0'
+													aria-valuemax='100' style='width: ".$coverage_then."%;'>".$coverage_then."</div>";
+													if ($coverage_growth > 0) {
+														echo "<div class='progress-bar progress-bar-success' role='progressbar' aria-valuenow='".$coverage_growth."'
+														aria-valuemin='0' aria-valuemax='100' style='width: ".$coverage_growth."%'>+".$coverage_growth."</div></td>";
+													}
+												} else {
+													echo "<div class='progress-bar' role='progressbar' aria-valuenow='".$coverage_now."' aria-valuemin='0'
+													aria-valuemax='100' style='width: ".$coverage_now."%;'>".$coverage_now."</div>";	
+												}
+												?>
+											</tr>
+											<tr>
+												<?php
+												$tackling_now = $playerData['tackling_now'];
+												if ($progress) {
+													$tackling_then = $progressionData['tackling_now'];
+													$tackling_growth = $tackling_now-$tackling_then;
+												}
+												echo "<td>Tackling</td>
+												<td>".$tackling_now."</td>
+												<td>";
+												if ($progress) { 
+													echo "<div class='progress-bar' role='progressbar' aria-valuenow='".$tackling_then."' aria-valuemin='0'
+													aria-valuemax='100' style='width: ".$tackling_then."%;'>".$tackling_then."</div>";
+													if ($tackling_growth > 0) {
+														echo "<div class='progress-bar progress-bar-success' role='progressbar' aria-valuenow='".$tackling_growth."'
+														aria-valuemin='0' aria-valuemax='100' style='width: ".$tackling_growth."%'>+".$tackling_growth."</div></td>";
+													}
+												} else {
+													echo "<div class='progress-bar' role='progressbar' aria-valuenow='".$tackling_now."' aria-valuemin='0'
+													aria-valuemax='100' style='width: ".$tackling_now."%;'>".$tackling_now."</div>";	
+												}
+												?>
+											</tr>
+											<tr>
+												<?php
+												$kick_pow_now = $playerData['kick_pow_now'];
+												if ($progress) {
+													$kick_pow_then = $progressionData['kick_pow_now'];
+													$kick_pow_growth = $kick_pow_now-$kick_pow_then;
+												}
+												echo "<td>Kicking Power</td>
+												<td>".$kick_pow_now."</td>
+												<td>";
+												if ($progress) { 
+													echo "<div class='progress-bar' role='progressbar' aria-valuenow='".$kick_pow_then."' aria-valuemin='0'
+													aria-valuemax='100' style='width: ".$kick_pow_then."%;'>".$kick_pow_then."</div>";
+													if ($kick_pow_growth > 0) {
+														echo "<div class='progress-bar progress-bar-success' role='progressbar' aria-valuenow='".$kick_pow_growth."'
+														aria-valuemin='0' aria-valuemax='100' style='width: ".$kick_pow_growth."%'>+".$kick_pow_growth."</div></td>";
+													}
+												} else {
+													echo "<div class='progress-bar' role='progressbar' aria-valuenow='".$kick_pow_now."' aria-valuemin='0'
+													aria-valuemax='100' style='width: ".$kick_pow_now."%;'>".$kick_pow_now."</div>";	
+												}
+												?>
+											</tr>
+											<tr>
+												<?php
+												$kick_acc_now = $playerData['kick_acc_now'];
+												if ($progress) {
+													$kick_acc_then = $progressionData['kick_acc_now'];
+													$kick_acc_growth = $kick_acc_now-$kick_acc_then;
+												}
+												echo "<td>Kicking Accuracy</td>
+												<td>".$kick_acc_now."</td>
+												<td>";
+												if ($progress) { 
+													echo "<div class='progress-bar' role='progressbar' aria-valuenow='".$kick_acc_then."' aria-valuemin='0'
+													aria-valuemax='100' style='width: ".$kick_acc_then."%;'>".$kick_acc_then."</div>";
+													if ($kick_acc_growth > 0) {
+														echo "<div class='progress-bar progress-bar-success' role='progressbar' aria-valuenow='".$kick_acc_growth."'
+														aria-valuemin='0' aria-valuemax='100' style='width: ".$kick_acc_growth."%'>+".$kick_acc_growth."</div></td>";
+													}
+												} else {
+													echo "<div class='progress-bar' role='progressbar' aria-valuenow='".$kick_acc_now."' aria-valuemin='0'
+													aria-valuemax='100' style='width: ".$kick_acc_now."%;'>".$kick_acc_now."</div>";	
+												}
+												?>
+											</tr>
+											<tr>
+												<?php
+												$punt_acc_now = $playerData['punt_acc_now'];
+												if ($progress) {
+													$punt_acc_then = $progressionData['punt_acc_now'];
+													$punt_acc_growth = $punt_acc_now-$punt_acc_then;
+												}
+												echo "<td>Punting Accuracy</td>
+												<td>".$punt_acc_now."</td>
+												<td>";
+												if ($progress) { 
+													echo "<div class='progress-bar' role='progressbar' aria-valuenow='".$punt_acc_then."' aria-valuemin='0'
+													aria-valuemax='100' style='width: ".$punt_acc_then."%;'>".$punt_acc_then."</div>";
+													if ($punt_acc_growth > 0) {
+														echo "<div class='progress-bar progress-bar-success' role='progressbar' aria-valuenow='".$punt_acc_growth."'
+														aria-valuemin='0' aria-valuemax='100' style='width: ".$punt_acc_growth."%'>+".$punt_acc_growth."</div></td>";
+													}
+												} else {
+													echo "<div class='progress-bar' role='progressbar' aria-valuenow='".$punt_acc_now."' aria-valuemin='0'
+													aria-valuemax='100' style='width: ".$punt_acc_now."%;'>".$punt_acc_now."</div>";	
+												}
+												?>
+											</tr>
+											<tr>
+												<?php
+												$clutch = $playerData['clutch'];
+												echo "<td>Clutch</td>
+												<td>".$clutch."</td>
+												<td>";
+												
+												echo "<div class='progress-bar progress-bar-info' role='progressbar' aria-valuenow='".$clutch."' aria-valuemin='0'
+												aria-valuemax='100' style='width: ".$clutch."%;'>".$clutch."</div>";	
+												
+												?>
+											</tr>
+											<tr>
+												<?php
+												$leadership = $playerData['leadership'];
+												echo "<td>Leadership</td>
+												<td>".$leadership."</td>
+												<td>";
+												
+												echo "<div class='progress-bar progress-bar-info' role='progressbar' aria-valuenow='".$leadership."' aria-valuemin='0'
+												aria-valuemax='100' style='width: ".$leadership."%;'>".$leadership."</div>";	
+												
+												?>
+											</tr>
+											<tr>
+												<?php
+												$durability = $playerData['durability'];
+												echo "<td>Durability</td>
+												<td>".$durability."</td>
+												<td>";
+												
+												echo "<div class='progress-bar progress-bar-info' role='progressbar' aria-valuenow='".$durability."' aria-valuemin='0'
+												aria-valuemax='100' style='width: ".$durability."%;'>".$durability."</div>";	
+												
+												?>
+											</tr>
+											<tr>
+												<?php
+												$toughness = $playerData['toughness'];
+												echo "<td>Toughness</td>
+												<td>".$toughness."</td>
+												<td>";
+												
+												echo "<div class='progress-bar progress-bar-info' role='progressbar' aria-valuenow='".$toughness."' aria-valuemin='0'
+												aria-valuemax='100' style='width: ".$toughness."%;'>".$toughness."</div>";	
+												
+												?>
+											</tr>
+										</tbody>
+									</table>
+									</div>
+								</div>
+							  </div>
+                            
                         </div>
                       </div>
                     </div>
@@ -1298,12 +2483,12 @@ if (!empty($_GET['playerid'])) {
 				  <div class=\"panel panel-default\">
 					<div class=\"panel-heading\">
 					  <h4 class=\"panel-title\">
-						<a data-toggle=\"collapse\" data-parent=\"#accordion\" href=\"#collapseOne\">
+						<a data-toggle=\"collapse\" data-parent=\"#accordion\" href=\"#contractinfo\">
 						  Click to view contract information
 						</a>
 					  </h4>
 					</div>
-					<div id=\"collapseOne\" class=\"panel-collapse collapse\">
+					<div id=\"contractinfo\" class=\"panel-collapse collapse\">
 					  <div class=\"panel-body\">";
 				echo "<div class=\"table-responsive\">
 				<table class=\"table\">

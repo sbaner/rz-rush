@@ -1,0 +1,7 @@
+base     rzwiki
+author   Sumit Banerjee
+email    
+date     2014-8-16
+name     RZRush Template
+desc     Template for RedZone Rush's Wiki (rzrush.com)
+url      http://www.dokuwiki.org/template:dokuwiki

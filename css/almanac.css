@@ -19,6 +19,9 @@
 	font-weight:bold;
 }
 
+.teamrow {
+	margin-bottom:10px;
+}
 .tab-pane h4 {
 	color:#000;
 	font-weight:bold;
@@ -38,3 +41,11 @@
 .champ-card h4 {
 	border-bottom-style:none;
 }
+
+.main > h3 {
+	color:#FFF;
+}
+
+.team-card h3 {
+	color:#2d2d2d;
+}	

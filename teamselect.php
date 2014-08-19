@@ -11,6 +11,16 @@
 	$own_team_result = mysqli_query($conn,"SELECT * FROM team WHERE `owner`='$userID'");
 	$leagues_result = mysqli_query($conn,"SELECT * FROM `league`");
 	$num_leagues = mysqli_num_rows($leagues_result);
+	
+	$tut_result = mysqli_query($conn,"SELECT profile,teamselect FROM tutorial WHERE member=$userID");
+	if (mysqli_num_rows($tut_result)==1) {
+		$tutData = mysqli_fetch_array($tut_result);
+		$profile = $tutData['profile'];
+		$teamselect = $tutData['teamselect'];
+		if ($profile==0) {
+			mysqli_query($conn,"UPDATE tutorial SET profile='1' WHERE member=$userID");
+		}
+	}
 ?>
 <!DOCTYPE html>
 <html>
@@ -25,6 +35,21 @@
 	<link rel="shortcut icon" href="favicon.ico" />
     <script src="../js/jquery-1.11.1.min.js"></script>
     <script src="../js/bootstrap.js"></script>
+	<?php
+	if ($teamselect==0) {
+	echo "<script>
+	$( document ).ready(function() {
+		$('#getteam').popover({
+				trigger: 'manual',
+				placement: 'top',
+				container: 'body',
+				template: '<div class=\"popover\" role=\"tooltip\"><div class=\"arrow\"></div><h3 class=\"popover-title\" style=\"font-weight:bold;\"></h3><div class=\"popover-content\"></div></div>'
+		});
+		$('#getteam').popover('show');
+	});
+	</script>";
+	}
+	?>
     <title>RedZone Rush - Join a League</title>
   </head>
   <body>
@@ -93,7 +118,7 @@
 				<a href="allusers.php">Users</a>
 			  </li>
               <li>
-                <a href="#">Help</a>
+                <a href="/help" target="_blank">Help</a>
               </li>
             </ul>
           </div>
@@ -107,7 +132,7 @@
 		  <table class="table">
                 <thead>
                   <tr>
-                    <th width="20%">League</th>
+                    <th width="20%"<?php if ($teamselect==0) { echo "data-toggle='popover' data-content=\"Find a league that suits you, and then click on it!\" id='getteam'"; }?>>League</th>
                     <th width="20%">Frequency</th>
                     <th width="20%">Salary Cap</th>
                     <th width="20%">Injuries</th>

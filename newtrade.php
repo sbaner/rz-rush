@@ -75,11 +75,11 @@
 	<link rel="shortcut icon" href="favicon.ico" />
     <script src="../js/jquery-1.11.1.min.js"></script>
     <script src="../js/bootstrap.js"></script>
+	<script>document.write('<style>.playerbox { display: none; }</style>');</script>
 	<script>
 	$( document ).ready(function() {
 	var offered = [];
 	var requested = [];
-	$('.playerbox').hide();
 		$('.playerselect').on('change click', function(e){
 			var value = $(this).val();
 			$.ajax({
@@ -183,6 +183,7 @@
 			$('#givebox').html("");
 			$('#receivebox').html("");
 			$('#msgbox').val("");
+			location.reload();
 		});
 	});
 	</script>
@@ -254,7 +255,7 @@
 				<a href="allusers.php">Users</a>
 			  </li>
 			   <li>
-				<a href="">Help</a>
+				<a href="/help" target="_blank">Help</a>
 			  </li>
               
             </ul>
@@ -262,7 +263,7 @@
         </div>
       </div>
       <div class="row" id="content">
-        <div class="col-md-3 col-lg-2">
+        <div class="col-sm-3 col-lg-2">
           <div class="side-bar">
             <div class="team-card">
             <?php 
@@ -319,7 +320,7 @@
 			<button type="submit" class="btn btn-primary">Log out</button>
 		</form>
         </div>
-        <div class="col-md-9 col-lg-8">
+        <div class="col-sm-9 col-lg-8">
 		<ol class="breadcrumb">
 		<?php
 		$leaguename = $leagueData['leaguename'];
@@ -335,11 +336,11 @@
 					}
 				?></h3>
 				<div class="row mainrow">
-					<div class="well col-md-4 tradebox"><b>Give</b>
+					<div class="well col-md-4 col-sm-5 tradebox"><b>Give</b>
 						<div id="givebox">
 						</div>
 					</div>
-					<div class="well col-md-4 tradebox"><b>Receive</b>
+					<div class="well col-md-4 col-sm-5 tradebox"><b>Receive</b>
 						<div id="receivebox">
 						</div>
 					</div>
@@ -350,7 +351,7 @@
 					</div>
 				</div>
 				<div class="row mainrow">
-					<div class="well col-md-4 tradebox"><p><b>Your Team</b></p>
+					<div class="well col-md-4 col-sm-5 tradebox"><p><b>Your Team</b></p>
 					<p>Players</p>
 					<select class="form-control playerselect" id="ownplayers">
 					<?php
@@ -366,7 +367,7 @@
 					</select>
 					<button class="btn btn-primary" id="offerplayer">Offer</button>
 					</div>
-					<div class="well col-md-4 tradebox"><p><b>Other Team</b></p>
+					<div class="well col-sm-5 col-md-4 tradebox"><p><b>Other Team</b></p>
 					<p>Players</p>
 					<select class="form-control playerselect" id="otherplayers">
 					<?php
@@ -382,7 +383,7 @@
 					</select>
 					<button class="btn btn-primary" id="requestplayer">Request</button></b>
 					</div>
-					<div class="col-md-2 col-sm-12">
+					<div class="col-sm-2 col-xs-12">
 						<div class="playerbox">
 							<b>Selected Player:</b><br>
 							<b><span class="playername"></span></b>

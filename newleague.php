@@ -51,6 +51,7 @@
 				VALUES ('{$leaguename}', '{$freq}', '{$salary}', '{$injury}','{$year}',1)");
 		if (mysqli_affected_rows($conn) == 1) {
 			$leagueid = mysqli_insert_id($conn);
+			mysqli_query($conn,"INSERT INTO `board` (id,boardname) VALUES ($leagueid,'$leaguename')");
 		} else {
 			echo "League create fail...";
 		}
@@ -286,7 +287,7 @@
 		$draft_round = 1;
 		
 		//--Select QBs: 4 rounds
-		$qb_result = mysqli_query($conn,"SELECT * FROM player WHERE position='QB' AND league=$leagueid ORDER BY overall_now DESC");
+		$qb_result = mysqli_query($conn,"SELECT player.*,attributes.overall_now FROM player INNER JOIN attributes ON attributes.player=player.id WHERE player.position='QB' AND player.league=$leagueid ORDER BY attributes.overall_now DESC");
 		for ($k=0; $k<4; $k++) {
 			shuffle($draftorder);
 			for ($i=1; $i<33; $i++) {
@@ -302,7 +303,7 @@
 		}
 		
 		//--Select RBs; 6 rounds
-		$rb_result = mysqli_query($conn,"SELECT * FROM player WHERE position='RB' AND league=$leagueid ORDER BY overall_now DESC");
+		$rb_result = mysqli_query($conn,"SELECT player.*,attributes.overall_now FROM player INNER JOIN attributes ON attributes.player=player.id WHERE player.position='RB' AND player.league=$leagueid ORDER BY attributes.overall_now DESC");
 		for ($k=0; $k<6; $k++) {
 			shuffle($draftorder);
 			for ($i=1; $i<33; $i++) {
@@ -318,7 +319,7 @@
 		}
 		
 		//--Select FBs; 2 rounds
-		$fb_result = mysqli_query($conn,"SELECT * FROM player WHERE position='FB' AND league=$leagueid ORDER BY overall_now DESC");
+		$fb_result = mysqli_query($conn,"SELECT player.*,attributes.overall_now FROM player INNER JOIN attributes ON attributes.player=player.id WHERE player.position='FB' AND player.league=$leagueid ORDER BY attributes.overall_now DESC");
 		for ($k=0; $k<2; $k++) {
 			shuffle($draftorder);
 			for ($i=1; $i<33; $i++) {
@@ -334,7 +335,7 @@
 		}
 		
 		//--Select WRs; 8 rounds
-		$wr_result = mysqli_query($conn,"SELECT * FROM player WHERE position='WR' AND league=$leagueid ORDER BY overall_now DESC");
+		$wr_result = mysqli_query($conn,"SELECT player.*,attributes.overall_now FROM player INNER JOIN attributes ON attributes.player=player.id WHERE player.position='WR' AND player.league=$leagueid ORDER BY attributes.overall_now DESC");
 		for ($k=0; $k<8; $k++) {
 			shuffle($draftorder);
 			for ($i=1; $i<33; $i++) {
@@ -349,7 +350,7 @@
 			$draft_round++;
 		}
 		//--Select TEs; 4 rounds
-		$te_result = mysqli_query($conn,"SELECT * FROM player WHERE position='TE' AND league=$leagueid ORDER BY overall_now DESC");
+		$te_result = mysqli_query($conn,"SELECT player.*,attributes.overall_now FROM player INNER JOIN attributes ON attributes.player=player.id WHERE player.position='TE' AND player.league=$leagueid ORDER BY attributes.overall_now DESC");
 		for ($k=0; $k<4; $k++) {
 			shuffle($draftorder);
 			for ($i=1; $i<33; $i++) {
@@ -364,7 +365,7 @@
 			$draft_round++;
 		}
 		//--Select Gs; 6 rounds
-		$g_result = mysqli_query($conn,"SELECT * FROM player WHERE position='G' AND league=$leagueid ORDER BY overall_now DESC");
+		$g_result = mysqli_query($conn,"SELECT player.*,attributes.overall_now FROM player INNER JOIN attributes ON attributes.player=player.id WHERE player.position='G' AND player.league=$leagueid ORDER BY attributes.overall_now DESC");
 		for ($k=0; $k<6; $k++) {
 			shuffle($draftorder);
 			for ($i=1; $i<33; $i++) {
@@ -380,7 +381,7 @@
 		}
 		
 		//--Select Cs; 4 rounds
-		$c_result = mysqli_query($conn,"SELECT * FROM player WHERE position='C' AND league=$leagueid ORDER BY overall_now DESC");
+		$c_result = mysqli_query($conn,"SELECT player.*,attributes.overall_now FROM player INNER JOIN attributes ON attributes.player=player.id WHERE player.position='C' AND player.league=$leagueid ORDER BY attributes.overall_now DESC");
 		for ($k=0; $k<4; $k++) {
 			shuffle($draftorder);
 			for ($i=1; $i<33; $i++) {
@@ -395,7 +396,7 @@
 			$draft_round++;
 		}
 		//--Select Ts; 6 rounds
-		$t_result = mysqli_query($conn,"SELECT * FROM player WHERE position='T' AND league=$leagueid ORDER BY overall_now DESC");
+		$t_result = mysqli_query($conn,"SELECT player.*,attributes.overall_now FROM player INNER JOIN attributes ON attributes.player=player.id WHERE player.position='T' AND player.league=$leagueid ORDER BY attributes.overall_now DESC");
 		for ($k=0; $k<6; $k++) {
 			shuffle($draftorder);
 			for ($i=1; $i<33; $i++) {
@@ -411,7 +412,7 @@
 		}
 		
 		//--Select DEs; 6 rounds
-		$de_result = mysqli_query($conn,"SELECT * FROM player WHERE position='DE' AND league=$leagueid ORDER BY overall_now DESC");
+		$de_result = mysqli_query($conn,"SELECT player.*,attributes.overall_now FROM player INNER JOIN attributes ON attributes.player=player.id WHERE player.position='DE' AND player.league=$leagueid ORDER BY attributes.overall_now DESC");
 		for ($k=0; $k<6; $k++) {
 			shuffle($draftorder);
 			for ($i=1; $i<33; $i++) {
@@ -427,7 +428,7 @@
 		}
 		
 		//--Select DTs; 6 rounds
-		$dt_result = mysqli_query($conn,"SELECT * FROM player WHERE position='DT' AND league=$leagueid ORDER BY overall_now DESC");
+		$dt_result = mysqli_query($conn,"SELECT player.*,attributes.overall_now FROM player INNER JOIN attributes ON attributes.player=player.id WHERE player.position='DT' AND player.league=$leagueid ORDER BY attributes.overall_now DESC");
 		for ($k=0; $k<6; $k++) {
 			shuffle($draftorder);
 			for ($i=1; $i<33; $i++) {
@@ -443,7 +444,7 @@
 		}
 		
 		//--Select LBs; 8 rounds
-		$lb_result = mysqli_query($conn,"SELECT * FROM player WHERE position='LB' AND league=$leagueid ORDER BY overall_now DESC");
+		$lb_result = mysqli_query($conn,"SELECT player.*,attributes.overall_now FROM player INNER JOIN attributes ON attributes.player=player.id WHERE player.position='LB' AND player.league=$leagueid ORDER BY attributes.overall_now DESC");
 		for ($k=0; $k<8; $k++) {
 			shuffle($draftorder);
 			for ($i=1; $i<33; $i++) {
@@ -459,7 +460,7 @@
 		}
 		
 		//--Select CBs; 8 rounds
-		$cb_result = mysqli_query($conn,"SELECT * FROM player WHERE position='CB' AND league=$leagueid ORDER BY overall_now DESC");
+		$cb_result = mysqli_query($conn,"SELECT player.*,attributes.overall_now FROM player INNER JOIN attributes ON attributes.player=player.id WHERE player.position='CB' AND player.league=$leagueid ORDER BY attributes.overall_now DESC");
 		for ($k=0; $k<8; $k++) {
 			shuffle($draftorder);
 			for ($i=1; $i<33; $i++) {
@@ -474,7 +475,7 @@
 			$draft_round++;
 		}
 		//--Select Ss; 8 rounds
-		$s_result = mysqli_query($conn,"SELECT * FROM player WHERE position='S' AND league=$leagueid ORDER BY overall_now DESC");
+		$s_result = mysqli_query($conn,"SELECT player.*,attributes.overall_now FROM player INNER JOIN attributes ON attributes.player=player.id WHERE player.position='S' AND player.league=$leagueid ORDER BY attributes.overall_now DESC");
 		for ($k=0; $k<8; $k++) {
 			shuffle($draftorder);
 			for ($i=1; $i<33; $i++) {
@@ -489,7 +490,7 @@
 			$draft_round++;
 		}
 		//--Select Ks; 2 rounds
-		$k_result = mysqli_query($conn,"SELECT * FROM player WHERE position='K' AND league=$leagueid ORDER BY overall_now DESC");
+		$k_result = mysqli_query($conn,"SELECT player.*,attributes.overall_now FROM player INNER JOIN attributes ON attributes.player=player.id WHERE player.position='K' AND player.league=$leagueid ORDER BY attributes.overall_now DESC");
 		for ($k=0; $k<2; $k++) {
 			shuffle($draftorder);
 			for ($i=1; $i<33; $i++) {
@@ -504,7 +505,7 @@
 			$draft_round++;
 		}
 		//--Select Ps; 2 rounds
-		$p_result = mysqli_query($conn,"SELECT * FROM player WHERE position='P' AND league=$leagueid ORDER BY overall_now DESC");
+		$p_result = mysqli_query($conn,"SELECT player.*,attributes.overall_now FROM player INNER JOIN attributes ON attributes.player=player.id WHERE player.position='P' AND player.league=$leagueid ORDER BY attributes.overall_now DESC");
 		for ($k=0; $k<2; $k++) {
 			shuffle($draftorder);
 			for ($i=1; $i<33; $i++) {
@@ -635,7 +636,7 @@
 				}
 			  ?>
               <li>
-                <a href="#">Help</a>
+                <a href="/help" target="_blank">Help</a>
               </li>
             </ul>
           </div>

@@ -10,7 +10,7 @@
 	
 	$conn = mysqli_connect('localhost', 'rzrushco_admin', 'rzr_3541', 'rzrushco_main');
 	$own_team_result = mysqli_query($conn,"SELECT * FROM team WHERE `owner`='$userID'");
-	$members_result = mysqli_query($conn,"SELECT id,username,signup,last_login FROM `member`");
+	$members_result = mysqli_query($conn,"SELECT id,username,signup,last_login FROM `member` WHERE id!=0");
 	$num_members = mysqli_num_rows($members_result);
 ?>
 <!DOCTYPE html>
@@ -27,7 +27,7 @@
     <script src="js/jquery-1.11.1.min.js"></script>
     <script src="js/bootstrap.js"></script>
 	<script src="js/sorttable.js"></script>
-    <title>RedZone Rush - Join a League</title>
+    <title>RedZone Rush - All Users</title>
   </head>
   <body>
     <div class="container-fluid">
@@ -95,14 +95,14 @@
 				<a href="allusers.php">Users</a>
 			  </li>
               <li>
-                <a href="#">Help</a>
+                <a href="/help" target="_blank">Help</a>
               </li>
             </ul>
           </div>
         </div>
       </div>
       <div class="row" id="content">
-        <div class="col-md-offset-2 col-md-8 col-lg-offset-3 col-lg-6">
+        <div class="col-sm-offset-2 col-sm-8 col-lg-offset-3 col-lg-6">
           <div class="main">
 		  <h3>All Users</h3>
 		  <div class="table-responsive">

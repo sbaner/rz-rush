@@ -44,6 +44,10 @@
 	 }
 	
 	
+	 $draft_result = mysqli_query($conn,"SELECT * FROM player WHERE league=$leagueid AND draft_round=$roundnum AND start_year=$draft_year ORDER BY draft_round,draft_pos");
+	 $draft_result_p = mysqli_query($conn,"SELECT * FROM player WHERE league=$leagueid AND start_year=$draft_year ORDER BY draft_round,draft_pos");
+	 $rows = mysqli_num_rows($draft_result_p); 
+	 $page_rows = 32; 
 ?>
 <!DOCTYPE html>
 <html>
@@ -126,14 +130,14 @@
 				<a href="allusers.php">Users</a>
 			  </li>
               <li>
-                <a href="#">Help</a>
+                <a href="/help" target="_blank">Help</a>
               </li>
             </ul>
           </div>
         </div>
       </div>
       <div class="row" id="content">
-        <div class="col-md-3 col-lg-2">
+        <div class="col-sm-3 col-lg-2">
           <div class="side-bar">
             <div class="team-card">
             
@@ -167,9 +171,6 @@
 			  <?php
 			  echo
                 "<li>
-                  <a href=\"league.php?leagueid=".$leagueid."\">Standings</a>
-                </li>
-                <li>
                   <a href=\"scores.php?leagueid=".$leagueid."\">Scores &amp; Schedule</a>
                 </li>
                 <li>
@@ -180,24 +181,29 @@
                 </li>
                 <li>
                   <a href=\"leaguealmanac.php?leagueid=".$leagueid."\">Almanac</a>
-                </li><li>
-                  <a href=\"#\">Message Board</a>
+                </li>
+				<li>
+                  <a href=\"mboard.php?leagueid=".$leagueid."\">Message Board</a>
                 </li>";
 				?>
               </ul>
             </div>
           </div>
         </div>
-        <div class="col-md-9 col-lg-8">
+        <div class="col-sm-9 col-lg-8">
 		<ol class="breadcrumb">
 		<?php
 			echo "<li><a href=\"league.php?leagueid=".$leagueid."\">".$leaguename."</a></li>";
-				echo "<li><a href=\"draft.php?leagueid=".$leagueid."\">Draft</a></li>";
-			
+				echo "<li>Draft</li>";
 		?>
 		</ol>
           <div class="main">
             <h3><?php echo $leaguename." ".$draft_year." Draft"?></h3>
+			<?php 
+			if ($rows==2560) {
+				echo "<h4>Creation Draft</h4>";
+			}
+			?>
 			<form class="form horizontal" action="draft.php?leagueid=<?php echo $leagueid;?>" method="POST">
 			<div class="row">
 				<div class="col-md-2">
@@ -234,12 +240,6 @@
 					</thead>
 					<tbody>
             <?php 
-			
-			 $draft_result = mysqli_query($conn,"SELECT * FROM player WHERE league=$leagueid AND draft_round=$roundnum AND start_year=$draft_year ORDER BY draft_round,draft_pos");
-			 $draft_result_p = mysqli_query($conn,"SELECT * FROM player WHERE league=$leagueid AND start_year=$draft_year ORDER BY draft_round,draft_pos");
-			 $rows = mysqli_num_rows($draft_result_p); 
-			 $page_rows = 32; 
-
 			 //This tells us the page number of our last page 
 			 $last = ceil($rows/$page_rows); 
 			 if ($last==0)  {

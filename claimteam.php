@@ -57,5 +57,6 @@
 		$timestamp = date("Y")."-".date("m")."-".date("d")." ".date("g").":".date("i")." ".date("A");
 		mysqli_query($conn,"INSERT INTO leagueactivity (league,team,member,action,timestamp) VALUES  ($leagueid,$teamid,$userID,'claimed','$timestamp')");
 		header('Location: team.php?teamid='.$teamid);
+		mysqli_query($conn,"UPDATE tutorial SET profile='1',teamselect='1',league='1',team='1' WHERE member=$userID");
 	}
 ?>

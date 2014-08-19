@@ -1,0 +1,116 @@
+.game-header{
+	background-image:url('game-bg.jpg')	;
+	color:#FFF;
+}
+
+.player-header p{
+	font-size:16px;
+}
+
+.main h3 {
+	color:#FFF;
+}
+
+.main {
+	background-color:#DDD;
+}
+.game-header {
+	padding:10px;
+	margin-bottom:20px;
+}
+
+.textrow {
+	margin-bottom:10px;
+}
+.game-header h4 {
+	color:#FFF;
+}
+
+.game-header a {
+	color:#FFF;
+}
+
+.panel-title {
+	color:#2d2d2d;
+}
+
+.first-col > h4 {
+text-align:center;
+}
+
+.first-col > p {
+text-align:center;
+}
+
+.first-col > img {
+display: block;
+margin-left: auto;
+margin-right: auto;
+}
+
+.sec-col > h4 {
+text-align:center;
+}
+
+.sec-col > p {
+text-align:center;
+}
+
+.sec-col > img {
+display: block;
+margin-left: auto;
+margin-right: auto;
+}
+.main {
+	text-align:center;
+	color:#2d2d2d;
+}
+
+.statrow {
+	margin-left:0px;
+	margin-right:0px;
+}
+
+.main > .row > h4 {
+	font-weight:bold;
+}
+.third-col > h4, .third-col > p{
+	text-align:center;
+	font-weight:bold;
+}
+
+.panel-heading {
+	font-weight:bold;
+}
+
+.panel-default {
+	border-color:#BBB;
+}
+
+.trheading {
+	background-color:#EEE;
+}
+
+.trheading > td:first-child {
+	padding-left:5px !important;
+
+}
+
+.trchild  >td:first-child {
+	padding-left:25px !important;
+}
+
+thead {
+	color:#333;
+	background-color:#DDD;
+	font-size:12px;
+}
+
+tbody {
+	background-color:#FFF;
+	color:#333;
+}
+
+#buttonrow {
+	padding-bottom:10px;
+}

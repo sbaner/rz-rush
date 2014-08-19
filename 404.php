@@ -28,7 +28,7 @@
                 <a href="../index.php">Home</a>
               </li>
               <li>
-                <a href="#">Help</a>
+                <a href="/help" target="_blank">Help</a>
               </li>
             </ul>
           </div>

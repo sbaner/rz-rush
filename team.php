@@ -55,19 +55,30 @@
 	$leagueData = mysqli_fetch_array($league_result, MYSQL_ASSOC);
 	$league_year = $leagueData['year'];
 	
-	$active_player_result = mysqli_query($conn,"SELECT id,start_year,firstname,lastname,position,health,overall_now FROM player WHERE team=$teamid AND status='active'");
-	$inactive_player_result = mysqli_query($conn,"SELECT id,start_year,firstname,lastname,position,health,overall_now FROM player WHERE team=$teamid AND status='inactive'");
-	$ir_player_result = mysqli_query($conn,"SELECT id,start_year,firstname,lastname,position,health,overall_now FROM player WHERE team=$teamid AND status='ir'");
+	$active_player_result = mysqli_query($conn,"SELECT player.*,attributes.overall_now FROM player INNER JOIN attributes ON attributes.player=player.id WHERE player.team=$teamid AND status='active'");
+	$inactive_player_result = mysqli_query($conn,"SELECT player.*,attributes.overall_now FROM player INNER JOIN attributes ON attributes.player=player.id WHERE player.team=$teamid AND status='inactive'");
+	$ir_player_result = mysqli_query($conn,"SELECT player.*,attributes.overall_now FROM player INNER JOIN attributes ON attributes.player=player.id WHERE player.team=$teamid AND status='ir'");
 	
+	//Tutorial
+	$tut_result = mysqli_query($conn,"SELECT league,team,teamedit FROM tutorial WHERE member=$userID");
+	if (mysqli_num_rows($tut_result)==1) {
+		$tutData = mysqli_fetch_array($tut_result);
+		$leaguetut = $tutData['league'];
+		$teamtut = $tutData['team'];
+		$teamedittut = $tutData['teamedit'];
+		if ($leaguetut==0) {
+			mysqli_query($conn,"UPDATE tutorial SET profile='1',teamselect='1',league='1' WHERE member=$userID");
+		}
+	}
 	//Process team actions
 	if (isset($_POST['inactivate'])) {
 		$players = $_POST['playercheck'];
 		foreach($players as $player) {
 			mysqli_query($conn,"UPDATE player SET status='inactive' WHERE id=$player");
 		}
-		$active_player_result = mysqli_query($conn,"SELECT id,start_year,firstname,lastname,position,health,overall_now FROM player WHERE team=$teamid AND status='active'");
-		$inactive_player_result = mysqli_query($conn,"SELECT id,start_year,firstname,lastname,position,health,overall_now FROM player WHERE team=$teamid AND status='inactive'");
-		$ir_player_result = mysqli_query($conn,"SELECT id,start_year,firstname,lastname,position,health,overall_now FROM player WHERE team=$teamid AND status='ir'");
+		$active_player_result = mysqli_query($conn,"SELECT player.*,attributes.overall_now FROM player INNER JOIN attributes ON attributes.player=player.id WHERE player.team=$teamid AND status='active'");
+		$inactive_player_result = mysqli_query($conn,"SELECT player.*,attributes.overall_now FROM player INNER JOIN attributes ON attributes.player=player.id WHERE player.team=$teamid AND status='inactive'");
+		$ir_player_result = mysqli_query($conn,"SELECT player.*,attributes.overall_now FROM player INNER JOIN attributes ON attributes.player=player.id WHERE player.team=$teamid AND status='ir'");
 	} else if (isset($_POST['activate'])) {
 		$players = $_POST['playercheck'];
 		if (count($players)+mysqli_num_rows($active_player_result) <= 46) {
@@ -80,17 +91,17 @@
 			}
 			$message = "You may only have 46 players on your active roster.";
 		}
-		$active_player_result = mysqli_query($conn,"SELECT id,start_year,firstname,lastname,position,health,overall_now FROM player WHERE team=$teamid AND status='active'");
-		$inactive_player_result = mysqli_query($conn,"SELECT id,start_year,firstname,lastname,position,health,overall_now FROM player WHERE team=$teamid AND status='inactive'");
-		$ir_player_result = mysqli_query($conn,"SELECT id,start_year,firstname,lastname,position,health,overall_now FROM player WHERE team=$teamid AND status='ir'");
+		$active_player_result = mysqli_query($conn,"SELECT player.*,attributes.overall_now FROM player INNER JOIN attributes ON attributes.player=player.id WHERE player.team=$teamid AND status='active'");
+		$inactive_player_result = mysqli_query($conn,"SELECT player.*,attributes.overall_now FROM player INNER JOIN attributes ON attributes.player=player.id WHERE player.team=$teamid AND status='inactive'");
+		$ir_player_result = mysqli_query($conn,"SELECT player.*,attributes.overall_now FROM player INNER JOIN attributes ON attributes.player=player.id WHERE player.team=$teamid AND status='ir'");
 	} else if (isset($_POST['toir'])) {
 		$players = $_POST['playercheck'];
 		foreach($players as $player) {
 			mysqli_query($conn,"UPDATE player SET status='ir' WHERE id=$player");
 		}
-		$active_player_result = mysqli_query($conn,"SELECT id,start_year,firstname,lastname,position,health,overall_now FROM player WHERE team=$teamid AND status='active'");
-		$inactive_player_result = mysqli_query($conn,"SELECT id,start_year,firstname,lastname,position,health,overall_now FROM player WHERE team=$teamid AND status='inactive'");
-		$ir_player_result = mysqli_query($conn,"SELECT id,start_year,firstname,lastname,position,health,overall_now FROM player WHERE team=$teamid AND status='ir'");
+		$active_player_result = mysqli_query($conn,"SELECT player.*,attributes.overall_now FROM player INNER JOIN attributes ON attributes.player=player.id WHERE player.team=$teamid AND status='active'");
+		$inactive_player_result = mysqli_query($conn,"SELECT player.*,attributes.overall_now FROM player INNER JOIN attributes ON attributes.player=player.id WHERE player.team=$teamid AND status='inactive'");
+		$ir_player_result = mysqli_query($conn,"SELECT player.*,attributes.overall_now FROM player INNER JOIN attributes ON attributes.player=player.id WHERE player.team=$teamid AND status='ir'");
 	} else if (isset($_POST['cut'])) {
 		$players = $_POST['playercheck'];
 		foreach($players as $player) {
@@ -104,9 +115,9 @@
 			$timestamp = date("Y")."-".date("m")."-".date("d")." ".date("g").":".date("i")." ".date("A");
 			mysqli_query($conn,"INSERT INTO leagueactivity (league,team,action,player,timestamp) VALUES ($leagueid,$teamid,'cut',$player,'$timestamp')");
 		}
-		$active_player_result = mysqli_query($conn,"SELECT id,start_year,firstname,lastname,position,health,overall_now FROM player WHERE team=$teamid AND status='active'");
-		$inactive_player_result = mysqli_query($conn,"SELECT id,start_year,firstname,lastname,position,health,overall_now FROM player WHERE team=$teamid AND status='inactive'");
-		$ir_player_result = mysqli_query($conn,"SELECT id,start_year,firstname,lastname,position,health,overall_now FROM player WHERE team=$teamid AND status='ir'");
+		$active_player_result = mysqli_query($conn,"SELECT player.*,attributes.overall_now FROM player INNER JOIN attributes ON attributes.player=player.id WHERE player.team=$teamid AND status='active'");
+		$inactive_player_result = mysqli_query($conn,"SELECT player.*,attributes.overall_now FROM player INNER JOIN attributes ON attributes.player=player.id WHERE player.team=$teamid AND status='inactive'");
+		$ir_player_result = mysqli_query($conn,"SELECT player.*,attributes.overall_now FROM player INNER JOIN attributes ON attributes.player=player.id WHERE player.team=$teamid AND status='ir'");
 	}
 ?>
 <!DOCTYPE html>
@@ -123,6 +134,32 @@
 	<script src="js/jquery-1.11.1.min.js"></script>
 	<script src="js/bootstrap.js"></script>
 	<script src="js/sorttable.js"></script>
+	<script>
+	$( document ).ready(function() {
+		<?php
+		if ($teamtut==0) {
+		echo "$('#claimteam').popover({
+				trigger: 'manual',
+				placement: 'bottom',
+				container: 'body',
+				template: '<div class=\"popover\" role=\"tooltip\"><div class=\"arrow\"></div><h3 class=\"popover-title\" style=\"font-weight:bold;\"></h3><div class=\"popover-content\"></div></div>'
+		});
+		$('#claimteam').popover('show');";
+		}
+		
+		if ($teamedittut==0) {
+		echo "$('#teamedit').popover({
+				trigger: 'manual',
+				placement: 'right',
+				container: 'body',
+				template: '<div class=\"popover\" role=\"tooltip\"><div class=\"arrow\"></div><h3 class=\"popover-title\" style=\"font-weight:bold;\"></h3><div class=\"popover-content\"></div></div>'
+		});
+		
+		$('#teamedit').popover('show');";
+		}
+		?>
+	});
+	</script>
     <title>RedZone Rush - Team</title>
   </head>
   <body>
@@ -191,14 +228,14 @@
 				<a href="allusers.php">Users</a>
 			  </li>
               <li>
-                <a href="#">Help</a>
+                <a href="/help" target="_blank">Help</a>
               </li>
             </ul>
           </div>
         </div>
       </div>
       <div class="row" id="content">
-        <div class="col-md-3 col-lg-2">
+        <div class="col-sm-3 col-lg-2">
           <div class="side-bar">
 		  <?php
 		  if (!$own_team) {
@@ -230,7 +267,7 @@
 			  <?php
 			  if($own_team){
 				echo "<li>
-					<a href=\"teamedit.php?teamid=".$teamid."\">Edit Team</a>
+					<a href=\"teamedit.php?teamid=".$teamid."\"  data-toggle='popover' data-title='Congrats!' data-content=\"You now own a team! Click here to edit the team's name and logo. If you need more help with managing your team, click the 'Help' link at the top of the screen.\" id='teamedit'>Edit Team</a>
 				</li>";
 				}
 			  ?>
@@ -272,7 +309,7 @@
             </div>
           </div>
         </div>
-        <div class="col-md-9 col-lg-8">
+        <div class="col-sm-9 col-lg-8">
 		<ol class="breadcrumb">
 		<?php
 		$leaguename = $leagueData['leaguename'];
@@ -283,13 +320,12 @@
 		</ol>
           <div class="main">
 			<div class="team-header">
-				<div class="container">
 					<div class="row">
-						<div class="col-md-3">
+						<div class="col-lg-3 col-md-5 col-sm-6">
 								<h3 id="teamname"><?php echo $location." ".$teamname;?></h3>
 								<img src="<?php echo $logopath;?>">
 						</div>
-						<div class="col-md-3 col-md">
+						<div class="col-md-3">
 							<div class="middle-col">
 							<?php
 							echo "<h3>".$season_win." - ".$season_loss."</h3>";
@@ -299,7 +335,7 @@
 								echo "<p>CPU Team</p>";
 								if($canclaim) {
 									echo "<p><form action=\"claimteam.php?teamid=".$teamid."\" method=\"POST\">
-											  <button class=\"btn btn-primary\">Claim Team</button>
+											  <button class=\"btn btn-primary\" data-toggle='popover' data-content=\"Claim your new team!\" id='claimteam'>Claim Team</button>
 											</form></p>";
 								}
 							}							
@@ -318,22 +354,18 @@
 						}
 						if (!$own_team && $owner!=0 && $sameleague) {
 							
-							echo "<div class=\"row\">
+							echo "
 							<form action='newtrade.php?teamid=".$sameleagueteam."&and=".$teamid."' method='POST'>
 												<button type=\"submit\" class=\"btn btn-primary\"><span class=\"glyphicon glyphicon-share\"></span> Offer Trade</button>
-												</form>
-											</div>";
+												</form>";
 						}
 						?>
 						</div>
 						</div>
 					</div>
-				</div>
 			</div>
-            <h3>Team Details</h3>
-				
 			 <div class="row">
-			 <div class="col-md-10 col-lg-9">
+			 <div class="col-md-12 col-lg-10">
 			 <?php
 			 if (isset($message)) {
 				 echo "<div class=\"alert alert-warning fade in\" id=\"message\">
@@ -396,8 +428,40 @@
             <div class="panel-heading">Active Players (<?php echo mysqli_num_rows($active_player_result);?>/46)</div>
 			<?php
 			 if($own_team) {
-			echo "<button type=\"submit\" name=\"cut\" class=\"btn btn-danger\" onclick=\"return confirm('Cut the selected players?');\">Cut</button>
-			<button type=\"submit\" name=\"toir\" class=\"btn btn-warning\" onclick=\"return confirm('Place the player(s) on injured reserve? This will free up their roster spot but you cannot reactivate the player for the rest of the season.');\">Place on IR</button>
+			echo "<button type='button' class=\"btn btn-danger\" data-toggle='modal' data-target='#cutModal'>Cut</button>
+				<div class='modal fade' id='cutModal' tabindex='-1' role='dialog' aria-labelledby='ConfirmCut' aria-hidden='true'>
+				  <div class='modal-dialog modal-sm'>
+					<div class='modal-content'>
+					  <div class='modal-header'>
+						<button type='button' class='close' data-dismiss='modal'><span aria-hidden='true'>&times;</span><span class='sr-only'>Close</span></button>
+						<h4 class='modal-title' id='cutModalLabel'>Confirm action</h4>
+					  </div>
+					  <div class='modal-body'>
+						Cut the selected players?
+					  </div>
+					  <div class='modal-footer'>
+						<button type=\"submit\" name=\"cut\" class=\"btn btn-danger\">Cut</button>
+					  </div>
+					</div>
+				  </div>
+				</div>
+			<button type='button' class=\"btn btn-warning\" data-toggle='modal' data-target='#irModal'>Place on IR</button>
+			<div class='modal fade' id='irModal' tabindex='-1' role='dialog' aria-labelledby='ConfirmIR' aria-hidden='true'>
+			  <div class='modal-dialog modal-sm'>
+				<div class='modal-content'>
+				  <div class='modal-header'>
+					<button type='button' class='close' data-dismiss='modal'><span aria-hidden='true'>&times;</span><span class='sr-only'>Close</span></button>
+					<h4 class='modal-title' id='cutModalLabel'>Confirm action</h4>
+				  </div>
+				  <div class='modal-body'>
+					Place the player(s) on injured reserve? This will free up their roster spot but you cannot reactivate the player for the rest of the season.
+				  </div>
+				  <div class='modal-footer'>
+					<button type=\"submit\" name=\"toir\" class=\"btn btn-warning\">Place on IR</button>
+				  </div>
+				</div>
+			  </div>
+			</div>
 			<button type=\"submit\" name=\"inactivate\" class=\"btn btn-info\">Inactivate</button>";
 			}
 			?>
@@ -417,7 +481,7 @@
                 </thead>
                 <tbody>
 				<?php
-				$active_qb_result = mysqli_query($conn,"SELECT id,start_year,firstname,lastname,position,health,overall_now FROM player WHERE team=$teamid AND status='active' AND position='QB' ORDER BY overall_now DESC");
+				$active_qb_result = mysqli_query($conn,"SELECT player.*,attributes.overall_now FROM player INNER JOIN attributes ON attributes.player=player.id WHERE player.team=$teamid AND status='active' AND position='QB' ORDER BY overall_now DESC");
 				for ($i=1; $i < mysqli_num_rows($active_qb_result); $i++) {
 					$activeData = mysqli_fetch_array($active_qb_result);
 					$playerid = $activeData['id'];
@@ -472,7 +536,7 @@
 					}
 					echo "</td></tr>";
 				}
-				$active_rb_result = mysqli_query($conn,"SELECT id,start_year,firstname,lastname,position,health,overall_now FROM player WHERE team=$teamid AND status='active' AND position='RB' ORDER BY overall_now DESC");
+				$active_rb_result = mysqli_query($conn,"SELECT player.*,attributes.overall_now FROM player INNER JOIN attributes ON attributes.player=player.id WHERE player.team=$teamid AND status='active' AND position='RB' ORDER BY overall_now DESC");
 				for ($i=1; $i < mysqli_num_rows($active_rb_result); $i++) {
 					$activeData = mysqli_fetch_array($active_rb_result);
 					$playerid = $activeData['id'];
@@ -526,7 +590,7 @@
 					}
 					echo "</td></tr>";
 				}
-				$active_fb_result = mysqli_query($conn,"SELECT id,start_year,firstname,lastname,position,health,overall_now FROM player WHERE team=$teamid AND status='active' AND position='FB' ORDER BY overall_now DESC");
+				$active_fb_result = mysqli_query($conn,"SELECT player.*,attributes.overall_now FROM player INNER JOIN attributes ON attributes.player=player.id WHERE player.team=$teamid AND status='active' AND position='FB' ORDER BY overall_now DESC");
 				for ($i=1; $i < mysqli_num_rows($active_fb_result); $i++) {
 					$activeData = mysqli_fetch_array($active_fb_result);
 					$playerid = $activeData['id'];
@@ -580,7 +644,7 @@
 					}
 					echo "</td></tr>";
 				}
-				$active_wr_result = mysqli_query($conn,"SELECT id,start_year,firstname,lastname,position,health,overall_now FROM player WHERE team=$teamid AND status='active' AND position='WR' ORDER BY overall_now DESC");
+				$active_wr_result = mysqli_query($conn,"SELECT player.*,attributes.overall_now FROM player INNER JOIN attributes ON attributes.player=player.id WHERE player.team=$teamid AND status='active' AND position='WR' ORDER BY overall_now DESC");
 				for ($i=1; $i < mysqli_num_rows($active_wr_result); $i++) {
 					$activeData = mysqli_fetch_array($active_wr_result);
 					$playerid = $activeData['id'];
@@ -634,7 +698,7 @@
 					}
 					echo "</td></tr>";
 				}
-				$active_te_result = mysqli_query($conn,"SELECT id,start_year,firstname,lastname,position,health,overall_now FROM player WHERE team=$teamid AND status='active' AND position='TE' ORDER BY overall_now DESC");
+				$active_te_result = mysqli_query($conn,"SELECT player.*,attributes.overall_now FROM player INNER JOIN attributes ON attributes.player=player.id WHERE player.team=$teamid AND status='active' AND position='TE' ORDER BY overall_now DESC");
 				for ($i=1; $i < mysqli_num_rows($active_te_result); $i++) {
 					$activeData = mysqli_fetch_array($active_te_result);
 					$playerid = $activeData['id'];
@@ -688,7 +752,7 @@
 					}
 					echo "</td></tr>";
 				}
-				$active_g_result = mysqli_query($conn,"SELECT id,start_year,firstname,lastname,position,health,overall_now FROM player WHERE team=$teamid AND status='active' AND position='G' ORDER BY overall_now DESC");
+				$active_g_result = mysqli_query($conn,"SELECT player.*,attributes.overall_now FROM player INNER JOIN attributes ON attributes.player=player.id WHERE player.team=$teamid AND status='active' AND position='G' ORDER BY overall_now DESC");
 				for ($i=1; $i < mysqli_num_rows($active_g_result); $i++) {
 					$activeData = mysqli_fetch_array($active_g_result);
 					$playerid = $activeData['id'];
@@ -742,7 +806,7 @@
 					}
 					echo "</td></tr>";
 				}
-				$active_c_result = mysqli_query($conn,"SELECT id,start_year,firstname,lastname,position,health,overall_now FROM player WHERE team=$teamid AND status='active' AND position='C' ORDER BY overall_now DESC");
+				$active_c_result = mysqli_query($conn,"SELECT player.*,attributes.overall_now FROM player INNER JOIN attributes ON attributes.player=player.id WHERE player.team=$teamid AND status='active' AND position='C' ORDER BY overall_now DESC");
 				for ($i=1; $i < mysqli_num_rows($active_c_result); $i++) {
 					$activeData = mysqli_fetch_array($active_c_result);
 					$playerid = $activeData['id'];
@@ -796,7 +860,7 @@
 					}
 					echo "</td></tr>";
 				}
-				$active_t_result = mysqli_query($conn,"SELECT id,start_year,firstname,lastname,position,health,overall_now FROM player WHERE team=$teamid AND status='active' AND position='T' ORDER BY overall_now DESC");
+				$active_t_result = mysqli_query($conn,"SELECT player.*,attributes.overall_now FROM player INNER JOIN attributes ON attributes.player=player.id WHERE player.team=$teamid AND status='active' AND position='T' ORDER BY overall_now DESC");
 				for ($i=1; $i < mysqli_num_rows($active_t_result); $i++) {
 					$activeData = mysqli_fetch_array($active_t_result);
 					$playerid = $activeData['id'];
@@ -850,7 +914,7 @@
 					}
 					echo "</td></tr>";
 				}
-				$active_de_result = mysqli_query($conn,"SELECT id,start_year,firstname,lastname,position,health,overall_now FROM player WHERE team=$teamid AND status='active' AND position='DE' ORDER BY overall_now DESC");
+				$active_de_result = mysqli_query($conn,"SELECT player.*,attributes.overall_now FROM player INNER JOIN attributes ON attributes.player=player.id WHERE player.team=$teamid AND status='active' AND position='DE' ORDER BY overall_now DESC");
 				for ($i=1; $i < mysqli_num_rows($active_de_result); $i++) {
 					$activeData = mysqli_fetch_array($active_de_result);
 					$playerid = $activeData['id'];
@@ -904,7 +968,7 @@
 					}
 					echo "</td></tr>";
 				}
-				$active_dt_result = mysqli_query($conn,"SELECT id,start_year,firstname,lastname,position,health,overall_now FROM player WHERE team=$teamid AND status='active' AND position='DT' ORDER BY overall_now DESC");
+				$active_dt_result = mysqli_query($conn,"SELECT player.*,attributes.overall_now FROM player INNER JOIN attributes ON attributes.player=player.id WHERE player.team=$teamid AND status='active' AND position='DT' ORDER BY overall_now DESC");
 				for ($i=1; $i < mysqli_num_rows($active_dt_result); $i++) {
 					$activeData = mysqli_fetch_array($active_dt_result);
 					$playerid = $activeData['id'];
@@ -958,7 +1022,7 @@
 					}
 					echo "</td></tr>";
 				}
-				$active_lb_result = mysqli_query($conn,"SELECT id,start_year,firstname,lastname,position,health,overall_now FROM player WHERE team=$teamid AND status='active' AND position='LB' ORDER BY overall_now DESC");
+				$active_lb_result = mysqli_query($conn,"SELECT player.*,attributes.overall_now FROM player INNER JOIN attributes ON attributes.player=player.id WHERE player.team=$teamid AND status='active' AND position='LB' ORDER BY overall_now DESC");
 				for ($i=1; $i < mysqli_num_rows($active_lb_result); $i++) {
 					$activeData = mysqli_fetch_array($active_lb_result);
 					$playerid = $activeData['id'];
@@ -1012,7 +1076,7 @@
 					}
 					echo "</td></tr>";
 				}
-				$active_cb_result = mysqli_query($conn,"SELECT id,start_year,firstname,lastname,position,health,overall_now FROM player WHERE team=$teamid AND status='active' AND position='CB' ORDER BY overall_now DESC");
+				$active_cb_result = mysqli_query($conn,"SELECT player.*,attributes.overall_now FROM player INNER JOIN attributes ON attributes.player=player.id WHERE player.team=$teamid AND status='active' AND position='CB' ORDER BY overall_now DESC");
 				for ($i=1; $i < mysqli_num_rows($active_cb_result); $i++) {
 					$activeData = mysqli_fetch_array($active_cb_result);
 					$playerid = $activeData['id'];
@@ -1066,7 +1130,7 @@
 					}
 					echo "</td></tr>";
 				}
-				$active_s_result = mysqli_query($conn,"SELECT id,start_year,firstname,lastname,position,health,overall_now FROM player WHERE team=$teamid AND status='active' AND position='S' ORDER BY overall_now DESC");
+				$active_s_result = mysqli_query($conn,"SELECT player.*,attributes.overall_now FROM player INNER JOIN attributes ON attributes.player=player.id WHERE player.team=$teamid AND status='active' AND position='S' ORDER BY overall_now DESC");
 				for ($i=1; $i < mysqli_num_rows($active_s_result); $i++) {
 					$activeData = mysqli_fetch_array($active_s_result);
 					$playerid = $activeData['id'];
@@ -1120,7 +1184,7 @@
 					}
 					echo "</td></tr>";
 				}
-				$active_k_result = mysqli_query($conn,"SELECT id,start_year,firstname,lastname,position,health,overall_now FROM player WHERE team=$teamid AND status='active' AND position='K' ORDER BY overall_now DESC");
+				$active_k_result = mysqli_query($conn,"SELECT player.*,attributes.overall_now FROM player INNER JOIN attributes ON attributes.player=player.id WHERE player.team=$teamid AND status='active' AND position='K' ORDER BY overall_now DESC");
 				for ($i=1; $i < mysqli_num_rows($active_k_result); $i++) {
 					$activeData = mysqli_fetch_array($active_k_result);
 					$playerid = $activeData['id'];
@@ -1174,7 +1238,7 @@
 					}
 					echo "</td></tr>";
 				}
-				$active_p_result = mysqli_query($conn,"SELECT id,start_year,firstname,lastname,position,health,overall_now FROM player WHERE team=$teamid AND status='active' AND position='P' ORDER BY overall_now DESC");
+				$active_p_result = mysqli_query($conn,"SELECT player.*,attributes.overall_now FROM player INNER JOIN attributes ON attributes.player=player.id WHERE player.team=$teamid AND status='active' AND position='P' ORDER BY overall_now DESC");
 				for ($i=0; $i < mysqli_num_rows($active_p_result); $i++) {
 					$activeData = mysqli_fetch_array($active_p_result);
 					$playerid = $activeData['id'];
@@ -1217,8 +1281,40 @@
             <div class="panel-heading">Inactive Players (<?php echo mysqli_num_rows($inactive_player_result);?>)</div>
 			<?php
 			 if($own_team) {
-			echo "<button type=\"submit\" name=\"cut\" class=\"btn btn-danger\" onclick=\"return confirm('Cut the selected players?');\">Cut</button>
-			<button type=\"submit\" name=\"toir\" class=\"btn btn-warning\" onclick=\"return confirm('Place the player on injured reserve? This will free up a roster spot but you cannot reactive the player for the rest of the season.');\">Place on IR</button>
+			echo "<button type='button' class=\"btn btn-danger\" data-toggle='modal' data-target='#iacutModal'>Cut</button>
+				<div class='modal fade' id='iacutModal' tabindex='-1' role='dialog' aria-labelledby='ConfirmCut' aria-hidden='true'>
+				  <div class='modal-dialog modal-sm'>
+					<div class='modal-content'>
+					  <div class='modal-header'>
+						<button type='button' class='close' data-dismiss='modal'><span aria-hidden='true'>&times;</span><span class='sr-only'>Close</span></button>
+						<h4 class='modal-title' id='cutModalLabel'>Confirm action</h4>
+					  </div>
+					  <div class='modal-body'>
+						Cut the selected players?
+					  </div>
+					  <div class='modal-footer'>
+						<button type=\"submit\" name=\"cut\" class=\"btn btn-danger\">Cut</button>
+					  </div>
+					</div>
+				  </div>
+				</div>
+			<button type='button' class=\"btn btn-warning\" data-toggle='modal' data-target='#iairModal'>Place on IR</button>
+			<div class='modal fade' id='iairModal' tabindex='-1' role='dialog' aria-labelledby='ConfirmIR' aria-hidden='true'>
+			  <div class='modal-dialog modal-sm'>
+				<div class='modal-content'>
+				  <div class='modal-header'>
+					<button type='button' class='close' data-dismiss='modal'><span aria-hidden='true'>&times;</span><span class='sr-only'>Close</span></button>
+					<h4 class='modal-title' id='cutModalLabel'>Confirm action</h4>
+				  </div>
+				  <div class='modal-body'>
+					Place the player(s) on injured reserve? This will free up their roster spot but you cannot reactivate the player for the rest of the season.
+				  </div>
+				  <div class='modal-footer'>
+					<button type=\"submit\" name=\"toir\" class=\"btn btn-warning\">Place on IR</button>
+				  </div>
+				</div>
+			  </div>
+			</div>
 			<button type=\"submit\" name=\"activate\" class=\"btn btn-success\">Activate</button>";
 			}
 			?>
@@ -1238,7 +1334,7 @@
                 </thead>
                 <tbody>
                   <?php
-					$inactive_qb_result = mysqli_query($conn,"SELECT id,start_year,firstname,lastname,position,health,overall_now FROM player WHERE team=$teamid AND status='inactive' AND position='QB' ORDER BY overall_now DESC");
+					$inactive_qb_result = mysqli_query($conn,"SELECT player.*,attributes.overall_now FROM player INNER JOIN attributes ON attributes.player=player.id WHERE player.team=$teamid AND status='inactive' AND position='QB' ORDER BY overall_now DESC");
 				for ($i=1; $i < mysqli_num_rows($inactive_qb_result); $i++) {
 					$inactiveData = mysqli_fetch_array($inactive_qb_result);
 					$playerid = $inactiveData['id'];
@@ -1292,7 +1388,7 @@
 					}
 					echo "</td></tr>";
 				}
-				$inactive_rb_result = mysqli_query($conn,"SELECT id,start_year,firstname,lastname,position,health,overall_now FROM player WHERE team=$teamid AND status='inactive' AND position='RB' ORDER BY overall_now DESC");
+				$inactive_rb_result = mysqli_query($conn,"SELECT player.*,attributes.overall_now FROM player INNER JOIN attributes ON attributes.player=player.id WHERE player.team=$teamid AND status='inactive' AND position='RB' ORDER BY overall_now DESC");
 				for ($i=1; $i < mysqli_num_rows($inactive_rb_result); $i++) {
 					$inactiveData = mysqli_fetch_array($inactive_rb_result);
 					$playerid = $inactiveData['id'];
@@ -1346,7 +1442,7 @@
 					}
 					echo "</td></tr>";
 				}
-				$inactive_fb_result = mysqli_query($conn,"SELECT id,start_year,firstname,lastname,position,health,overall_now FROM player WHERE team=$teamid AND status='inactive' AND position='FB' ORDER BY overall_now DESC");
+				$inactive_fb_result = mysqli_query($conn,"SELECT player.*,attributes.overall_now FROM player INNER JOIN attributes ON attributes.player=player.id WHERE player.team=$teamid AND status='inactive' AND position='FB' ORDER BY overall_now DESC");
 				for ($i=1; $i < mysqli_num_rows($inactive_fb_result); $i++) {
 					$inactiveData = mysqli_fetch_array($inactive_fb_result);
 					$playerid = $inactiveData['id'];
@@ -1400,7 +1496,7 @@
 					}
 					echo "</td></tr>";
 				}
-				$inactive_wr_result = mysqli_query($conn,"SELECT id,start_year,firstname,lastname,position,health,overall_now FROM player WHERE team=$teamid AND status='inactive' AND position='WR' ORDER BY overall_now DESC");
+				$inactive_wr_result = mysqli_query($conn,"SELECT player.*,attributes.overall_now FROM player INNER JOIN attributes ON attributes.player=player.id WHERE player.team=$teamid AND status='inactive' AND position='WR' ORDER BY overall_now DESC");
 				for ($i=1; $i < mysqli_num_rows($inactive_wr_result); $i++) {
 					$inactiveData = mysqli_fetch_array($inactive_wr_result);
 					$playerid = $inactiveData['id'];
@@ -1454,7 +1550,7 @@
 					}
 					echo "</td></tr>";
 				}
-				$inactive_te_result = mysqli_query($conn,"SELECT id,start_year,firstname,lastname,position,health,overall_now FROM player WHERE team=$teamid AND status='inactive' AND position='TE' ORDER BY overall_now DESC");
+				$inactive_te_result = mysqli_query($conn,"SELECT player.*,attributes.overall_now FROM player INNER JOIN attributes ON attributes.player=player.id WHERE player.team=$teamid AND status='inactive' AND position='TE' ORDER BY overall_now DESC");
 				for ($i=1; $i < mysqli_num_rows($inactive_te_result); $i++) {
 					$inactiveData = mysqli_fetch_array($inactive_te_result);
 					$playerid = $inactiveData['id'];
@@ -1508,7 +1604,7 @@
 					}
 					echo "</td></tr>";
 				}
-				$inactive_g_result = mysqli_query($conn,"SELECT id,start_year,firstname,lastname,position,health,overall_now FROM player WHERE team=$teamid AND status='inactive' AND position='G' ORDER BY overall_now DESC");
+				$inactive_g_result = mysqli_query($conn,"SELECT player.*,attributes.overall_now FROM player INNER JOIN attributes ON attributes.player=player.id WHERE player.team=$teamid AND status='inactive' AND position='G' ORDER BY overall_now DESC");
 				for ($i=1; $i < mysqli_num_rows($inactive_g_result); $i++) {
 					$inactiveData = mysqli_fetch_array($inactive_g_result);
 					$playerid = $inactiveData['id'];
@@ -1562,7 +1658,7 @@
 					}
 					echo "</td></tr>";
 				}
-				$inactive_c_result = mysqli_query($conn,"SELECT id,start_year,firstname,lastname,position,health,overall_now FROM player WHERE team=$teamid AND status='inactive' AND position='C' ORDER BY overall_now DESC");
+				$inactive_c_result = mysqli_query($conn,"SELECT player.*,attributes.overall_now FROM player INNER JOIN attributes ON attributes.player=player.id WHERE player.team=$teamid AND status='inactive' AND position='C' ORDER BY overall_now DESC");
 				for ($i=1; $i < mysqli_num_rows($inactive_c_result); $i++) {
 					$inactiveData = mysqli_fetch_array($inactive_c_result);
 					$playerid = $inactiveData['id'];
@@ -1616,7 +1712,7 @@
 					}
 					echo "</td></tr>";
 				}
-				$inactive_t_result = mysqli_query($conn,"SELECT id,start_year,firstname,lastname,position,health,overall_now FROM player WHERE team=$teamid AND status='inactive' AND position='T' ORDER BY overall_now DESC");
+				$inactive_t_result = mysqli_query($conn,"SELECT player.*,attributes.overall_now FROM player INNER JOIN attributes ON attributes.player=player.id WHERE player.team=$teamid AND status='inactive' AND position='T' ORDER BY overall_now DESC");
 				for ($i=1; $i < mysqli_num_rows($inactive_t_result); $i++) {
 					$inactiveData = mysqli_fetch_array($inactive_t_result);
 					$playerid = $inactiveData['id'];
@@ -1670,7 +1766,7 @@
 					}
 					echo "</td></tr>";
 				}
-				$inactive_de_result = mysqli_query($conn,"SELECT id,start_year,firstname,lastname,position,health,overall_now FROM player WHERE team=$teamid AND status='inactive' AND position='DE' ORDER BY overall_now DESC");
+				$inactive_de_result = mysqli_query($conn,"SELECT player.*,attributes.overall_now FROM player INNER JOIN attributes ON attributes.player=player.id WHERE player.team=$teamid AND status='inactive' AND position='DE' ORDER BY overall_now DESC");
 				for ($i=1; $i < mysqli_num_rows($inactive_de_result); $i++) {
 					$inactiveData = mysqli_fetch_array($inactive_de_result);
 					$playerid = $inactiveData['id'];
@@ -1724,7 +1820,7 @@
 					}
 					echo "</td></tr>";
 				}
-				$inactive_dt_result = mysqli_query($conn,"SELECT id,start_year,firstname,lastname,position,health,overall_now FROM player WHERE team=$teamid AND status='inactive' AND position='DT' ORDER BY overall_now DESC");
+				$inactive_dt_result = mysqli_query($conn,"SELECT player.*,attributes.overall_now FROM player INNER JOIN attributes ON attributes.player=player.id WHERE player.team=$teamid AND status='inactive' AND position='DT' ORDER BY overall_now DESC");
 				for ($i=1; $i < mysqli_num_rows($inactive_dt_result); $i++) {
 					$inactiveData = mysqli_fetch_array($inactive_dt_result);
 					$playerid = $inactiveData['id'];
@@ -1778,7 +1874,7 @@
 					}
 					echo "</td></tr>";
 				}
-				$inactive_lb_result = mysqli_query($conn,"SELECT id,start_year,firstname,lastname,position,health,overall_now FROM player WHERE team=$teamid AND status='inactive' AND position='LB' ORDER BY overall_now DESC");
+				$inactive_lb_result = mysqli_query($conn,"SELECT player.*,attributes.overall_now FROM player INNER JOIN attributes ON attributes.player=player.id WHERE player.team=$teamid AND status='inactive' AND position='LB' ORDER BY overall_now DESC");
 				for ($i=1; $i < mysqli_num_rows($inactive_lb_result); $i++) {
 					$inactiveData = mysqli_fetch_array($inactive_lb_result);
 					$playerid = $inactiveData['id'];
@@ -1832,7 +1928,7 @@
 					}
 					echo "</td></tr>";
 				}
-				$inactive_cb_result = mysqli_query($conn,"SELECT id,start_year,firstname,lastname,position,health,overall_now FROM player WHERE team=$teamid AND status='inactive' AND position='CB' ORDER BY overall_now DESC");
+				$inactive_cb_result = mysqli_query($conn,"SELECT player.*,attributes.overall_now FROM player INNER JOIN attributes ON attributes.player=player.id WHERE player.team=$teamid AND status='inactive' AND position='CB' ORDER BY overall_now DESC");
 				for ($i=1; $i < mysqli_num_rows($inactive_cb_result); $i++) {
 					$inactiveData = mysqli_fetch_array($inactive_cb_result);
 					$playerid = $inactiveData['id'];
@@ -1886,7 +1982,7 @@
 					}
 					echo "</td></tr>";
 				}
-				$inactive_s_result = mysqli_query($conn,"SELECT id,start_year,firstname,lastname,position,health,overall_now FROM player WHERE team=$teamid AND status='inactive' AND position='S' ORDER BY overall_now DESC");
+				$inactive_s_result = mysqli_query($conn,"SELECT player.*,attributes.overall_now FROM player INNER JOIN attributes ON attributes.player=player.id WHERE player.team=$teamid AND status='inactive' AND position='S' ORDER BY overall_now DESC");
 				for ($i=1; $i < mysqli_num_rows($inactive_s_result); $i++) {
 					$inactiveData = mysqli_fetch_array($inactive_s_result);
 					$playerid = $inactiveData['id'];
@@ -1940,7 +2036,7 @@
 					}
 					echo "</td></tr>";
 				}
-				$inactive_k_result = mysqli_query($conn,"SELECT id,start_year,firstname,lastname,position,health,overall_now FROM player WHERE team=$teamid AND status='inactive' AND position='K' ORDER BY overall_now DESC");
+				$inactive_k_result = mysqli_query($conn,"SELECT player.*,attributes.overall_now FROM player INNER JOIN attributes ON attributes.player=player.id WHERE player.team=$teamid AND status='inactive' AND position='K' ORDER BY overall_now DESC");
 				for ($i=1; $i < mysqli_num_rows($inactive_k_result); $i++) {
 					$inactiveData = mysqli_fetch_array($inactive_k_result);
 					$playerid = $inactiveData['id'];
@@ -1994,7 +2090,7 @@
 					}
 					echo "</td></tr>";
 				}
-				$inactive_p_result = mysqli_query($conn,"SELECT id,start_year,firstname,lastname,position,health,overall_now FROM player WHERE team=$teamid AND status='inactive' AND position='P' ORDER BY overall_now DESC");
+				$inactive_p_result = mysqli_query($conn,"SELECT player.*,attributes.overall_now FROM player INNER JOIN attributes ON attributes.player=player.id WHERE player.team=$teamid AND status='inactive' AND position='P' ORDER BY overall_now DESC");
 				for ($i=0; $i < mysqli_num_rows($inactive_p_result); $i++) {
 					$inactiveData = mysqli_fetch_array($inactive_p_result);
 					$playerid = $inactiveData['id'];
@@ -2056,7 +2152,7 @@
                 </thead>
                 <tbody>
                   <?php
-					$ir_qb_result = mysqli_query($conn,"SELECT id,start_year,firstname,lastname,position,health,overall_now FROM player WHERE team=$teamid AND status='ir' AND position='QB' ORDER BY overall_now DESC");
+					$ir_qb_result = mysqli_query($conn,"SELECT player.*,attributes.overall_now FROM player INNER JOIN attributes ON attributes.player=player.id WHERE player.team=$teamid AND status='ir' AND position='QB' ORDER BY overall_now DESC");
 				for ($i=0; $i < mysqli_num_rows($ir_qb_result); $i++) {
 					$irData = mysqli_fetch_array($ir_qb_result);
 					$playerid = $irData['id'];
@@ -2078,7 +2174,7 @@
 					}
 					echo "</td></tr>";
 				}
-				$ir_rb_result = mysqli_query($conn,"SELECT id,start_year,firstname,lastname,position,health,overall_now FROM player WHERE team=$teamid AND status='ir' AND position='RB' ORDER BY overall_now DESC");
+				$ir_rb_result = mysqli_query($conn,"SELECT player.*,attributes.overall_now FROM player INNER JOIN attributes ON attributes.player=player.id WHERE player.team=$teamid AND status='ir' AND position='RB' ORDER BY overall_now DESC");
 				for ($i=0; $i < mysqli_num_rows($ir_rb_result); $i++) {
 					$irData = mysqli_fetch_array($ir_rb_result);
 					$playerid = $irData['id'];
@@ -2101,7 +2197,7 @@
 					}
 					echo "</td></tr>";
 				}
-				$ir_fb_result = mysqli_query($conn,"SELECT id,start_year,firstname,lastname,position,health,overall_now FROM player WHERE team=$teamid AND status='ir' AND position='FB' ORDER BY overall_now DESC");
+				$ir_fb_result = mysqli_query($conn,"SELECT player.*,attributes.overall_now FROM player INNER JOIN attributes ON attributes.player=player.id WHERE player.team=$teamid AND status='ir' AND position='FB' ORDER BY overall_now DESC");
 				for ($i=0; $i < mysqli_num_rows($ir_fb_result); $i++) {
 					$irData = mysqli_fetch_array($ir_fb_result);
 					$playerid = $irData['id'];
@@ -2124,7 +2220,7 @@
 					}
 					echo "</td></tr>";
 				}
-				$ir_wr_result = mysqli_query($conn,"SELECT id,start_year,firstname,lastname,position,health,overall_now FROM player WHERE team=$teamid AND status='ir' AND position='WR' ORDER BY overall_now DESC");
+				$ir_wr_result = mysqli_query($conn,"SELECT player.*,attributes.overall_now FROM player INNER JOIN attributes ON attributes.player=player.id WHERE player.team=$teamid AND status='ir' AND position='WR' ORDER BY overall_now DESC");
 				for ($i=0; $i < mysqli_num_rows($ir_wr_result); $i++) {
 					$irData = mysqli_fetch_array($ir_wr_result);
 					$playerid = $irData['id'];
@@ -2147,7 +2243,7 @@
 					}
 					echo "</td></tr>";
 				}
-				$ir_te_result = mysqli_query($conn,"SELECT id,start_year,firstname,lastname,position,health,overall_now FROM player WHERE team=$teamid AND status='ir' AND position='TE' ORDER BY overall_now DESC");
+				$ir_te_result = mysqli_query($conn,"SELECT player.*,attributes.overall_now FROM player INNER JOIN attributes ON attributes.player=player.id WHERE player.team=$teamid AND status='ir' AND position='TE' ORDER BY overall_now DESC");
 				for ($i=0; $i < mysqli_num_rows($ir_te_result); $i++) {
 					$irData = mysqli_fetch_array($ir_te_result);
 					$playerid = $irData['id'];
@@ -2170,7 +2266,7 @@
 					}
 					echo "</td></tr>";
 				}
-				$ir_g_result = mysqli_query($conn,"SELECT id,start_year,firstname,lastname,position,health,overall_now FROM player WHERE team=$teamid AND status='ir' AND position='G' ORDER BY overall_now DESC");
+				$ir_g_result = mysqli_query($conn,"SELECT player.*,attributes.overall_now FROM player INNER JOIN attributes ON attributes.player=player.id WHERE player.team=$teamid AND status='ir' AND position='G' ORDER BY overall_now DESC");
 				for ($i=0; $i < mysqli_num_rows($ir_g_result); $i++) {
 					$irData = mysqli_fetch_array($ir_g_result);
 					$playerid = $irData['id'];
@@ -2193,7 +2289,7 @@
 					}
 					echo "</td></tr>";
 				}
-				$ir_c_result = mysqli_query($conn,"SELECT id,start_year,firstname,lastname,position,health,overall_now FROM player WHERE team=$teamid AND status='ir' AND position='C' ORDER BY overall_now DESC");
+				$ir_c_result = mysqli_query($conn,"SELECT player.*,attributes.overall_now FROM player INNER JOIN attributes ON attributes.player=player.id WHERE player.team=$teamid AND status='ir' AND position='C' ORDER BY overall_now DESC");
 				for ($i=0; $i < mysqli_num_rows($ir_c_result); $i++) {
 					$irData = mysqli_fetch_array($ir_c_result);
 					$playerid = $irData['id'];
@@ -2216,7 +2312,7 @@
 					}
 					echo "</td></tr>";
 				}
-				$ir_t_result = mysqli_query($conn,"SELECT id,start_year,firstname,lastname,position,health,overall_now FROM player WHERE team=$teamid AND status='ir' AND position='T' ORDER BY overall_now DESC");
+				$ir_t_result = mysqli_query($conn,"SELECT player.*,attributes.overall_now FROM player INNER JOIN attributes ON attributes.player=player.id WHERE player.team=$teamid AND status='ir' AND position='T' ORDER BY overall_now DESC");
 				for ($i=0; $i < mysqli_num_rows($ir_t_result); $i++) {
 					$irData = mysqli_fetch_array($ir_t_result);
 					$playerid = $irData['id'];
@@ -2239,7 +2335,7 @@
 					}
 					echo "</td></tr>";
 				}
-				$ir_de_result = mysqli_query($conn,"SELECT id,start_year,firstname,lastname,position,health,overall_now FROM player WHERE team=$teamid AND status='ir' AND position='DE' ORDER BY overall_now DESC");
+				$ir_de_result = mysqli_query($conn,"SELECT player.*,attributes.overall_now FROM player INNER JOIN attributes ON attributes.player=player.id WHERE player.team=$teamid AND status='ir' AND position='DE' ORDER BY overall_now DESC");
 				for ($i=0; $i < mysqli_num_rows($ir_de_result); $i++) {
 					$irData = mysqli_fetch_array($ir_de_result);
 					$playerid = $irData['id'];
@@ -2262,7 +2358,7 @@
 					}
 					echo "</td></tr>";
 				}
-				$ir_dt_result = mysqli_query($conn,"SELECT id,start_year,firstname,lastname,position,health,overall_now FROM player WHERE team=$teamid AND status='ir' AND position='DT' ORDER BY overall_now DESC");
+				$ir_dt_result = mysqli_query($conn,"SELECT player.*,attributes.overall_now FROM player INNER JOIN attributes ON attributes.player=player.id WHERE player.team=$teamid AND status='ir' AND position='DT' ORDER BY overall_now DESC");
 				for ($i=0; $i < mysqli_num_rows($ir_dt_result); $i++) {
 					$irData = mysqli_fetch_array($ir_dt_result);
 					$playerid = $irData['id'];
@@ -2285,7 +2381,7 @@
 					}
 					echo "</td></tr>";
 				}
-				$ir_lb_result = mysqli_query($conn,"SELECT id,start_year,firstname,lastname,position,health,overall_now FROM player WHERE team=$teamid AND status='ir' AND position='LB' ORDER BY overall_now DESC");
+				$ir_lb_result = mysqli_query($conn,"SELECT player.*,attributes.overall_now FROM player INNER JOIN attributes ON attributes.player=player.id WHERE player.team=$teamid AND status='ir' AND position='LB' ORDER BY overall_now DESC");
 				for ($i=0; $i < mysqli_num_rows($ir_lb_result); $i++) {
 					$irData = mysqli_fetch_array($ir_lb_result);
 					$playerid = $irData['id'];
@@ -2308,7 +2404,7 @@
 					}
 					echo "</td></tr>";
 				}
-				$ir_cb_result = mysqli_query($conn,"SELECT id,start_year,firstname,lastname,position,health,overall_now FROM player WHERE team=$teamid AND status='ir' AND position='CB' ORDER BY overall_now DESC");
+				$ir_cb_result = mysqli_query($conn,"SELECT player.*,attributes.overall_now FROM player INNER JOIN attributes ON attributes.player=player.id WHERE player.team=$teamid AND status='ir' AND position='CB' ORDER BY overall_now DESC");
 				for ($i=0; $i < mysqli_num_rows($ir_cb_result); $i++) {
 					$irData = mysqli_fetch_array($ir_cb_result);
 					$playerid = $irData['id'];
@@ -2331,7 +2427,7 @@
 					}
 					echo "</td></tr>";
 				}
-				$ir_s_result = mysqli_query($conn,"SELECT id,start_year,firstname,lastname,position,health,overall_now FROM player WHERE team=$teamid AND status='ir' AND position='S' ORDER BY overall_now DESC");
+				$ir_s_result = mysqli_query($conn,"SELECT player.*,attributes.overall_now FROM player INNER JOIN attributes ON attributes.player=player.id WHERE player.team=$teamid AND status='ir' AND position='S' ORDER BY overall_now DESC");
 				for ($i=0; $i < mysqli_num_rows($ir_s_result); $i++) {
 					$irData = mysqli_fetch_array($ir_s_result);
 					$playerid = $irData['id'];
@@ -2354,7 +2450,7 @@
 					}
 					echo "</td></tr>";
 				}
-				$ir_k_result = mysqli_query($conn,"SELECT id,start_year,firstname,lastname,position,health,overall_now FROM player WHERE team=$teamid AND status='ir' AND position='K' ORDER BY overall_now DESC");
+				$ir_k_result = mysqli_query($conn,"SELECT player.*,attributes.overall_now FROM player INNER JOIN attributes ON attributes.player=player.id WHERE player.team=$teamid AND status='ir' AND position='K' ORDER BY overall_now DESC");
 				for ($i=0; $i < mysqli_num_rows($ir_k_result); $i++) {
 					$irData = mysqli_fetch_array($ir_k_result);
 					$playerid = $irData['id'];
@@ -2377,7 +2473,7 @@
 					}
 					echo "</td></tr>";
 				}
-				$ir_p_result = mysqli_query($conn,"SELECT id,start_year,firstname,lastname,position,health,overall_now FROM player WHERE team=$teamid AND status='ir' AND position='P' ORDER BY overall_now DESC");
+				$ir_p_result = mysqli_query($conn,"SELECT player.*,attributes.overall_now FROM player INNER JOIN attributes ON attributes.player=player.id WHERE player.team=$teamid AND status='ir' AND position='P' ORDER BY overall_now DESC");
 				for ($i=0; $i < mysqli_num_rows($ir_p_result); $i++) {
 					$irData = mysqli_fetch_array($ir_p_result);
 					$playerid = $irData['id'];

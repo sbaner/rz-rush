@@ -35,14 +35,39 @@ if (!empty($_GET['leagueid'])) {
 		$myteamrecord = $myteamData['season_win']."-".$myteamData['season_loss']."-".$myteamData['season_tie'];
 	}
 	$myteam_logopath = "uploads/logos/".$myteamData['logofile'];
-	
+	} else {
+		$myteamid = 0;
+	}
 	
 	//Retrieve POST data
 	if (isset($_POST['week'])) {
 		$week = $_POST['week'];
-		$yg_query = "SELECT * FROM games WHERE league=$leagueid AND year=$year AND week=".mysqli_real_escape_string($conn,$week)." AND (home=$myteamid OR away=$myteamid)";
+		if ($myteamid!=0) {
+			$yg_query = "SELECT * FROM games WHERE league=$leagueid AND year=$year AND week=".mysqli_real_escape_string($conn,$week)." AND (home=$myteamid OR away=$myteamid)"; 
+		}
 		$score_query = "SELECT * FROM games WHERE league=$leagueid AND year=$year AND week=$week";
-		$header = "Week ".$week;
+		//Week Header
+		switch (true) {
+			case ($week <=16):
+				$header = "Week ".$week;
+				break;
+			case ($week <= 20):
+				$preweek = $week-16;
+				$header = "Preseason Week ".$preweek;
+				break;
+			case ($week==21):
+				$header = "Wildcard Round";
+				break;
+			case ($week==22):
+				$header = "Divisional Round";
+				break;
+			case ($week==23):
+				$header = "Conference Championships";
+				break;
+			case ($week==24):
+				$header = "League Championship";
+				break;
+		}
 	} else {
 		$week = 1;
 		$yg_query = "SELECT * FROM games WHERE league=$leagueid AND year=$year AND week=1 AND (home=$myteamid OR away=$myteamid)";
@@ -58,6 +83,7 @@ if (!empty($_GET['leagueid'])) {
 		$schedData = mysqli_fetch_array($schedteam_result);
 		$header = $schedData['location']." ".$schedData['teamname']." "." Schedule";
 	}
+
 
 ?>
 <!DOCTYPE html>
@@ -151,17 +177,18 @@ if (!empty($_GET['leagueid'])) {
 				<a href="allusers.php">Users</a>
 			  </li>
               <li>
-                <a href="#">Help</a>
+                <a href="/help" target="_blank">Help</a>
               </li>
             </ul>
           </div>
         </div>
       </div>
       <div class="row" id="content">
-        <div class="col-md-3 col-lg-2">
+        <div class="col-sm-3 col-lg-2">
           <div class="side-bar">
             <div class="team-card">
             <?php 
+			if ($myteamid!=0) {
 			echo "<h3>My team</h3><a href=\"team.php?teamid=".$myteamid."\">
               <img src=\"".$myteam_logopath."\" width=\"150\"/>
             </a> 
@@ -169,19 +196,14 @@ if (!empty($_GET['leagueid'])) {
               <p>".$myteamname."</p>
             </a><p>".$myteamrecord."</p></b>";
 			echo "<p>".getWeek($leagueid)."</p>";
-			} else {
-				$myteamid = 0;
-			}
+			} 
 			?></div>
 			<h3>League Links</h3>
             <div class="nav">
               <ul class="nav nav-pills nav-stacked navbar-left">
                 <?php
 			  echo
-                "<li>
-                  <a href=\"league.php?leagueid=".$leagueid."\">Standings</a>
-                </li>
-                <li class=\"active\">
+                "<li class=\"active\">
                   <a href=\"scores.php?leagueid=".$leagueid."\">Scores &amp; Schedule</a>
                 </li>
                 <li>
@@ -192,20 +214,21 @@ if (!empty($_GET['leagueid'])) {
                 </li>
                 <li>
                   <a href=\"leaguealmanac.php?leagueid=".$leagueid."\">Almanac</a>
-                </li><li>
-                  <a href=\"#\">Message Board</a>
+                </li>
+				<li>
+                  <a href=\"mboard.php?leagueid=".$leagueid."\">Message Board</a>
                 </li>";
 				?>
               </ul>
             </div>
           </div>
         </div>
-        <div class="col-md-9 col-lg-8">
+        <div class="col-sm-9 col-lg-8">
           <div class="main"><button type="button" class="btn btn-primary" id="showbutton">Show/Hide Scores</button>
             <h3>Scores</h3> 
             <div class="score-card">
                 <div class="row">
-                  <div class="col-md-3 col-lg-3 selectdiv">
+                  <div class="col-md-3 col-lg-2 selectdiv">
 					<form method="POST" action="scores.php?leagueid=<?php echo $leagueid;?>">
 						<select class="form-control" name="week" onchange="this.form.submit()">
 							<option>Select Week</option>
@@ -258,7 +281,7 @@ if (!empty($_GET['leagueid'])) {
                   <!-- Tab panes -->
                   <div id="all-scores">
                       <div class="row">
-                        <div class="col-md-10">
+                        <div class="col-md-12">
 						<div class="week-header">
 							<h3><?php echo $header;?></h3>
 						</div>
@@ -323,13 +346,17 @@ if (!empty($_GET['leagueid'])) {
 							$homeData = mysqli_fetch_array($home_result);
 							$away_result = mysqli_query($conn,"SELECT location,teamname,abbrev,season_win,season_loss,season_tie,logofile FROM team WHERE id=$away");
 							$awayData = mysqli_fetch_array($away_result);
-                            echo "<div class='col-md-6'>
-                                <div class='result'>
-                                  <div class='row'>
-									<div class='col-md-3 col-xs-12'>
-										<img class='smallhelm' width='40' src='uploads/logos/".$homeData['logofile']."' />
+                            if (!isset($schedteam)) { echo "<div class='col-md-6'>"; } 
+                                echo "<div class='result'>
+                                  <div class='row'>";
+								  if (isset($schedteam)) { echo "<div class='col-md-1'><b>".$weekData['week']."</b></div>"; }
+									echo "<div class='col-md-3 col-xs-12'>
+									<img width=";
+										if (!isset($schedteam)) { echo "'40' class='smallhelm'"; }
+										else { echo "'60'"; }
+										echo "src='uploads/logos/".$homeData['logofile']."' />
 									</div>
-                                    <div class='col-md-6 col-xs-6'>
+                                    <div class='col-md-5 col-xs-6'>
                                       <h4>
                                         <a href='team.php?teamid=".$home."'>".$homeData['location']." ".$homeData['teamname']."</a>
                                       </h4>
@@ -339,10 +366,15 @@ if (!empty($_GET['leagueid'])) {
                                     </div>
                                   </div>
                                   <div class='row'>
-									<div class='col-md-3 col-xs-12'>
-										<img class='smallhelm' width='40' src='uploads/logos/".$awayData['logofile']."' />
+									<div class='col-md-3 ";
+									if (isset($schedteam)) { echo "col-md-offset-1 "; }
+									echo "col-xs-12'>
+										<img class='smallhelm' width=";
+										if (!isset($schedteam)) { echo "'40' class='smallhelm'"; }
+										else { echo "'60'"; }
+										echo "src='uploads/logos/".$awayData['logofile']."' />
 									</div>
-                                    <div class='col-md-6 col-xs-6'>
+                                    <div class='col-md-5 col-xs-6'>
                                       <h4>
                                         <a href='team.php?teamid=".$away."'>".$awayData['location']." ".$awayData['teamname']."</a>
                                       </h4>
@@ -351,8 +383,13 @@ if (!empty($_GET['leagueid'])) {
                                       <h4 class='hidden-score'>".$weekData['a_score']."</h4>
                                     </div>
                                   </div>
-                                </div>
-                              </div>";
+								  <div class='row buttonrow'>
+								  <form method='GET' action='gameresult.php' target='_blank'>
+									<button class='btn btn-sm btn-simple' type='submit' name='gameid' value='".$weekData['id']."'>Box Score</button>
+								  </form>
+								  </div>
+                                </div>";
+                            if (!isset($schedteam)) {  echo "</div>"; }
 							  if ($num%2==0) {
 								echo "</div><div class='row'>";
 							  }

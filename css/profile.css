@@ -46,11 +46,14 @@
 
 .middle-col {
 	color:#DDD;
-	padding-top:60px;
+	margin-top:60px;
+	overflow-y:auto;
+	max-height:200px;
 }
 
 .middle-col h4 {
 	font-family:"Verdana",sans-serif;
+	color:#FFF;
 }
 
 .middle-col p {
@@ -59,11 +62,12 @@
 
 .third-col {
 	color:#DDD;
-	padding-top:60px;
+	margin-top:60px;
 }
 
 .third-col h4 {
 	font-family:"Verdana",sans-serif;
+	color:#FFF;
 }
 
 .third-col p {
@@ -78,7 +82,40 @@
 	padding-bottom:15px;
 }
 
-.btn {
+.modal-body {
+	color:#2d2d2d;
+}
+
+.modal-footer {
+	padding:5px;
+}
+last-col .btn {
 	float:left;
-	
+}
+
+.modal-footer btn {
+	float:right;
+}
+
+#widgets {
+	margin-top:10px;
+	margin-left:0;
+	margin-right:0;
+	color:#2d2d2d;
+}
+#widgets > div {
+	background-color:#DDD;
+	padding:10px;
+}
+
+#widgets h4 {
+	text-align:center;
+}
+
+.news-header {
+	font-weight:bold;
+}
+
+.news-time {
+	margin-left:20px;
 }

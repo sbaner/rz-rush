@@ -58,6 +58,46 @@
 	<link rel="shortcut icon" href="favicon.ico" />
     <script src="../js/jquery-1.11.1.min.js"></script>
     <script src="../js/bootstrap.js"></script>
+	<script>
+	$( document ).ready(function() {
+		$('#resultdiv').hide();
+		$('#to').on('keydown', function(e){
+		
+		var value = $(this).val();
+		if (value.length > 1) {
+				$.ajax({
+				  url: 'search.php',
+				  type: 'POST',
+				  dataType : 'json',
+				  data: {'search': value},
+				  success: function(data) {
+				  $('#resultdiv').html("");
+					$.each(data, function(index,value) {
+						var userid = value[0];
+						var username = value[1];
+						var resultstring = "<div class='row userrow'>"+username+"</div>";
+						$('#resultdiv').delay(300).slideDown(100);
+						$('#resultdiv').append(resultstring);
+					});
+				  },
+				  error: function(xhr, desc, err) {
+				  }
+				}); //end ajax 
+			} else {
+				$('#resultdiv').slideUp(100);
+			}
+		});
+		
+		$('#to').on('blur', function(e){
+			$('#resultdiv').delay(500).slideUp(100);
+		});
+		
+		$('#resultdiv').on('click','.userrow',function() {
+		var value = $(this).text();
+		$('#to').val(value);
+		});
+	});
+	</script>
     <title>RedZone Rush - Send Message</title>
   </head>
   <body>
@@ -126,7 +166,7 @@
 				<a href="allusers.php">Users</a>
 			  </li>
               <li>
-                <a href="#">Help</a>
+                <a href="/help" target="_blank">Help</a>
               </li>
             </ul>
           </div>
@@ -140,7 +180,9 @@
               <div class="form-group">
                 <label for="to" class="col-sm-2 control-label">To</label>
                 <div class="col-sm-10">
-                  <input type="text" class="form-control" id="to" name="to" <?php if(isset($recipient)) { echo "value=\"".$recipient."\""; }?>/>
+					<input type="text" autocomplete="off" class="form-control" id="to" name="to" placeholder="Type to search for user"<?php if(isset($recipient)) { echo "value=\"".$recipient."\""; }?>/>
+					<div id="resultdiv">
+					</div>
                 </div>
               </div>
 			  <div class="form-group">

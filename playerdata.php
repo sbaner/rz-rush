@@ -3,7 +3,7 @@
 		$playerid = $_POST['playerid'];
 		if ($playerid !=0) {
 			$conn = mysqli_connect('localhost', 'rzrushco_admin', 'rzr_3541', 'rzrushco_main');
-			$player_result = mysqli_query($conn,"SELECT * FROM player WHERE id=$playerid");
+			$player_result = mysqli_query($conn,"SELECT player.firstname,player.lastname,player.position,player.health,attributes.overall_now,attributes.height,attributes.weight FROM player JOIN attributes ON attributes.player=player.id WHERE player.id=$playerid");
 			if (mysqli_num_rows($player_result)==1) {
 				$playerData = mysqli_fetch_array($player_result);
 				$name = $playerData['firstname']." ".$playerData['lastname'];

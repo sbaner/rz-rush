@@ -74,7 +74,7 @@
                 <a href="#">Sign Up</a>
               </li>
               <li>
-                <a href="#">Help</a>
+                <a href="/help" target="_blank">Help</a>
               </li>
             </ul>
           </div>

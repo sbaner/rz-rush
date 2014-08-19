@@ -132,14 +132,14 @@
 				<a href="allusers.php">Users</a>
 			  </li>
               <li>
-                <a href="#">Help</a>
+                <a href="/help" target="_blank">Help</a>
               </li>
             </ul>
           </div>
         </div>
       </div>
       <div class="row" id="content">
-        <div class="col-md-3 col-lg-2">
+        <div class="col-sm-3 col-lg-2">
           <div class="side-bar">
             <?php 
 			
@@ -226,7 +226,7 @@
 			<button type="submit" class="btn btn-primary">Log out</button>
 		</form>
         </div>
-        <div class="col-md-8 col-lg-offset-1 col-lg-6">
+        <div class="col-sm-8 col-lg-offset-1 col-lg-6">
 			<div class="main">
 				<h3>Messages</h3>
 				<form action="newmessage.php" method="POST">
@@ -263,9 +263,8 @@
 							$imagepath="profile.jpg";
 						}
 						
-						echo "<div class=\"container\">
-					<div class=\"row\">
-						<div class=\"col-md-5\" id=\"msgcontainer\">
+						echo "<div class=\"row\">
+						<div class=\"col-md-8\" id=\"msgcontainer\">
 							<div class=\"well newmessage\">
 								<div class=\"row\" id=\"sender\">
 									<div class=\"col-md-3\">
@@ -295,8 +294,7 @@
 								</div>
 							</div>
 						</div>
-					</div>
-				</div>";
+					</div>";
 					}
 					mysqli_query($conn,"UPDATE messages SET `read`='1' WHERE id=$messageid");
 				}
@@ -320,9 +318,8 @@
 							$imagepath="profile.jpg";
 						}
 						
-						echo "<div class=\"container\">
-					<div class=\"row\">
-						<div class=\"col-md-5\" id=\"msgcontainer\">
+						echo "<div class=\"row\">
+						<div class=\"col-md-8\" id=\"msgcontainer\">
 							<div class=\"well\">
 								<div class=\"row\" id=\"sender\">
 									<div class=\"col-md-3\">
@@ -352,8 +349,7 @@
 								</div>
 							</div>
 						</div>
-					</div>
-				</div>";
+					</div>";
 					}
 				if (mysqli_num_rows($newmessage_result) == 0 && mysqli_num_rows($oldmessage_result) == 0) {
 					echo "You have no messages!";
@@ -383,9 +379,8 @@
 							$imagepath="profile.jpg";
 						}
 						
-						echo "<div class=\"container\">
-					<div class=\"row\">
-						<div class=\"col-md-5\" id=\"msgcontainer\">
+						echo "<div class=\"row\">
+						<div class=\"col-md-8\" id=\"msgcontainer\">
 							<div class=\"well\">
 								<div class=\"row\" id=\"sender\">
 									<div class=\"col-md-3\">
@@ -413,8 +408,7 @@
 						echo "</div>
 							</div>
 						</div>
-					</div>
-				</div>";
+					</div>";
 					}
 				  } else {
 					echo "No sent messages.";

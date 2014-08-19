@@ -7,12 +7,15 @@
 	} else {
 		header('Location: index.php');
 	}
+	
 	function createSalt()
 		{
 			$text = md5(uniqid(rand(), true));
 			return substr($text, 0, 3);
 		}
-		
+	
+	$conn = mysqli_connect('localhost', 'rzrushco_admin', 'rzr_3541', 'rzrushco_main');
+	
 	//Retrieve POST data
 	if (isset($_POST['newemail'])) {
 		$newemail = $_POST['newemail'];
@@ -53,14 +56,27 @@
 		}
 	}
 	}
+	
+	if (isset($_POST['msgcheck'])) { // Send emails on new message
+		mysqli_query($conn,"UPDATE member SET msgmail='1' WHERE id=$userID");
+	} else { //Do not send emails on new message
+		mysqli_query($conn,"UPDATE member SET msgmail='0' WHERE id=$userID");
+	}
+	
+	if (isset($_POST['tradecheck'])) { // Send email on new trade
+		mysqli_query($conn,"UPDATE member SET trademail='1' WHERE id=$userID");
+	} else { //Do not send emails on new trade
+		mysqli_query($conn,"UPDATE member SET trademail='0' WHERE id=$userID");
+	}
 	$udt_message = "";
 	
-	$conn = mysqli_connect('localhost', 'rzrushco_admin', 'rzr_3541', 'rzrushco_main');
+	
 	$own_team_result = mysqli_query($conn,"SELECT * FROM team WHERE `owner`='$userID'");
 	
-	
-	
-	
+	$check_result = mysqli_query($conn,"SELECT msgmail,trademail FROM member WHERE id=$userID");
+	$checkData = mysqli_fetch_array($check_result);
+	$msgmail = $checkData['msgmail'];
+	$trademail = $checkData['trademail'];
 ?>
 <!DOCTYPE html>
 <html>
@@ -191,14 +207,14 @@
 				<a href="allusers.php">Users</a>
 			  </li>
               <li>
-                <a href="#">Help</a>
+                <a href="/help" target="_blank">Help</a>
               </li>
             </ul>
           </div>
         </div>
       </div>
       <div class="row" id="content">
-        <div class="col-md-3 col-lg-2">
+        <div class="col-sm-3 col-lg-2">
           <div class="side-bar">
             <h3>Profile Links</h3>
             <div class="nav">
@@ -214,17 +230,17 @@
                 </li>
               </ul>
             </div>
-			<h3>Your Friends</h3>
-			<p>No one :(</p>
           </div>
 		  <form class="form-horizontal" id="logout-form" action="logout.php" role="form">
 			<button type="submit" class="btn btn-primary">Log out</button>
 		</form>
         </div>
-        <div class="col-md-offset-1 col-md-7 col-lg-6">
+        <div class="col-sm-offset-1 col-sm-8 col-lg-6">
           <div class="main">
 		  <h3>Edit Profile</h3>
-            <form class="form-horizontal" method="POST" id="edit-profile" action="editprofile.php" role="form">
+            <form class="form-horizontal" method="POST" id="edit-profile" action="editprofile.php" role="form" autocomplete="off" style="margin-bottom: 30px;">
+			<input style="display:none" type="text" name="fakeusernameremembered"/>
+			<input style="display:none" type="password" name="fakepasswordremembered"/>
 			  <div class="form-group">
                 <label for="newemail" class="col-sm-2 control-label">New Email</label>
                 <div class="col-sm-10">
@@ -249,9 +265,21 @@
                   <input type="password" class="form-control" id="password2" name="password2" placeholder="Password"/>
                 </div>
               </div>
+			  <div class="checkbox col-sm-offset-2">
+				  <label>
+					<input type="checkbox" name="msgcheck" value="msgcheck"<?php if ($msgmail==1) { echo " checked"; } ?>>
+					Email me when I receive a message
+				  </label>
+			  </div>
+			  <div class="checkbox col-sm-offset-2">
+				  <label>
+					<input type="checkbox" name="tradecheck" value="tradecheck"<?php if ($trademail==1) { echo " checked"; } ?>>
+					Email me when I receive a trade offer for one of my teams
+				  </label>
+			  </div>
               <div class="form-group">
                 <div class="col-sm-offset-2 col-sm-10">
-                  <button type="submit" class="btn btn-primary" id="signup-button" disabled>Update Info</button>
+                  <button type="submit" class="btn btn-primary" id="signup-button">Update Info</button>
                 </div>
               </div>
 			  <div id="formcheck"><?php echo $udt_message;?></div>

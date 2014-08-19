@@ -39,6 +39,16 @@
 		$last_login = $memberData['last_login'];
 		$profileid = $memberData['id'];
 	}
+	$showtut = false;
+	if ($own_profile) {
+		$tut_result = mysqli_query($conn,"SELECT profile FROM `tutorial` WHERE member=$userID");
+		if (mysqli_num_rows($tut_result)==1) {
+			$tutData = mysqli_fetch_array($tut_result);
+			if ($tutData['profile']==0) {
+				$showtut = true;
+			}
+		}
+	}
 ?>
 <!DOCTYPE html>
 <html>
@@ -56,6 +66,18 @@
 	<script>
 	$( document ).ready(function() {
 		$('#resultdiv').hide();
+		<?php
+		if ($showtut) {
+			echo "$('#getteam').popover({
+				trigger: 'manual',
+				placement: 'bottom',
+				container: 'body',
+				template: '<div class=\"popover\" role=\"tooltip\"><div class=\"arrow\"></div><h3 class=\"popover-title\" style=\"font-weight:bold;\"></h3><div class=\"popover-content\"></div></div>'
+			});
+			$('#getteam').popover('show');";
+		}
+		
+		?>
 		$('#searchbox').on('keydown', function(e){
 		
 		var value = $(this).val();
@@ -70,7 +92,7 @@
 					$.each(data, function(index,value) {
 						var userid = value[0];
 						var username = value[1];
-						var resultstring = "<a href=\"profile.php?profileid="+userid+"\">"+username+"</a><br>";
+						var resultstring = "<a href='profile.php?profileid="+userid+"'>"+username+"</a><br>";
 						$('#resultdiv').delay(300).slideDown(100);
 						$('#resultdiv').append(resultstring);
 					});
@@ -137,7 +159,9 @@
 				}
 			if(mysqli_num_rows($own_team_result) == 0) { 
 					//person doesn't own a team
-					echo "<li><a href=\"teamselect.php\">Get a Team</a></li>";
+					echo "<li><a href='teamselect.php' "; 
+					if ($showtut) { echo "data-toggle='popover' title='Welcome to RedZone Rush!' data-content=\"First you'll want to get a team. Click this link!\" "; }
+					echo "id='getteam'>Get a Team</a></li>";
 				} else if (mysqli_num_rows($own_team_result) == 1) {
 					echo "<li><a href=\"team.php?teamid=".$teamidArray[0]."\">Team</a></li>";
 				} else if (mysqli_num_rows($own_team_result) > 1) {
@@ -157,7 +181,7 @@
 				<a href="allusers.php">Users</a>
 			  </li>
               <li>
-                <a href="#">Help</a>
+                <a href="/help" target="_blank">Help</a>
               </li>
             </ul>
 			
@@ -170,7 +194,7 @@
 		</div>
       </div>
       <div class="row" id="content">
-        <div class="col-md-3 col-lg-2">
+        <div class="col-sm-3 col-lg-2">
           <div class="side-bar">
             <?php 
 			if ($own_profile) {
@@ -256,11 +280,11 @@
 			<button type="submit" class="btn btn-primary">Log out</button>
 		</form>
         </div>
-        <div class="col-md-9 col-lg-8">
+        <div class="col-sm-9 col-lg-8">
 			<div class="main">
 				<div class="profile-card">
 						<div class="row">
-							<div class="col-md-3">
+							<div class="col-sm-4 col-md-3">
 								<h3><?php echo $profile_name; ?></h3>
 								<?php if ($profile_premium == "y") { echo
 								"<p class=\"premium\">Premium Member <span class=\"glyphicon glyphicon-star\"></span> </p>"; }
@@ -278,7 +302,7 @@
 									}
 								?>
 							</div>
-							<div class="col-md-3">
+							<div class="col-sm-3">
 								<div class="middle-col">
 									<h4>Teams</h4>
 									<?php 
@@ -305,7 +329,7 @@
 									?>
 								</div>
 							</div>
-							<div class="col-md-3">
+							<div class="col-sm-3">
 								<div class="third-col">
 									<h4>Owner Info</h4>
 									<p>Member since: <?php echo $profile_signup;?>
@@ -340,7 +364,23 @@
 											//Is friend
 											echo "<div class=\"row\">
 												<form method=\"POST\" id=\"addfriend\" action=\"addfriend.php?friendid=".$memberData['id']."\" role=\"form\">
-													<button type=\"submit\" class=\"btn btn-primary\" name=\"removefriend\" id=\"removefriend\" onclick=\"return confirm('Remove ".$profile_name." as a friend?');\"><span class=\"glyphicon glyphicon-remove\"></span> Remove Friend</button>
+													<button type=\"button\" class=\"btn btn-primary\" data-toggle='modal' data-target='#delfriend' ><span class=\"glyphicon glyphicon-remove\"></span> Remove Friend</button>
+													<div class='modal fade' id='delfriend' tabindex='-1' role='dialog' aria-labelledby='ConfirmIR' aria-hidden='true'>
+													  <div class='modal-dialog modal-sm'>
+														<div class='modal-content'>
+														  <div class='modal-header'>
+															<button type='button' class='close' data-dismiss='modal'><span aria-hidden='true'>&times;</span><span class='sr-only'>Close</span></button>
+															<h4 class='modal-title' id='cutModalLabel'>Confirm action</h4>
+														  </div>
+														  <div class='modal-body'>
+															Remove ".$profile_name." as a friend?
+														  </div>
+														  <div class='modal-footer'>
+															<button type=\"submit\" class=\"btn btn-primary\" name=\"removefriend\" id=\"removefriend\" >Remove Friend</button>
+														  </div>
+														</div>
+													  </div>
+													</div>
 												</form>
 											</div>";
 										} else {
@@ -351,15 +391,62 @@
 												</div>";
 											}
 									}
-									ob_flush();
 									?>
 								</div>
 							</div>
 						</div>
 				</div>
+				<?php
+				if ($own_profile) {
+				echo "<div class=\"row\" id=\"widgets\">
+					<div class=\"col-sm-5 well\" id=\"news\">
+					<h4><b>News & Announcements</b></h4>";
+					
+					$wordconn = mysqli_connect('localhost', 'rzrushco_admin', 'rzr_3541', 'rzrushco_wor0944');
+					
+					$post_result = mysqli_query($wordconn,"SELECT * FROM `wp_nrfz_posts` WHERE post_type='post' AND post_status='publish' ORDER BY ID DESC LIMIT 5");
+					
+					while ($postData = mysqli_fetch_array($post_result)) {
+						$date = date_parse($postData['post_date']);
+						$year = $date['year'];
+						$day = $date['day'];
+						$month = date("F", mktime(0, 0, 0, $date['month'], 10));
+						echo "<p><span class='news-header'><a href='".$postData['guid']."'>".$postData['post_title']."</a></span>";
+						echo "<br><span class='news-time'>Posted ".$month." ".$day.", ".$year."</span></p>";
+					}
+					
+				echo "<a href='/blog/'>View All News</a>
+					</div>
+					<div class=\"col-sm-5 col-sm-offset-1 well\" id=\"posts\">
+					<h4><b>Recent Posts</b></h4>";
+					$thread_query = "SELECT mb_posts.*,member.username,board.boardname FROM mb_posts JOIN member ON member.id=mb_posts.author JOIN board ON board.id=mb_posts.boardid WHERE mb_posts.post_type='thread' AND mb_posts.status='publish' AND mb_posts.boardid IN ('m'";
+					$leagueCount = 0;
+					foreach ($leagueArray as $league) {
+						$leagueCount = $leagueCount+1;
+						$thread_query .= ",'".$league."'";
+						
+					}
+					$thread_query .= ") ORDER BY last_mod DESC LIMIT 5";
+					$thread_result = mysqli_query($conn,$thread_query);
+					while ($threadData = mysqli_fetch_array($thread_result)) {
+						
+						echo "<p><span class='news-header'><a href='mbthread.php?threadid=".$threadData['threadid']."'>".$threadData['subject']."</a></span>";
+						echo "<br><span class='news-time'><a href='mboard.php?leagueid=".$threadData['boardid']."'>".$threadData['boardname']."</a><br></span><span class='news-time'>Posted ".$threadData['timestamp']." by <a href='profile.php?profileid=".$threadData['author']."'>".$threadData['username']."</a></span></p>";
+					}
+					
+					if (mysqli_num_rows($thread_result)==0) {
+						echo "<p>No posts</p>";
+					}
+				echo "</div>
+				</div>";
+				}
+				?>
 			</div>
         </div>
       </div>
     </div>
   </body>
 </html>
+<?php
+ob_flush();
+?>

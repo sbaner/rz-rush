@@ -21,3 +21,7 @@ body {
 #formcheck {
 	float:right;
 }
+
+#signup-button {
+	margin-top:10px;
+}

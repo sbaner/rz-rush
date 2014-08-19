@@ -30,6 +30,16 @@
 		$year = $leagueData['year'];
 	}
 	
+	$tut_result = mysqli_query($conn,"SELECT teamselect,league FROM tutorial WHERE member=$userID");
+	if (mysqli_num_rows($tut_result)==1) {
+		$tutData = mysqli_fetch_array($tut_result);
+		$teamselect = $tutData['teamselect'];
+		$leaguetut = $tutData['league'];
+		if ($teamselect==0) {
+			mysqli_query($conn,"UPDATE tutorial SET profile='1',teamselect='1' WHERE member=$userID");
+		}
+	}
+	
 ?>
 <!DOCTYPE html>
 <html>
@@ -44,6 +54,21 @@
 	<link rel="shortcut icon" href="favicon.ico" />
 	<script src="js/jquery-1.11.1.min.js"></script>
 	<script src="js/bootstrap.js"></script>
+	<?php
+	if ($leaguetut==0) {
+	echo "<script>
+	$( document ).ready(function() {
+		$('#getteam').popover({
+				trigger: 'manual',
+				placement: 'top',
+				container: 'body',
+				template: '<div class=\"popover\" role=\"tooltip\"><div class=\"arrow\"></div><h3 class=\"popover-title\" style=\"font-weight:bold;\"></h3><div class=\"popover-content\"></div></div>'
+		});
+		$('#getteam').popover('show');
+	});
+	</script>";
+	}
+	?>
     <title>RedZone Rush - League</title>
   </head>
   <body>
@@ -112,7 +137,7 @@
 				<a href="allusers.php">Users</a>
 			  </li>
               <li>
-                <a href="#">Help</a>
+                <a href="/help" target="_blank">Help</a>
               </li>
             </ul>
           </div>
@@ -152,10 +177,7 @@
               <ul class="nav nav-pills nav-stacked navbar-left">
 			  <?php
 			  echo
-                "<li class=\"active\">
-                  <a href=\"league.php?leagueid=".$leagueid."\">Standings</a>
-                </li>
-                <li>
+                "<li>
                   <a href=\"scores.php?leagueid=".$leagueid."\">Scores &amp; Schedule</a>
                 </li>
                 <li>
@@ -168,7 +190,7 @@
                   <a href=\"leaguealmanac.php?leagueid=".$leagueid."\">Almanac</a>
                 </li>
 				<li>
-                  <a href=\"#\">Message Board</a>
+                  <a href=\"mboard.php?leagueid=".$leagueid."\">Message Board</a>
                 </li>";
 				?>
               </ul>
@@ -187,7 +209,7 @@
                 <thead>
                   <tr>
                     <th width="5%"></th>
-                    <th width="15%"></th>
+                    <th width="15%"<?php if ($leaguetut==0) { echo "data-toggle='popover' data-content=\"Look for an unowned team (one with a CPU as an owner), and click on its name.\""; }?> id='getteam'></th>
 					<th width="8%">Owner</th>
                     <th width="8%">W</th>
                     <th width="8%">L</th>
@@ -238,7 +260,11 @@
                     </td>
                     <td><a href=\"team.php?teamid=".$teamid."\">".$location."
                     <br />".$teamname."</a></td>
-					<td><a href='profile.php?profileid=".$ownerid."'>".$ownername."</td>
+					<td>";
+					if ($ownerid!=0) { echo "<a href='profile.php?profileid=".$ownerid."'>"; }
+					echo $ownername;
+					if ($ownerid!=0) { echo "</a>"; }
+					echo "</td>
                     <td>".$season_win."</td>
                     <td>".$season_loss."</td>
                     <td>".$season_tie."</td>
@@ -301,9 +327,10 @@
 					$points_against = $teamData['points_against'];
 					$logopath = "uploads/logos/".$teamData['logofile'];
 					
-					$owner_result = mysqli_query($conn, "SELECT * from member WHERE id='$teamowner'");
+					$owner_result = mysqli_query($conn, "SELECT id,username from member WHERE id='$teamowner'");
 					$memberData = mysqli_fetch_array($owner_result, MYSQL_ASSOC);
 					$ownername = $memberData['username'];
+					$ownerid = $memberData['id'];
 					
 					echo "<tr>
                     <td>
@@ -312,7 +339,11 @@
                     </td>
                     <td><a href=\"team.php?teamid=".$teamid."\">".$location."
                     <br />".$teamname."</a></td>
-					<td>".$ownername."</td>
+					<td>";
+					if ($ownerid!=0) { echo "<a href='profile.php?profileid=".$ownerid."'>"; }
+					echo $ownername;
+					if ($ownerid!=0) { echo "</a>"; }
+					echo "</td>
                     <td>".$season_win."</td>
                     <td>".$season_loss."</td>
                     <td>".$season_tie."</td>
@@ -375,9 +406,10 @@
 					$points_against = $teamData['points_against'];
 					$logopath = "uploads/logos/".$teamData['logofile'];
 					
-					$owner_result = mysqli_query($conn, "SELECT * from member WHERE id='$teamowner'");
+					$owner_result = mysqli_query($conn, "SELECT id,username from member WHERE id='$teamowner'");
 					$memberData = mysqli_fetch_array($owner_result, MYSQL_ASSOC);
 					$ownername = $memberData['username'];
+					$ownerid = $memberData['id'];
 					
 					echo "<tr>
                     <td>
@@ -386,7 +418,11 @@
                     </td>
                     <td><a href=\"team.php?teamid=".$teamid."\">".$location."
                     <br />".$teamname."</a></td>
-					<td>".$ownername."</td>
+					<td>";
+					if ($ownerid!=0) { echo "<a href='profile.php?profileid=".$ownerid."'>"; }
+					echo $ownername;
+					if ($ownerid!=0) { echo "</a>"; }
+					echo "</td>
                     <td>".$season_win."</td>
                     <td>".$season_loss."</td>
                     <td>".$season_tie."</td>
@@ -449,9 +485,10 @@
 					$points_against = $teamData['points_against'];
 					$logopath = "uploads/logos/".$teamData['logofile'];
 					
-					$owner_result = mysqli_query($conn, "SELECT * from member WHERE id='$teamowner'");
+					$owner_result = mysqli_query($conn, "SELECT id,username from member WHERE id='$teamowner'");
 					$memberData = mysqli_fetch_array($owner_result, MYSQL_ASSOC);
 					$ownername = $memberData['username'];
+					$ownerid = $memberData['id'];
 					
 					echo "<tr>
                     <td>
@@ -460,7 +497,11 @@
                     </td>
                     <td><a href=\"team.php?teamid=".$teamid."\">".$location."
                     <br />".$teamname."</a></td>
-					<td>".$ownername."</td>
+					<td>";
+					if ($ownerid!=0) { echo "<a href='profile.php?profileid=".$ownerid."'>"; }
+					echo $ownername;
+					if ($ownerid!=0) { echo "</a>"; }
+					echo "</td>
                     <td>".$season_win."</td>
                     <td>".$season_loss."</td>
                     <td>".$season_tie."</td>
@@ -523,9 +564,10 @@
 					$points_against = $teamData['points_against'];
 					$logopath = "uploads/logos/".$teamData['logofile'];
 					
-					$owner_result = mysqli_query($conn, "SELECT * from member WHERE id='$teamowner'");
+					$owner_result = mysqli_query($conn, "SELECT id,username from member WHERE id='$teamowner'");
 					$memberData = mysqli_fetch_array($owner_result, MYSQL_ASSOC);
 					$ownername = $memberData['username'];
+					$ownerid = $memberData['id'];
 					
 					echo "<tr>
                     <td>
@@ -534,7 +576,11 @@
                     </td>
                     <td><a href=\"team.php?teamid=".$teamid."\">".$location."
                     <br />".$teamname."</a></td>
-					<td>".$ownername."</td>
+					<td>";
+					if ($ownerid!=0) { echo "<a href='profile.php?profileid=".$ownerid."'>"; }
+					echo $ownername;
+					if ($ownerid!=0) { echo "</a>"; }
+					echo "</td>
                     <td>".$season_win."</td>
                     <td>".$season_loss."</td>
                     <td>".$season_tie."</td>
@@ -597,9 +643,10 @@
 					$points_against = $teamData['points_against'];
 					$logopath = "uploads/logos/".$teamData['logofile'];
 					
-					$owner_result = mysqli_query($conn, "SELECT * from member WHERE id='$teamowner'");
+					$owner_result = mysqli_query($conn, "SELECT id,username from member WHERE id='$teamowner'");
 					$memberData = mysqli_fetch_array($owner_result, MYSQL_ASSOC);
 					$ownername = $memberData['username'];
+					$ownerid = $memberData['id'];
 					
 					echo "<tr>
                     <td>
@@ -608,7 +655,11 @@
                     </td>
                     <td><a href=\"team.php?teamid=".$teamid."\">".$location."
                     <br />".$teamname."</a></td>
-					<td>".$ownername."</td>
+					<td>";
+					if ($ownerid!=0) { echo "<a href='profile.php?profileid=".$ownerid."'>"; }
+					echo $ownername;
+					if ($ownerid!=0) { echo "</a>"; }
+					echo "</td>
                     <td>".$season_win."</td>
                     <td>".$season_loss."</td>
                     <td>".$season_tie."</td>
@@ -671,9 +722,10 @@
 					$points_against = $teamData['points_against'];
 					$logopath = "uploads/logos/".$teamData['logofile'];
 					
-					$owner_result = mysqli_query($conn, "SELECT * from member WHERE id='$teamowner'");
+					$owner_result = mysqli_query($conn, "SELECT id,username from member WHERE id='$teamowner'");
 					$memberData = mysqli_fetch_array($owner_result, MYSQL_ASSOC);
 					$ownername = $memberData['username'];
+					$ownerid = $memberData['id'];
 					
 					echo "<tr>
                     <td>
@@ -682,7 +734,11 @@
                     </td>
                     <td><a href=\"team.php?teamid=".$teamid."\">".$location."
                     <br />".$teamname."</a></td>
-					<td>".$ownername."</td>
+					<td>";
+					if ($ownerid!=0) { echo "<a href='profile.php?profileid=".$ownerid."'>"; }
+					echo $ownername;
+					if ($ownerid!=0) { echo "</a>"; }
+					echo "</td>
                     <td>".$season_win."</td>
                     <td>".$season_loss."</td>
                     <td>".$season_tie."</td>
@@ -745,9 +801,10 @@
 					$points_against = $teamData['points_against'];
 					$logopath = "uploads/logos/".$teamData['logofile'];
 					
-					$owner_result = mysqli_query($conn, "SELECT * from member WHERE id='$teamowner'");
+					$owner_result = mysqli_query($conn, "SELECT id,username from member WHERE id='$teamowner'");
 					$memberData = mysqli_fetch_array($owner_result, MYSQL_ASSOC);
 					$ownername = $memberData['username'];
+					$ownerid = $memberData['id'];
 					
 					echo "<tr>
                     <td>
@@ -756,7 +813,11 @@
                     </td>
                     <td><a href=\"team.php?teamid=".$teamid."\">".$location."
                     <br />".$teamname."</a></td>
-					<td>".$ownername."</td>
+					<td>";
+					if ($ownerid!=0) { echo "<a href='profile.php?profileid=".$ownerid."'>"; }
+					echo $ownername;
+					if ($ownerid!=0) { echo "</a>"; }
+					echo "</td>
                     <td>".$season_win."</td>
                     <td>".$season_loss."</td>
                     <td>".$season_tie."</td>

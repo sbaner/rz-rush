@@ -21,6 +21,7 @@ if(isset($_SESSION['userID'])) {
   </head>
   <body>
     <div class="container-fluid">
+	<div class="fixedrows">
       <div class="row" id="top">
         <div class="col-md-2">
           <a href="./index.php">
@@ -37,14 +38,14 @@ if(isset($_SESSION['userID'])) {
                 <a href="register.php">Sign Up</a>
               </li>
               <li>
-                <a href="#">Help</a>
+                <a href="/help" target="_blank">Help</a>
               </li>
             </ul>
           </div>
         </div>
       </div>
       <div class="row" id="content">
-	  <div class=" col-xs-12 col-md-2 col-md-offset-1" id="login-col">
+	  <div class=" col-xs-12 col-sm-2 col-md-offset-1" id="login-col">
           <div class="login-bar">
 		  <h1>Log in</h1>
             <form class="form" id="login-form" name="login-form" method="post" action="login.php" role="login">
@@ -61,38 +62,63 @@ if(isset($_SESSION['userID'])) {
 				$result = $_GET["result"];
 				if ($result=="fail") {
 					echo "Wrong username or password. Try again or <a href=\"login/register.php\">sign up</a>.";
-				} 
+				} else if ($result=="inactive") {
+					echo "User account is not activated. Please check your email for an activation link.";
+				}
 			}
 			?>
           </div> 
         </div>
-		<div class="col-md-7 col-xs-12">
-		<div id="carousel" class="carousel slide" data-ride="carousel">
-		  <!-- Indicators -->
-		  <ol class="carousel-indicators">
-			<li data-target="#carousel" data-slide-to="0" class="active"></li>
-			<li data-target="#carousel" data-slide-to="1"></li>
-		  </ol>
+		<div class="col-sm-7 hidden-xs">
+			<div id="carousel" class="carousel slide" data-ride="carousel">
+			  <!-- Indicators -->
+			  <ol class="carousel-indicators">
+				<li data-target="#carousel" data-slide-to="0" class="active"></li>
+				<li data-target="#carousel" data-slide-to="1"></li>
+			  </ol>
 
-		  <!-- Wrapper for slides -->
-		  <div class="carousel-inner">
-			<div class="item active">
-			  <img src="images/carousel2.jpg" alt="">
-			  <div class="carousel-caption">
-				<h3>Build a Dynasty</h3>
-				<p>Draft rookies, sign free agents, make playbooks, and lead your team to the championship!</p>
+			  <!-- Wrapper for slides -->
+			  <div class="carousel-inner">
+				<div class="item active">
+				  <img src="images/carousel2.jpg" alt="">
+				  <div class="carousel-caption">
+					<h3>Build a Dynasty</h3>
+					<p>Draft rookies, sign free agents, make playbooks, and lead your team to the championship!</p>
+				  </div>
+				</div>
+				<div class="item">
+				  <img src="images/carousel1.jpg" alt="">
+				  <div class="carousel-caption">
+					<h3>Football in Every Size</h3>
+					<p>Sign free agents, draft rookies, and lead your team to the championship!</p>
+				  </div>
+				</div>
 			  </div>
 			</div>
-			<div class="item">
-			  <img src="images/carousel1.jpg" alt="">
-			  <div class="carousel-caption">
-				<h3>Football in Every Size</h3>
-				<p>Sign free agents, draft rookies, and lead your team to the championship!</p>
-			  </div>
-			</div>
-		  </div>
 		</div>
-      </div>
     </div>
+	</div>
+	<div class='row hidden-sm hidden-md hidden-lg mobile-img'>
+		<div class='row'>
+			<div class='col-xs-12'>
+				 <img src="images/carousel2.jpg" alt="">
+				 <h3>Build a Dynasty</h3>
+						<p>Draft rookies, sign free agents, make playbooks, and lead your team to the championship!</p>
+			</div>
+		</div>
+		<div class='row'>
+			<div class='col-xs-12'>
+				 <img src="images/carousel1.jpg" alt="">
+				 <h3>Football in Every Size</h3>
+						<p>Accessible from your desktop, laptop, tablet, phone, RedzoneRush lets you manage your team from anywhere</p>
+			</div>
+		</div>
+		<div class='row'>
+			<form action='register.php' method='POST'>
+				<button type='submit' class='btn btn-primary'>Sign Up</button>
+			</form>
+		</div>
+	</div>
+	</div>
   </body>
 </html>

@@ -4,7 +4,7 @@ if (isset($_POST['search'])) {
 	
 	$search = $_POST['search'];
 	$conn = mysqli_connect('localhost', 'rzrushco_admin', 'rzr_3541', 'rzrushco_main');
-	$member_result = mysqli_query($conn,"SELECT id,username FROM `member` WHERE username LIKE '$search%' LIMIT 0,5");
+	$member_result = mysqli_query($conn,"SELECT id,username FROM `member` WHERE username LIKE '$search%' AND id!=0 LIMIT 0,5");
 	$result_array = [];
 	
 	while ($memberData = mysqli_fetch_array($member_result)) {

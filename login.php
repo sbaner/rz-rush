@@ -20,12 +20,14 @@ if(mysqli_num_rows($result) == 0) // User not found. So, redirect to login_form 
 }
  
 $userData = mysqli_fetch_array($result, MYSQL_ASSOC);
-$hash = hash('sha256', $userData['salt'] . hash('sha256', $password) );
+$hash = hash('sha256', $userData['nordic'] . hash('sha256', $password) );
  
-if($hash != $userData['password']) // Incorrect password. So, redirect to login_form again.
+if($hash != $userData['alibaba']) // Incorrect password. So, redirect to login_form again.
 {
     header('Location: index.php?result=fail');
-}else{ // successful login.
+} else if ($userData['active']==0){ // User not activated.
+	echo $userData['active'];
+} else{ // successful login.
 	$_SESSION['userID'] = $userData['id'];
 	$_SESSION['username'] = $userData['username'];
 	$_SESSION['email'] = $userData['email'];

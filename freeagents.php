@@ -17,6 +17,9 @@
 	$conn = mysqli_connect('localhost', 'rzrushco_admin', 'rzr_3541', 'rzrushco_main');
 	$league_result = mysqli_query($conn,"SELECT * FROM `league` WHERE id=$leagueid");
 	$own_team_result = mysqli_query($conn,"SELECT * FROM team WHERE `owner`='$userID'");
+	
+	$inornot = "";
+	$nopages = false;
 	if(mysqli_num_rows($league_result) == 0) {
 		//no such league
 		header('Location: 404.php');
@@ -39,6 +42,7 @@
 	//filter
 	$filter = "";
 	if(isset($_POST['filter'])) {
+		$inornot = "in";
 		$minoverall = $_POST['minoverall'];
 		$maxoverall = $_POST['maxoverall'];
 		$position = $_POST['position']; 
@@ -139,14 +143,14 @@
 				<a href="allusers.php">Users</a>
 			  </li>
               <li>
-                <a href="#">Help</a>
+                <a href="/help" target="_blank">Help</a>
               </li>
             </ul>
           </div>
         </div>
       </div>
       <div class="row" id="content">
-        <div class="col-md-3 col-lg-2">
+        <div class="col-sm-3 col-lg-2">
           <div class="side-bar">
             <div class="team-card">
             
@@ -180,9 +184,6 @@
 			  <?php
 			  echo
                 "<li>
-                  <a href=\"league.php?leagueid=".$leagueid."\">Standings</a>
-                </li>
-                <li>
                   <a href=\"scores.php?leagueid=".$leagueid."\">Scores &amp; Schedule</a>
                 </li>
                 <li class=\"active\">
@@ -193,19 +194,20 @@
                 </li>
                 <li>
                   <a href=\"leaguealmanac.php?leagueid=".$leagueid."\">Almanac</a>
-                </li><li>
-                  <a href=\"#\">Message Board</a>
+                </li>
+				<li>
+                  <a href=\"mboard.php?leagueid=".$leagueid."\">Message Board</a>
                 </li>";
 				?>
               </ul>
             </div>
           </div>
         </div>
-        <div class="col-md-9 col-lg-8">
+        <div class="col-sm-9 col-lg-8">
 		<ol class="breadcrumb">
 		<?php
 			echo "<li><a href=\"league.php?leagueid=".$leagueid."\">".$leaguename."</a></li>";
-				echo "<li><a href=\"freeagents.php?leagueid=".$leagueid."\">Free Agents</a></li>";
+				echo "<li class='active'>Free Agents</li>";
 			
 		?>
 		</ol>
@@ -215,12 +217,12 @@
 			  <div class="panel panel-default searchfilter">
 				<div class="panel-heading">
 				  <h4 class="panel-title">
-					<a data-toggle="collapse" data-parent="#accordion" href="#collapseOne">
+					<a data-toggle="collapse" data-parent="#accordion" href="#filters">
 					  <b>Filter Search</b>
 					</a>
 				  </h4>
 				</div>
-				<div id="collapseOne" class="panel-collapse collapse <?php echo $inornot;?>">
+				<div id="filters" class="panel-collapse collapse <?php echo $inornot;?>">
 				  <div class="panel-body">
 					<form class="form horizontal" action="freeagents.php?leagueid=<?php echo $leagueid;?>" method="POST">
 					<div class="row">
@@ -317,7 +319,7 @@
 			}
 			  //This is your query again, the same one... the only difference is we add $max into it
 
-			 $fa_result_p = mysqli_query($conn, "SELECT * FROM player WHERE league=$leagueid AND team=0 $filter ORDER BY overall_now DESC $max"); 
+			 $fa_result_p = mysqli_query($conn, "SELECT * FROM player JOIN attributes ON attributes.player=player.id WHERE player.league=$leagueid AND player.team=0 $filter ORDER BY attributes.overall_now DESC $max"); 
 
 
 			 //This is where you display your query results

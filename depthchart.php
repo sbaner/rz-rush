@@ -689,37 +689,12 @@
     <script src="../js/bootstrap.js"></script>
     <script src="../js/stacktable.js"></script>
     <script src="../js/tendina.js"></script>
+	<script>document.write('<style>.playerbox { display: none; }</style>');</script>
 	<script>
 	$( document ).ready(function() {
 		$('a[href="#<?php echo $tab;?>"]').tab('show');
 		$('#packages').tendina();
-		var value = $("#qb1select").val();
-			$.ajax({
-		  url: 'playerdata.php',
-		  type: 'POST',
-		  dataType : 'json',
-		  data: {'playerid': value},
-		  success: function(data) {
-			var name = data[0];
-			var position = data[1];
-			var health = data[2];
-			health = health.toLowerCase().replace(/\b[a-z]/g, function(letter) {
-				return letter.toUpperCase();
-			});
-			var rating = data[3];
-			var height = data[4];
-			var weight = data[5];
-			
-			$(".playername").html("<a href=\"player.php?playerid="+value+"\">"+name+"</a>");
-			$(".playerposition").html(position);
-			$(".playerhealth").html(health);
-			$(".playerrating").html(rating);
-			$(".height").html(height);
-			$(".weight").html(weight);
-		  },
-		  error: function(xhr, desc, err) {
-		  }
-		  }); //end ajax 
+		
 		$('.playeropt').on('change click', function(e){
 			e.preventDefault();
 			var value = $(this).val();
@@ -745,6 +720,8 @@
 			$(".playerrating").html(rating);
 			$(".height").html(height);
 			$(".weight").html(weight);
+			
+			$('.playerbox').fadeIn();
 		  },
 		  error: function(xhr, desc, err) {
 		  }
@@ -821,7 +798,7 @@
 				<a href="allusers.php">Users</a>
 			  </li>
 			   <li>
-				<a href="">Help</a>
+				<a href="/help" target="_blank">Help</a>
 			  </li>
               
             </ul>
@@ -829,7 +806,7 @@
         </div>
       </div>
       <div class="row" id="content">
-        <div class="col-md-3 col-lg-2">
+        <div class="col-sm-3 col-lg-2">
           <div class="side-bar">
             <div class="team-card">
             <?php 
@@ -894,7 +871,7 @@
 			<button type="submit" class="btn btn-primary">Log out</button>
 		</form>
         </div>
-        <div class="col-md-9 col-lg-8">
+        <div class="col-sm-9 col-lg-8">
           <div class="main">
 		  <div class="row">
 			<div class="col-md-offset-4 col-lg-offset-3 col-lg-8 col-md-12" ><h3><?php echo $location." ".$teamname;?> Depth Chart</h3>
@@ -5033,7 +5010,7 @@
 										</select></td>
 									</tr>
 									<tr>
-										<td>Strong Safety #2</td>
+										<td>Strong Safety #2 (Nickel)</td>
 										<td><select class="form-control playeropt" name="ss2-1select">
 											<?php
 												$current = $deflineup['SS2_1'];
@@ -6213,7 +6190,7 @@
 										</select></td>
 									</tr>
 									<tr>
-										<td>Strong Safety #2</td>
+										<td>Strong Safety #2 (Nickel)</td>
 										<td><select class="form-control playeropt" name="ss2-1select">
 											<?php
 												$current = $deflineup425['SS2_1'];
@@ -7348,7 +7325,7 @@
 										</select></td>
 									</tr>
 									<tr>
-										<td>Strong Safety #2</td>
+										<td>Strong Safety #2 (Nickel)</td>
 										<td><select class="form-control playeropt" name="ss2-1select">
 											<?php
 												$current = $deflineup335['SS2_1'];

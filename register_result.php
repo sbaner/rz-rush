@@ -30,7 +30,7 @@
                 <a href="#">Sign Up</a>
               </li>
               <li>
-                <a href="#">Help</a>
+                <a href="/help" target="_blank">Help</a>
               </li>
             </ul>
           </div>
@@ -52,6 +52,8 @@
 		  } else if ($result=="sameip") {
 			echo "<p>An account has already been registered from this computer. Please do not create multiple accounts. If you think this is a mistake, <a href=\"#\">contact us</a>.</p>
 				<p>If you've forgotten your username or password, <a href=\"#\">click here</a>.</p>";
+		  } else if ($result=="activated") {
+				echo "<p>Your account was successfully activated! You may now <a href='index.php'>log in</a>.</p>";
 		  } else {
 			echo "Something went wrong.";
 		  }

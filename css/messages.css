@@ -31,6 +31,11 @@
 	margin-right:20px;
 }
 
+.well {
+	margin-left:10px;
+	margin-right:10px;
+}
+
 #writemsg {
 	float:right;
 	margin-right:10px;
@@ -66,3 +71,35 @@
 #sender img {
 	margin-bottom:5px;
 }
+
+#blockplayers {
+	padding:10px;
+	background-color:#EEE;
+	margin:15px;
+}
+
+.playerrow {
+	margin-left:0;
+	margin-right:0;
+	margin-bottom:10px;
+}
+
+.removeplayer {
+	margin-top:5px;
+	margin-bottom:5px;
+	float:right;
+}
+
+.thread-post {
+	margin-top:10px;
+	background-color:#EEE;
+	padding:15px;
+	margin-left:5px;
+	margin-right:5px;
+}
+
+.thread-post img {
+	max-width:100%;
+	height:auto;
+}
+
