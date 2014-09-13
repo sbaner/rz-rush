@@ -1,0 +1,26 @@
+TRUNCATE TABLE attributes;
+TRUNCATE TABLE contract;
+
+TRUNCATE TABLE deflineup;
+
+TRUNCATE TABLE games;
+
+TRUNCATE TABLE league;
+
+TRUNCATE TABLE leagueactivity;
+
+TRUNCATE TABLE offlineup;
+
+TRUNCATE TABLE player;
+
+TRUNCATE TABLE stlineup;
+
+TRUNCATE TABLE team;
+
+TRUNCATE TABLE board;
+
+TRUNCATE TABLE mb_posts;
+
+TRUNCATE TABLE tradeblock;
+
+TRUNCATE TABLE trades;

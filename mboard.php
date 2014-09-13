@@ -135,6 +135,9 @@
 				<li>
                   <a href=\"draft.php?leagueid=".$leagueid."\">Draft</a>
                 </li>
+				<li>
+                  <a href=\"tradeblock.php?leagueid=".$leagueid."\">Trade Block</a>
+                </li>
                 <li>
                   <a href=\"leaguealmanac.php?leagueid=".$leagueid."\">Almanac</a>
                 </li>

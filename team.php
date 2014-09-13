@@ -132,10 +132,16 @@
     <link href="css/team.css" rel="stylesheet" />
 	<link rel="shortcut icon" href="favicon.ico" />
 	<script src="js/jquery-1.11.1.min.js"></script>
+	<script src="js/jquery.number.js"></script>
 	<script src="js/bootstrap.js"></script>
 	<script src="js/sorttable.js"></script>
+	<script>document.write('<style>.player-header { display: none; }</style>');</script>
 	<script>
 	$( document ).ready(function() {
+		$("span").tooltip({
+			container: 'body',
+			template: '<div class="tooltip" role="tooltip"><div class="tooltip-inner"></div></div>'
+		});
 		<?php
 		if ($teamtut==0) {
 		echo "$('#claimteam').popover({
@@ -158,6 +164,135 @@
 		$('#teamedit').popover('show');";
 		}
 		?>
+		
+		$('#active-form .playercheck').on('click',function(e) {
+			var cutbtn = document.getElementById('active-cut-btn');
+			var irbtn = document.getElementById('active-ir-btn');
+			var inactivatebtn = document.getElementById('inactivate-btn');
+			var n = $( "#active-form :checked" ).length;
+			
+			if (n>0) {
+				cutbtn.disabled=false;
+				irbtn.disabled=false;
+				inactivatebtn.disabled=false;
+				$("#active-header").show();
+				$("#active-num").text(n);
+			} else {
+				cutbtn.disabled=true;
+				irbtn.disabled=true;
+				inactivatebtn.disabled=true;
+				$("#active-header").hide();
+			}
+		});
+		
+		$('#inactive-form .playercheck').on('click',function(e) {
+			var cutbtn = document.getElementById('inactive-cut-btn');
+			var irbtn = document.getElementById('inactive-ir-btn');
+			var activatebtn = document.getElementById('activate-btn');
+			var n = $( "#inactive-form :checked" ).length;
+			
+			if (n>0) {
+				cutbtn.disabled=false;
+				irbtn.disabled=false;
+				activatebtn.disabled=false;
+				$("#inactive-header").show();
+				$("#inactive-num").text(n);
+			} else {
+				cutbtn.disabled=true;
+				irbtn.disabled=true;
+				activatebtn.disabled=true;
+				$("#inactive-header").hide();
+			}
+		});
+		
+		$('#injured-form .playercheck').on('click',function(e) {
+			var cutbtn = document.getElementById('ir-cut-btn');
+			var n = $( "#injured-form :checked" ).length;
+			
+			if (n>0) {
+				cutbtn.disabled=false;
+			} else {
+				cutbtn.disabled=true;
+			}
+		});
+		
+		$('.playercheck').on('click',function(e) {
+			var n = $(".main :checked").length;
+			var value = $(this).val();
+			if (n>0) {
+			
+				//Player Data 
+				$.ajax({
+				  url: 'playerdata.php',
+				  type: 'POST',
+				  dataType : 'json',
+				  data: {'playerid': value},
+				  success: function(data) {
+					var name = data[0];
+					var position = data[1];
+					var health = data[2];
+					health = health.toLowerCase().replace(/\b[a-z]/g, function(letter) {
+						return letter.toUpperCase();
+					});
+					var rating = data[3];
+					var height = data[4];
+					var weight = data[5];
+					
+					$(".playername").html("<a target=\"_blank\" href=\"player.php?playerid="+value+"\">"+name+"</a>");
+					$(".playerposition").html(position);
+					$(".playerhealth").html(health);
+					$(".playerrating").html(rating);
+					$(".height").html(height);
+					$(".weight").html(weight);
+					
+				  },
+				  error: function(xhr, desc, err) {
+				  console.log(xhr);
+					console.log("Details: " + desc + "\nError:" + err);
+				  }
+				  }); //end ajax 
+				  //Contract Info
+				$.ajax({
+					url: 'getcontract.php',
+					type: 'POST',
+					dataType: 'json',
+					data: {'playerid': value},
+					success: function(data) {
+						$("#conbody").html("");
+						var conlength = data.length;
+						var deadcap = 0;
+						for (var i=0;i<conlength;i++) {
+							var conyear = i+1;
+							var year = data[i]["year"];
+							var bonus = data[i]["bonus"];
+							var base = data[i]["base"];
+							var total = parseInt(bonus)+parseInt(base);
+							deadcap = parseInt(data[i]["bonus"])+parseInt(deadcap);
+							
+							$("#year-"+conyear+"-bonus span").number(bonus);
+							$("#year-"+conyear+"-bonus span").prepend("$");
+							$("#year-"+conyear+"-base span").number(base);
+							$("#year-"+conyear+"-base span").prepend("$");
+							$("#year-"+conyear+"-total span").number(total);
+							$("#year-"+conyear+"-total span").prepend("$");
+						}
+						
+						$("#year-1-dead span").number(deadcap);
+						$("#year-1-dead span").prepend("$");
+					},
+					error: function(xhr, desc, err) {
+						console.log(xhr);
+						console.log("Details: " + desc + "\nError:" + err);
+					}
+				});
+				$(".player-td span").text("--");
+				$("#playercol span").text("");
+			} else {
+				$(".player-td span").text("--");
+				$("#playercol span").text("");
+			}
+		});
+		
 	});
 	</script>
     <title>RedZone Rush - Team</title>
@@ -321,7 +456,7 @@
           <div class="main">
 			<div class="team-header">
 					<div class="row">
-						<div class="col-lg-3 col-md-5 col-sm-6">
+						<div class="col-lg-4 col-md-5 col-sm-6">
 								<h3 id="teamname"><?php echo $location." ".$teamname;?></h3>
 								<img src="<?php echo $logopath;?>">
 						</div>
@@ -355,7 +490,9 @@
 						if (!$own_team && $owner!=0 && $sameleague) {
 							
 							echo "
-							<form action='newtrade.php?teamid=".$sameleagueteam."&and=".$teamid."' method='POST'>
+							<form action='newtrade.php' method='GET'>
+							<input type='hidden' name='teamid' value='".$sameleagueteam."'>
+							<input type='hidden' name='and' value='".$teamid."'>
 												<button type=\"submit\" class=\"btn btn-primary\"><span class=\"glyphicon glyphicon-share\"></span> Offer Trade</button>
 												</form>";
 						}
@@ -378,25 +515,33 @@
 					<div class="panel-heading">
 					  <h4 class="panel-title">
 						<a data-toggle="collapse" data-parent="#accordion" href="#collapseOne">
-						  Click to view salary information
+						  Click to toggle salary information
 						</a>
 					  </h4>
 					</div>
-					<div id="collapseOne" class="panel-collapse collapse">
+					<div id="collapseOne" class="panel-collapse collapse<?php if ($own_team) { echo " in";}?>">
 					  <div class="panel-body">
 						<div class="table-responsive">
 							<table class="table">
 								<thead>
 									<tr>
-										<th>Year</th>
-										<th>Dead Money</th>
-										<th>Total Spending (includes dead money)</th>
-										<th>Total Cap</th>
+										<th colspan="3">Team Info</td>
+										<th colspan="4" id="playercol"><span class="playerposition"></span> <span class="playername"></span></td>
+									</tr>
+									<tr>
+										<th width="10%">Year</th>
+										<th width="15%"><span data-toggle="tooltip" data-placement="top" title="How much you are spending on all your players, including dead money. Must be below the salary cap.">Total Spending</span></th>
+										<th width="15%"><span data-toggle="tooltip" data-placement="top" title="Money that was guaranteed to players no longer on your team.">Dead Money</span></th>
+										<th width="15%"><span data-toggle="tooltip" data-placement="top" title="Money that is guaranteed to this player. If you cut this player this money still contributes to your cap.">Bonus</span></th>
+										<th width="15%"><span data-toggle="tooltip" data-placement="top" title="Non-guaranteed money.">Base Salary</span></th>
+										<th width="15%"><span data-toggle="tooltip" data-placement="top" title="The total amount you are paying this player in a given year.">Cap Hit</span></th>
+										<th width="15%"><span data-toggle="tooltip" data-placement="top" title="If you cut (or trade) a player, any future bonus money owed to him will impact your cap this year.">Dead Cap if Cut</span></th>
 									</tr>
 								</thead>
 								<tbody>
 								<?php
 								for ($i=0;$i<6;$i++) {
+									$td_year = $i+1;
 									$contract_year = $league_year + $i;
 									$total_result = mysqli_query($conn,"SELECT * FROM contract WHERE team=$teamid AND year=$contract_year");
 									$total_salary = 0;
@@ -405,10 +550,15 @@
 										$total_salary = $total_salary + $totalData['bonus'] + $totalData['base'];
 										$deadcap = $deadcap + $totalData['deadcap'];
 									}
-									echo "<tr><td>".$contract_year."</td>
-										<td>$".number_format($deadcap)."</td>
+									echo "<tr>
+										<td>".$contract_year."</td>
 										<td>$".number_format($total_salary)."</td>
-										<td>$130,000,000</td>";
+										<td>$".number_format($deadcap)."</td>
+										<td class='player-td' id='year-".$td_year."-bonus'><span>--</span></td>
+										<td class='player-td' id='year-".$td_year."-base'><span>--</span></td>
+										<td class='player-td' id='year-".$td_year."-total'><span>--</span></td>
+										<td class='player-td' id='year-".$td_year."-dead'><span>--</span></td>";
+										
 								}
 								?>
 								</tbody>
@@ -420,7 +570,7 @@
 				</div>
 			<?php
 			 if($own_team) {
-			 echo "<form name=\"active\" action=\"team.php?teamid=".$teamid."\" method=\"POST\" role=\"form\">";
+			 echo "<form name=\"active\" id=\"active-form\" action=\"team.php?teamid=".$teamid."\" method=\"POST\" role=\"form\">";
 			 }
 			 ?>
 			 <div class="panel panel-primary">
@@ -428,7 +578,7 @@
             <div class="panel-heading">Active Players (<?php echo mysqli_num_rows($active_player_result);?>/46)</div>
 			<?php
 			 if($own_team) {
-			echo "<button type='button' class=\"btn btn-danger\" data-toggle='modal' data-target='#cutModal'>Cut</button>
+			echo "<button type='button' disabled class=\"btn btn-danger\" id=\"active-cut-btn\" data-toggle='modal' data-target='#cutModal'>Cut</button>
 				<div class='modal fade' id='cutModal' tabindex='-1' role='dialog' aria-labelledby='ConfirmCut' aria-hidden='true'>
 				  <div class='modal-dialog modal-sm'>
 					<div class='modal-content'>
@@ -445,7 +595,7 @@
 					</div>
 				  </div>
 				</div>
-			<button type='button' class=\"btn btn-warning\" data-toggle='modal' data-target='#irModal'>Place on IR</button>
+			<button type='button' disabled class=\"btn btn-warning\" id=\"active-ir-btn\" data-toggle='modal' data-target='#irModal'>Place on IR</button>
 			<div class='modal fade' id='irModal' tabindex='-1' role='dialog' aria-labelledby='ConfirmIR' aria-hidden='true'>
 			  <div class='modal-dialog modal-sm'>
 				<div class='modal-content'>
@@ -462,7 +612,9 @@
 				</div>
 			  </div>
 			</div>
-			<button type=\"submit\" name=\"inactivate\" class=\"btn btn-info\">Inactivate</button>";
+			<button type=\"submit\" disabled name=\"inactivate\" id=\"inactivate-btn\" class=\"btn btn-info\">Inactivate</button>
+			<span id=\"active-header\" class=\"player-header\"><span id=\"active-num\">0</span> Players Selected</span>
+			";
 			}
 			?>
             <!-- Table -->
@@ -505,7 +657,7 @@
 					}
 					echo "<td>".$salary."</td><td>";
 					if($own_team) {
-						echo "<input type=\"checkbox\" name=\"playercheck[]\" id=\"playercheck\" value=\"".$playerid."\">";
+						echo "<input type=\"checkbox\" name=\"playercheck[]\" class=\"playercheck\" value=\"".$playerid."\">";
 					}
 					echo "</td></tr>";
 				} if (mysqli_num_rows($active_qb_result) > 0) {
@@ -532,7 +684,7 @@
 					}
 					echo "<td>".$salary."</td><td>";
 					if($own_team) {
-						echo "<input type=\"checkbox\" name=\"playercheck[]\" id=\"playercheck\" value=\"".$playerid."\">";
+						echo "<input type=\"checkbox\" name=\"playercheck[]\" class=\"playercheck\" value=\"".$playerid."\">";
 					}
 					echo "</td></tr>";
 				}
@@ -560,7 +712,7 @@
 					}
 					echo "<td>".$salary."</td><td>";
 					if($own_team) {
-						echo "<input type=\"checkbox\" name=\"playercheck[]\" id=\"playercheck\" value=\"".$playerid."\">";
+						echo "<input type=\"checkbox\" name=\"playercheck[]\" class=\"playercheck\" value=\"".$playerid."\">";
 					}
 					echo "</td></tr>";
 				} if (mysqli_num_rows($active_rb_result) > 0) {
@@ -586,7 +738,7 @@
 					}
 					echo "<td>".$salary."</td><td>";
 					if($own_team) {
-						echo "<input type=\"checkbox\" name=\"playercheck[]\" id=\"playercheck\" value=\"".$playerid."\">";
+						echo "<input type=\"checkbox\" name=\"playercheck[]\" class=\"playercheck\" value=\"".$playerid."\">";
 					}
 					echo "</td></tr>";
 				}
@@ -614,7 +766,7 @@
 					}
 					echo "<td>".$salary."</td><td>";
 					if($own_team) {
-						echo "<input type=\"checkbox\" name=\"playercheck[]\" id=\"playercheck\" value=\"".$playerid."\">";
+						echo "<input type=\"checkbox\" name=\"playercheck[]\" class=\"playercheck\" value=\"".$playerid."\">";
 					}
 					echo "</td></tr>";
 				}  if (mysqli_num_rows($active_fb_result) > 0) {
@@ -640,7 +792,7 @@
 					}
 					echo "<td>".$salary."</td><td>";
 					if($own_team) {
-						echo "<input type=\"checkbox\" name=\"playercheck[]\" id=\"playercheck\" value=\"".$playerid."\">";
+						echo "<input type=\"checkbox\" name=\"playercheck[]\" class=\"playercheck\" value=\"".$playerid."\">";
 					}
 					echo "</td></tr>";
 				}
@@ -668,7 +820,7 @@
 					}
 					echo "<td>".$salary."</td><td>";
 					if($own_team) {
-						echo "<input type=\"checkbox\" name=\"playercheck[]\" id=\"playercheck\" value=\"".$playerid."\">";
+						echo "<input type=\"checkbox\" name=\"playercheck[]\" class=\"playercheck\" value=\"".$playerid."\">";
 					}
 					echo "</td></tr>";
 				} if (mysqli_num_rows($active_wr_result) > 0) {
@@ -694,7 +846,7 @@
 					}
 					echo "<td>".$salary."</td><td>";
 					if($own_team) {
-						echo "<input type=\"checkbox\" name=\"playercheck[]\" id=\"playercheck\" value=\"".$playerid."\">";
+						echo "<input type=\"checkbox\" name=\"playercheck[]\" class=\"playercheck\" value=\"".$playerid."\">";
 					}
 					echo "</td></tr>";
 				}
@@ -722,7 +874,7 @@
 					}
 					echo "<td>".$salary."</td><td>";
 					if($own_team) {
-						echo "<input type=\"checkbox\" name=\"playercheck[]\" id=\"playercheck\" value=\"".$playerid."\">";
+						echo "<input type=\"checkbox\" name=\"playercheck[]\" class=\"playercheck\" value=\"".$playerid."\">";
 					}
 					echo "</td></tr>";
 				} if (mysqli_num_rows($active_te_result) > 0) {
@@ -748,7 +900,7 @@
 					}
 					echo "<td>".$salary."</td><td>";
 					if($own_team) {
-						echo "<input type=\"checkbox\" name=\"playercheck[]\" id=\"playercheck\" value=\"".$playerid."\">";
+						echo "<input type=\"checkbox\" name=\"playercheck[]\" class=\"playercheck\" value=\"".$playerid."\">";
 					}
 					echo "</td></tr>";
 				}
@@ -776,7 +928,7 @@
 					}
 					echo "<td>".$salary."</td><td>";
 					if($own_team) {
-						echo "<input type=\"checkbox\" name=\"playercheck[]\" id=\"playercheck\" value=\"".$playerid."\">";
+						echo "<input type=\"checkbox\" name=\"playercheck[]\" class=\"playercheck\" value=\"".$playerid."\">";
 					}
 					echo "</td></tr>";
 				} if (mysqli_num_rows($active_g_result) > 0) {
@@ -802,7 +954,7 @@
 					}
 					echo "<td>".$salary."</td><td>";
 					if($own_team) {
-						echo "<input type=\"checkbox\" name=\"playercheck[]\" id=\"playercheck\" value=\"".$playerid."\">";
+						echo "<input type=\"checkbox\" name=\"playercheck[]\" class=\"playercheck\" value=\"".$playerid."\">";
 					}
 					echo "</td></tr>";
 				}
@@ -830,7 +982,7 @@
 					}
 					echo "<td>".$salary."</td><td>";
 					if($own_team) {
-						echo "<input type=\"checkbox\" name=\"playercheck[]\" id=\"playercheck\" value=\"".$playerid."\">";
+						echo "<input type=\"checkbox\" name=\"playercheck[]\" class=\"playercheck\" value=\"".$playerid."\">";
 					}
 					echo "</td></tr>";
 				} if (mysqli_num_rows($active_c_result) > 0) {
@@ -856,7 +1008,7 @@
 					}
 					echo "<td>".$salary."</td><td>";
 					if($own_team) {
-						echo "<input type=\"checkbox\" name=\"playercheck[]\" id=\"playercheck\" value=\"".$playerid."\">";
+						echo "<input type=\"checkbox\" name=\"playercheck[]\" class=\"playercheck\" value=\"".$playerid."\">";
 					}
 					echo "</td></tr>";
 				}
@@ -884,7 +1036,7 @@
 					}
 					echo "<td>".$salary."</td><td>";
 					if($own_team) {
-						echo "<input type=\"checkbox\" name=\"playercheck[]\" id=\"playercheck\" value=\"".$playerid."\">";
+						echo "<input type=\"checkbox\" name=\"playercheck[]\" class=\"playercheck\" value=\"".$playerid."\">";
 					}
 					echo "</td></tr>";
 				} if (mysqli_num_rows($active_t_result) > 0) {
@@ -910,7 +1062,7 @@
 					}
 					echo "<td>".$salary."</td><td>";
 					if($own_team) {
-						echo "<input type=\"checkbox\" name=\"playercheck[]\" id=\"playercheck\" value=\"".$playerid."\">";
+						echo "<input type=\"checkbox\" name=\"playercheck[]\" class=\"playercheck\" value=\"".$playerid."\">";
 					}
 					echo "</td></tr>";
 				}
@@ -938,7 +1090,7 @@
 					}
 					echo "<td>".$salary."</td><td>";
 					if($own_team) {
-						echo "<input type=\"checkbox\" name=\"playercheck[]\" id=\"playercheck\" value=\"".$playerid."\">";
+						echo "<input type=\"checkbox\" name=\"playercheck[]\" class=\"playercheck\" value=\"".$playerid."\">";
 					}
 					echo "</td></tr>";
 				} if (mysqli_num_rows($active_de_result) > 0) {
@@ -964,7 +1116,7 @@
 					}
 					echo "<td>".$salary."</td><td>";
 					if($own_team) {
-						echo "<input type=\"checkbox\" name=\"playercheck[]\" id=\"playercheck\" value=\"".$playerid."\">";
+						echo "<input type=\"checkbox\" name=\"playercheck[]\" class=\"playercheck\" value=\"".$playerid."\">";
 					}
 					echo "</td></tr>";
 				}
@@ -992,7 +1144,7 @@
 					}
 					echo "<td>".$salary."</td><td>";
 					if($own_team) {
-						echo "<input type=\"checkbox\" name=\"playercheck[]\" id=\"playercheck\" value=\"".$playerid."\">";
+						echo "<input type=\"checkbox\" name=\"playercheck[]\" class=\"playercheck\" value=\"".$playerid."\">";
 					}
 					echo "</td></tr>";
 				} if (mysqli_num_rows($active_dt_result) > 0) {
@@ -1018,7 +1170,7 @@
 					}
 					echo "<td>".$salary."</td><td>";
 					if($own_team) {
-						echo "<input type=\"checkbox\" name=\"playercheck[]\" id=\"playercheck\" value=\"".$playerid."\">";
+						echo "<input type=\"checkbox\" name=\"playercheck[]\" class=\"playercheck\" value=\"".$playerid."\">";
 					}
 					echo "</td></tr>";
 				}
@@ -1046,7 +1198,7 @@
 					}
 					echo "<td>".$salary."</td><td>";
 					if($own_team) {
-						echo "<input type=\"checkbox\" name=\"playercheck[]\" id=\"playercheck\" value=\"".$playerid."\">";
+						echo "<input type=\"checkbox\" name=\"playercheck[]\" class=\"playercheck\" value=\"".$playerid."\">";
 					}
 					echo "</td></tr>";
 				} if (mysqli_num_rows($active_lb_result) > 0) {
@@ -1072,7 +1224,7 @@
 					}
 					echo "<td>".$salary."</td><td>";
 					if($own_team) {
-						echo "<input type=\"checkbox\" name=\"playercheck[]\" id=\"playercheck\" value=\"".$playerid."\">";
+						echo "<input type=\"checkbox\" name=\"playercheck[]\" class=\"playercheck\" value=\"".$playerid."\">";
 					}
 					echo "</td></tr>";
 				}
@@ -1100,7 +1252,7 @@
 					}
 					echo "<td>".$salary."</td><td>";
 					if($own_team) {
-						echo "<input type=\"checkbox\" name=\"playercheck[]\" id=\"playercheck\" value=\"".$playerid."\">";
+						echo "<input type=\"checkbox\" name=\"playercheck[]\" class=\"playercheck\" value=\"".$playerid."\">";
 					}
 					echo "</td></tr>";
 				} if (mysqli_num_rows($active_cb_result) > 0) {
@@ -1126,7 +1278,7 @@
 					}
 					echo "<td>".$salary."</td><td>";
 					if($own_team) {
-						echo "<input type=\"checkbox\" name=\"playercheck[]\" id=\"playercheck\" value=\"".$playerid."\">";
+						echo "<input type=\"checkbox\" name=\"playercheck[]\" class=\"playercheck\" value=\"".$playerid."\">";
 					}
 					echo "</td></tr>";
 				}
@@ -1154,7 +1306,7 @@
 					}
 					echo "<td>".$salary."</td><td>";
 					if($own_team) {
-						echo "<input type=\"checkbox\" name=\"playercheck[]\" id=\"playercheck\" value=\"".$playerid."\">";
+						echo "<input type=\"checkbox\" name=\"playercheck[]\" class=\"playercheck\" value=\"".$playerid."\">";
 					}
 					echo "</td></tr>";
 				} if (mysqli_num_rows($active_s_result) > 0) {
@@ -1180,7 +1332,7 @@
 					}
 					echo "<td>".$salary."</td><td>";
 					if($own_team) {
-						echo "<input type=\"checkbox\" name=\"playercheck[]\" id=\"playercheck\" value=\"".$playerid."\">";
+						echo "<input type=\"checkbox\" name=\"playercheck[]\" class=\"playercheck\" value=\"".$playerid."\">";
 					}
 					echo "</td></tr>";
 				}
@@ -1208,7 +1360,7 @@
 					}
 					echo "<td>".$salary."</td><td>";
 					if($own_team) {
-						echo "<input type=\"checkbox\" name=\"playercheck[]\" id=\"playercheck\" value=\"".$playerid."\">";
+						echo "<input type=\"checkbox\" name=\"playercheck[]\" class=\"playercheck\" value=\"".$playerid."\">";
 					}
 					echo "</td></tr>";
 				} if (mysqli_num_rows($active_k_result) > 0) {
@@ -1234,7 +1386,7 @@
 					}
 					echo "<td>".$salary."</td><td>";
 					if($own_team) {
-						echo "<input type=\"checkbox\" name=\"playercheck[]\" id=\"playercheck\" value=\"".$playerid."\">";
+						echo "<input type=\"checkbox\" name=\"playercheck[]\" class=\"playercheck\" value=\"".$playerid."\">";
 					}
 					echo "</td></tr>";
 				}
@@ -1262,7 +1414,7 @@
 					}
 					echo "<td>".$salary."</td><td>";
 					if($own_team) {
-						echo "<input type=\"checkbox\" name=\"playercheck[]\" id=\"playercheck\" value=\"".$playerid."\">";
+						echo "<input type=\"checkbox\" name=\"playercheck[]\" class=\"playercheck\" value=\"".$playerid."\">";
 					}
 					echo "</td></tr>";
 				}
@@ -1273,7 +1425,7 @@
 			  <?php
 			 if($own_team) {
 			 echo "</form>
-			  <form name=\"inactive\" action=\"team.php?teamid=".$teamid."\" method=\"POST\" role=\"form\">";
+			  <form name=\"inactive\" id=\"inactive-form\" action=\"team.php?teamid=".$teamid."\" method=\"POST\" role=\"form\">";
 			  }
 			  ?>
 			<div class="panel panel-info">
@@ -1281,7 +1433,7 @@
             <div class="panel-heading">Inactive Players (<?php echo mysqli_num_rows($inactive_player_result);?>)</div>
 			<?php
 			 if($own_team) {
-			echo "<button type='button' class=\"btn btn-danger\" data-toggle='modal' data-target='#iacutModal'>Cut</button>
+			echo "<button type='button' id=\"inactive-cut-btn\" disabled class=\"btn btn-danger\" data-toggle='modal' data-target='#iacutModal'>Cut</button>
 				<div class='modal fade' id='iacutModal' tabindex='-1' role='dialog' aria-labelledby='ConfirmCut' aria-hidden='true'>
 				  <div class='modal-dialog modal-sm'>
 					<div class='modal-content'>
@@ -1298,7 +1450,7 @@
 					</div>
 				  </div>
 				</div>
-			<button type='button' class=\"btn btn-warning\" data-toggle='modal' data-target='#iairModal'>Place on IR</button>
+			<button type='button' disabled id=\"inactive-ir-btn\" class=\"btn btn-warning\" data-toggle='modal' data-target='#iairModal'>Place on IR</button>
 			<div class='modal fade' id='iairModal' tabindex='-1' role='dialog' aria-labelledby='ConfirmIR' aria-hidden='true'>
 			  <div class='modal-dialog modal-sm'>
 				<div class='modal-content'>
@@ -1315,7 +1467,9 @@
 				</div>
 			  </div>
 			</div>
-			<button type=\"submit\" name=\"activate\" class=\"btn btn-success\">Activate</button>";
+			<button type=\"submit\" disabled id=\"activate-btn\" name=\"activate\" class=\"btn btn-success\">Activate</button>
+			<span id=\"inactive-header\" class=\"player-header\"><span id=\"inactive-num\">0</span> Players Selected</span>
+			";
 			}
 			?>
             <!-- Table -->
@@ -1358,7 +1512,7 @@
 					}
 					echo "<td>".$salary."</td><td>";
 					if($own_team) {
-						echo "<input type=\"checkbox\" name=\"playercheck[]\" id=\"playercheck\" value=\"".$playerid."\">";
+						echo "<input type=\"checkbox\" name=\"playercheck[]\" class=\"playercheck\" value=\"".$playerid."\">";
 					}
 					echo "</td></tr>";
 				} if (mysqli_num_rows($inactive_qb_result) > 0) {
@@ -1384,7 +1538,7 @@
 					}
 					echo "<td>".$salary."</td><td>";
 					if($own_team) {
-						echo "<input type=\"checkbox\" name=\"playercheck[]\" id=\"playercheck\" value=\"".$playerid."\">";
+						echo "<input type=\"checkbox\" name=\"playercheck[]\" class=\"playercheck\" value=\"".$playerid."\">";
 					}
 					echo "</td></tr>";
 				}
@@ -1412,7 +1566,7 @@
 					}
 					echo "<td>".$salary."</td><td>";
 					if($own_team) {
-						echo "<input type=\"checkbox\" name=\"playercheck[]\" id=\"playercheck\" value=\"".$playerid."\">";
+						echo "<input type=\"checkbox\" name=\"playercheck[]\" class=\"playercheck\" value=\"".$playerid."\">";
 					}
 					echo "</td></tr>";
 				} if (mysqli_num_rows($inactive_rb_result) > 0) {
@@ -1438,7 +1592,7 @@
 					}
 					echo "<td>".$salary."</td><td>";
 					if($own_team) {
-						echo "<input type=\"checkbox\" name=\"playercheck[]\" id=\"playercheck\" value=\"".$playerid."\">";
+						echo "<input type=\"checkbox\" name=\"playercheck[]\" class=\"playercheck\" value=\"".$playerid."\">";
 					}
 					echo "</td></tr>";
 				}
@@ -1466,7 +1620,7 @@
 					}
 					echo "<td>".$salary."</td><td>";
 					if($own_team) {
-						echo "<input type=\"checkbox\" name=\"playercheck[]\" id=\"playercheck\" value=\"".$playerid."\">";
+						echo "<input type=\"checkbox\" name=\"playercheck[]\" class=\"playercheck\" value=\"".$playerid."\">";
 					}
 					echo "</td></tr>";
 				}  if (mysqli_num_rows($inactive_fb_result) > 0) {
@@ -1492,7 +1646,7 @@
 					}
 					echo "<td>".$salary."</td><td>";
 					if($own_team) {
-						echo "<input type=\"checkbox\" name=\"playercheck[]\" id=\"playercheck\" value=\"".$playerid."\">";
+						echo "<input type=\"checkbox\" name=\"playercheck[]\" class=\"playercheck\" value=\"".$playerid."\">";
 					}
 					echo "</td></tr>";
 				}
@@ -1520,7 +1674,7 @@
 					}
 					echo "<td>".$salary."</td><td>";
 					if($own_team) {
-						echo "<input type=\"checkbox\" name=\"playercheck[]\" id=\"playercheck\" value=\"".$playerid."\">";
+						echo "<input type=\"checkbox\" name=\"playercheck[]\" class=\"playercheck\" value=\"".$playerid."\">";
 					}
 					echo "</td></tr>";
 				} if (mysqli_num_rows($inactive_wr_result) > 0) {
@@ -1546,7 +1700,7 @@
 					}
 					echo "<td>".$salary."</td><td>";
 					if($own_team) {
-						echo "<input type=\"checkbox\" name=\"playercheck[]\" id=\"playercheck\" value=\"".$playerid."\">";
+						echo "<input type=\"checkbox\" name=\"playercheck[]\" class=\"playercheck\" value=\"".$playerid."\">";
 					}
 					echo "</td></tr>";
 				}
@@ -1574,7 +1728,7 @@
 					}
 					echo "<td>".$salary."</td><td>";
 					if($own_team) {
-						echo "<input type=\"checkbox\" name=\"playercheck[]\" id=\"playercheck\" value=\"".$playerid."\">";
+						echo "<input type=\"checkbox\" name=\"playercheck[]\" class=\"playercheck\" value=\"".$playerid."\">";
 					}
 					echo "</td></tr>";
 				} if (mysqli_num_rows($inactive_te_result) > 0) {
@@ -1600,7 +1754,7 @@
 					}
 					echo "<td>".$salary."</td><td>";
 					if($own_team) {
-						echo "<input type=\"checkbox\" name=\"playercheck[]\" id=\"playercheck\" value=\"".$playerid."\">";
+						echo "<input type=\"checkbox\" name=\"playercheck[]\" class=\"playercheck\" value=\"".$playerid."\">";
 					}
 					echo "</td></tr>";
 				}
@@ -1628,7 +1782,7 @@
 					}
 					echo "<td>".$salary."</td><td>";
 					if($own_team) {
-						echo "<input type=\"checkbox\" name=\"playercheck[]\" id=\"playercheck\" value=\"".$playerid."\">";
+						echo "<input type=\"checkbox\" name=\"playercheck[]\" class=\"playercheck\" value=\"".$playerid."\">";
 					}
 					echo "</td></tr>";
 				} if (mysqli_num_rows($inactive_g_result) > 0) {
@@ -1654,7 +1808,7 @@
 					}
 					echo "<td>".$salary."</td><td>";
 					if($own_team) {
-						echo "<input type=\"checkbox\" name=\"playercheck[]\" id=\"playercheck\" value=\"".$playerid."\">";
+						echo "<input type=\"checkbox\" name=\"playercheck[]\" class=\"playercheck\" value=\"".$playerid."\">";
 					}
 					echo "</td></tr>";
 				}
@@ -1682,7 +1836,7 @@
 					}
 					echo "<td>".$salary."</td><td>";
 					if($own_team) {
-						echo "<input type=\"checkbox\" name=\"playercheck[]\" id=\"playercheck\" value=\"".$playerid."\">";
+						echo "<input type=\"checkbox\" name=\"playercheck[]\" class=\"playercheck\" value=\"".$playerid."\">";
 					}
 					echo "</td></tr>";
 				} if (mysqli_num_rows($inactive_c_result) > 0) {
@@ -1708,7 +1862,7 @@
 					}
 					echo "<td>".$salary."</td><td>";
 					if($own_team) {
-						echo "<input type=\"checkbox\" name=\"playercheck[]\" id=\"playercheck\" value=\"".$playerid."\">";
+						echo "<input type=\"checkbox\" name=\"playercheck[]\" class=\"playercheck\" value=\"".$playerid."\">";
 					}
 					echo "</td></tr>";
 				}
@@ -1736,7 +1890,7 @@
 					}
 					echo "<td>".$salary."</td><td>";
 					if($own_team) {
-						echo "<input type=\"checkbox\" name=\"playercheck[]\" id=\"playercheck\" value=\"".$playerid."\">";
+						echo "<input type=\"checkbox\" name=\"playercheck[]\" class=\"playercheck\" value=\"".$playerid."\">";
 					}
 					echo "</td></tr>";
 				} if (mysqli_num_rows($inactive_t_result) > 0) {
@@ -1762,7 +1916,7 @@
 					}
 					echo "<td>".$salary."</td><td>";
 					if($own_team) {
-						echo "<input type=\"checkbox\" name=\"playercheck[]\" id=\"playercheck\" value=\"".$playerid."\">";
+						echo "<input type=\"checkbox\" name=\"playercheck[]\" class=\"playercheck\" value=\"".$playerid."\">";
 					}
 					echo "</td></tr>";
 				}
@@ -1790,7 +1944,7 @@
 					}
 					echo "<td>".$salary."</td><td>";
 					if($own_team) {
-						echo "<input type=\"checkbox\" name=\"playercheck[]\" id=\"playercheck\" value=\"".$playerid."\">";
+						echo "<input type=\"checkbox\" name=\"playercheck[]\" class=\"playercheck\" value=\"".$playerid."\">";
 					}
 					echo "</td></tr>";
 				} if (mysqli_num_rows($inactive_de_result) > 0) {
@@ -1816,7 +1970,7 @@
 					}
 					echo "<td>".$salary."</td><td>";
 					if($own_team) {
-						echo "<input type=\"checkbox\" name=\"playercheck[]\" id=\"playercheck\" value=\"".$playerid."\">";
+						echo "<input type=\"checkbox\" name=\"playercheck[]\" class=\"playercheck\" value=\"".$playerid."\">";
 					}
 					echo "</td></tr>";
 				}
@@ -1844,7 +1998,7 @@
 					}
 					echo "<td>".$salary."</td><td>";
 					if($own_team) {
-						echo "<input type=\"checkbox\" name=\"playercheck[]\" id=\"playercheck\" value=\"".$playerid."\">";
+						echo "<input type=\"checkbox\" name=\"playercheck[]\" class=\"playercheck\" value=\"".$playerid."\">";
 					}
 					echo "</td></tr>";
 				} if (mysqli_num_rows($inactive_dt_result) > 0) {
@@ -1870,7 +2024,7 @@
 					}
 					echo "<td>".$salary."</td><td>";
 					if($own_team) {
-						echo "<input type=\"checkbox\" name=\"playercheck[]\" id=\"playercheck\" value=\"".$playerid."\">";
+						echo "<input type=\"checkbox\" name=\"playercheck[]\" class=\"playercheck\" value=\"".$playerid."\">";
 					}
 					echo "</td></tr>";
 				}
@@ -1898,7 +2052,7 @@
 					}
 					echo "<td>".$salary."</td><td>";
 					if($own_team) {
-						echo "<input type=\"checkbox\" name=\"playercheck[]\" id=\"playercheck\" value=\"".$playerid."\">";
+						echo "<input type=\"checkbox\" name=\"playercheck[]\" class=\"playercheck\" value=\"".$playerid."\">";
 					}
 					echo "</td></tr>";
 				} if (mysqli_num_rows($inactive_lb_result) > 0) {
@@ -1924,7 +2078,7 @@
 					}
 					echo "<td>".$salary."</td><td>";
 					if($own_team) {
-						echo "<input type=\"checkbox\" name=\"playercheck[]\" id=\"playercheck\" value=\"".$playerid."\">";
+						echo "<input type=\"checkbox\" name=\"playercheck[]\" class=\"playercheck\" value=\"".$playerid."\">";
 					}
 					echo "</td></tr>";
 				}
@@ -1952,7 +2106,7 @@
 					}
 					echo "<td>".$salary."</td><td>";
 					if($own_team) {
-						echo "<input type=\"checkbox\" name=\"playercheck[]\" id=\"playercheck\" value=\"".$playerid."\">";
+						echo "<input type=\"checkbox\" name=\"playercheck[]\" class=\"playercheck\" value=\"".$playerid."\">";
 					}
 					echo "</td></tr>";
 				} if (mysqli_num_rows($inactive_cb_result) > 0) {
@@ -1978,7 +2132,7 @@
 					}
 					echo "<td>".$salary."</td><td>";
 					if($own_team) {
-						echo "<input type=\"checkbox\" name=\"playercheck[]\" id=\"playercheck\" value=\"".$playerid."\">";
+						echo "<input type=\"checkbox\" name=\"playercheck[]\" class=\"playercheck\" value=\"".$playerid."\">";
 					}
 					echo "</td></tr>";
 				}
@@ -2006,7 +2160,7 @@
 					}
 					echo "<td>".$salary."</td><td>";
 					if($own_team) {
-						echo "<input type=\"checkbox\" name=\"playercheck[]\" id=\"playercheck\" value=\"".$playerid."\">";
+						echo "<input type=\"checkbox\" name=\"playercheck[]\" class=\"playercheck\" value=\"".$playerid."\">";
 					}
 					echo "</td></tr>";
 				} if (mysqli_num_rows($inactive_s_result) > 0) {
@@ -2032,7 +2186,7 @@
 					}
 					echo "<td>".$salary."</td><td>";
 					if($own_team) {
-						echo "<input type=\"checkbox\" name=\"playercheck[]\" id=\"playercheck\" value=\"".$playerid."\">";
+						echo "<input type=\"checkbox\" name=\"playercheck[]\" class=\"playercheck\" value=\"".$playerid."\">";
 					}
 					echo "</td></tr>";
 				}
@@ -2060,7 +2214,7 @@
 					}
 					echo "<td>".$salary."</td><td>";
 					if($own_team) {
-						echo "<input type=\"checkbox\" name=\"playercheck[]\" id=\"playercheck\" value=\"".$playerid."\">";
+						echo "<input type=\"checkbox\" name=\"playercheck[]\" class=\"playercheck\" value=\"".$playerid."\">";
 					}
 					echo "</td></tr>";
 				} if (mysqli_num_rows($inactive_k_result) > 0) {
@@ -2086,7 +2240,7 @@
 					}
 					echo "<td>".$salary."</td><td>";
 					if($own_team) {
-						echo "<input type=\"checkbox\" name=\"playercheck[]\" id=\"playercheck\" value=\"".$playerid."\">";
+						echo "<input type=\"checkbox\" name=\"playercheck[]\" class=\"playercheck\" value=\"".$playerid."\">";
 					}
 					echo "</td></tr>";
 				}
@@ -2114,7 +2268,7 @@
 					}
 					echo "<td>".$salary."</td><td>";
 					if($own_team) {
-						echo "<input type=\"checkbox\" name=\"playercheck[]\" id=\"playercheck\" value=\"".$playerid."\">";
+						echo "<input type=\"checkbox\" name=\"playercheck[]\" class=\"playercheck\" value=\"".$playerid."\">";
 					}
 					echo "</td></tr>";
 				}
@@ -2126,7 +2280,7 @@
 			  <?php
 			 if($own_team) {
 			  echo "</form>
-			  <form name=\"injured\" action=\"team.php?teamid=".$teamid."\" method=\"POST\" role=\"form\">";
+			  <form name=\"injured\" id=\"injured-form\" action=\"team.php?teamid=".$teamid."\" method=\"POST\" role=\"form\">";
 			  }
 			  ?>
 			  <div class="panel panel-danger">
@@ -2134,7 +2288,7 @@
             <div class="panel-heading">Injured Reserve (<?php echo mysqli_num_rows($ir_player_result);?>)</div>
 			<?php
 			 if($own_team) {
-			echo "<button type=\"submit\" name=\"cut\" class=\"btn btn-danger\" onclick=\"return confirm('Cut the selected players?');\">Cut</button>";
+			echo "<button type=\"submit\" disabled name=\"cut\" id=\"ir-cut-btn\" class=\"btn btn-danger\" onclick=\"return confirm('Cut the selected players?');\">Cut</button>";
 			}
 			?>
             <!-- Table -->
@@ -2170,7 +2324,7 @@
 							<td>".$player_exp."</td>";
 					echo "<td>".$salary."</td><td>";
 					if($own_team) {
-						echo "<input type=\"checkbox\" name=\"playercheck[]\" id=\"playercheck\" value=\"".$playerid."\">";
+						echo "<input type=\"checkbox\" name=\"playercheck[]\" class=\"playercheck\" value=\"".$playerid."\">";
 					}
 					echo "</td></tr>";
 				}
@@ -2193,7 +2347,7 @@
 							<td>".$player_exp."</td>";
 					echo "<td>".$salary."</td><td>";
 					if($own_team) {
-						echo "<input type=\"checkbox\" name=\"playercheck[]\" id=\"playercheck\" value=\"".$playerid."\">";
+						echo "<input type=\"checkbox\" name=\"playercheck[]\" class=\"playercheck\" value=\"".$playerid."\">";
 					}
 					echo "</td></tr>";
 				}
@@ -2216,7 +2370,7 @@
 							<td>".$player_exp."</td>";
 					echo "<td>".$salary."</td><td>";
 					if($own_team) {
-						echo "<input type=\"checkbox\" name=\"playercheck[]\" id=\"playercheck\" value=\"".$playerid."\">";
+						echo "<input type=\"checkbox\" name=\"playercheck[]\" class=\"playercheck\" value=\"".$playerid."\">";
 					}
 					echo "</td></tr>";
 				}
@@ -2239,7 +2393,7 @@
 							<td>".$player_exp."</td>";
 					echo "<td>".$salary."</td><td>";
 					if($own_team) {
-						echo "<input type=\"checkbox\" name=\"playercheck[]\" id=\"playercheck\" value=\"".$playerid."\">";
+						echo "<input type=\"checkbox\" name=\"playercheck[]\" class=\"playercheck\" value=\"".$playerid."\">";
 					}
 					echo "</td></tr>";
 				}
@@ -2262,7 +2416,7 @@
 							<td>".$player_exp."</td>";
 					echo "<td>".$salary."</td><td>";
 					if($own_team) {
-						echo "<input type=\"checkbox\" name=\"playercheck[]\" id=\"playercheck\" value=\"".$playerid."\">";
+						echo "<input type=\"checkbox\" name=\"playercheck[]\" class=\"playercheck\" value=\"".$playerid."\">";
 					}
 					echo "</td></tr>";
 				}
@@ -2285,7 +2439,7 @@
 							<td>".$player_exp."</td>";
 					echo "<td>".$salary."</td><td>";
 					if($own_team) {
-						echo "<input type=\"checkbox\" name=\"playercheck[]\" id=\"playercheck\" value=\"".$playerid."\">";
+						echo "<input type=\"checkbox\" name=\"playercheck[]\" class=\"playercheck\" value=\"".$playerid."\">";
 					}
 					echo "</td></tr>";
 				}
@@ -2308,7 +2462,7 @@
 							<td>".$player_exp."</td>";
 					echo "<td>".$salary."</td><td>";
 					if($own_team) {
-						echo "<input type=\"checkbox\" name=\"playercheck[]\" id=\"playercheck\" value=\"".$playerid."\">";
+						echo "<input type=\"checkbox\" name=\"playercheck[]\" class=\"playercheck\" value=\"".$playerid."\">";
 					}
 					echo "</td></tr>";
 				}
@@ -2331,7 +2485,7 @@
 							<td>".$player_exp."</td>";
 					echo "<td>".$salary."</td><td>";
 					if($own_team) {
-						echo "<input type=\"checkbox\" name=\"playercheck[]\" id=\"playercheck\" value=\"".$playerid."\">";
+						echo "<input type=\"checkbox\" name=\"playercheck[]\" class=\"playercheck\" value=\"".$playerid."\">";
 					}
 					echo "</td></tr>";
 				}
@@ -2354,7 +2508,7 @@
 							<td>".$player_exp."</td>";
 					echo "<td>".$salary."</td><td>";
 					if($own_team) {
-						echo "<input type=\"checkbox\" name=\"playercheck[]\" id=\"playercheck\" value=\"".$playerid."\">";
+						echo "<input type=\"checkbox\" name=\"playercheck[]\" class=\"playercheck\" value=\"".$playerid."\">";
 					}
 					echo "</td></tr>";
 				}
@@ -2377,7 +2531,7 @@
 							<td>".$player_exp."</td>";
 					echo "<td>".$salary."</td><td>";
 					if($own_team) {
-						echo "<input type=\"checkbox\" name=\"playercheck[]\" id=\"playercheck\" value=\"".$playerid."\">";
+						echo "<input type=\"checkbox\" name=\"playercheck[]\" class=\"playercheck\" value=\"".$playerid."\">";
 					}
 					echo "</td></tr>";
 				}
@@ -2400,7 +2554,7 @@
 							<td>".$player_exp."</td>";
 					echo "<td>".$salary."</td><td>";
 					if($own_team) {
-						echo "<input type=\"checkbox\" name=\"playercheck[]\" id=\"playercheck\" value=\"".$playerid."\">";
+						echo "<input type=\"checkbox\" name=\"playercheck[]\" class=\"playercheck\" value=\"".$playerid."\">";
 					}
 					echo "</td></tr>";
 				}
@@ -2423,7 +2577,7 @@
 							<td>".$player_exp."</td>";
 					echo "<td>".$salary."</td><td>";
 					if($own_team) {
-						echo "<input type=\"checkbox\" name=\"playercheck[]\" id=\"playercheck\" value=\"".$playerid."\">";
+						echo "<input type=\"checkbox\" name=\"playercheck[]\" class=\"playercheck\" value=\"".$playerid."\">";
 					}
 					echo "</td></tr>";
 				}
@@ -2446,7 +2600,7 @@
 							<td>".$player_exp."</td>";
 					echo "<td>".$salary."</td><td>";
 					if($own_team) {
-						echo "<input type=\"checkbox\" name=\"playercheck[]\" id=\"playercheck\" value=\"".$playerid."\">";
+						echo "<input type=\"checkbox\" name=\"playercheck[]\" class=\"playercheck\" value=\"".$playerid."\">";
 					}
 					echo "</td></tr>";
 				}
@@ -2469,7 +2623,7 @@
 							<td>".$player_exp."</td>";
 					echo "<td>".$salary."</td><td>";
 					if($own_team) {
-						echo "<input type=\"checkbox\" name=\"playercheck[]\" id=\"playercheck\" value=\"".$playerid."\">";
+						echo "<input type=\"checkbox\" name=\"playercheck[]\" class=\"playercheck\" value=\"".$playerid."\">";
 					}
 					echo "</td></tr>";
 				}
@@ -2492,7 +2646,7 @@
 							<td>".$player_exp."</td>";
 					echo "<td>".$salary."</td><td>";
 					if($own_team) {
-						echo "<input type=\"checkbox\" name=\"playercheck[]\" id=\"playercheck\" value=\"".$playerid."\">";
+						echo "<input type=\"checkbox\" name=\"playercheck[]\" class=\"playercheck\" value=\"".$playerid."\">";
 					}
 					echo "</td></tr>";
 				}

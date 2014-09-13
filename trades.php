@@ -286,7 +286,7 @@
 				$teamname = $teamData['teamname'];
 				echo "
 				  <li><a href=\"league.php?leagueid=".$leagueid."\">".$leaguename."</a></li>
-				  <li><a href=\"team.php?leagueid=".$teamid."\">".$location." ".$teamname."</a></li>
+				  <li><a href=\"team.php?teamid=".$teamid."\">".$location." ".$teamname."</a></li>
 				  <li class=\"active\">Trades</li>
 				  ";
 				?>
@@ -297,7 +297,7 @@
 				<ul class="nav nav-tabs" role="tablist">
 				  <li class="active"><a href="#received" role="tab" data-toggle="tab">Received</a></li>
 				  <li><a href="#sent" role="tab" data-toggle="tab">Sent</a></li>
-				  <li><a href="#block" role="tab" data-toggle="tab">Trade Block</a></li>
+				  <li><a href="#block" role="tab" data-toggle="tab">Your Trade Block</a></li>
 				</ul>
 
 				<!-- Tab panes -->
@@ -526,12 +526,12 @@
 					  ?>
 					</form>
 					</div>
-				</div>
-				  <form method="POST" action="blockact.php" class="form">
+					<form method="POST" action="blockact.php" class="form">
 				  <input type="hidden" name="team" value="<?php echo $teamid;?>">
 				  <input type="hidden" name="league" value="<?php echo $leagueid;?>">
 				  <div class="row">
 					  <div class="col-sm-6 col-xs-12">
+						<?php echo "<a href='tradeblock.php?leagueid=".$leagueid."'>View ".$leagueData['leaguename']." Trade Block</a>";?>
 						  <h4><b>Add Player to Trade Block</b></h4>
 						  <select class="form-control" id="addtb" name="addtb">
 						  <?php
@@ -562,6 +562,8 @@
 					</div>
 				  </div>
 				  </form>
+				</div>
+				 
 				  </div>
 				</div>
 			</div>

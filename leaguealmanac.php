@@ -18,6 +18,14 @@ if (!empty($_GET['leagueid'])) {
 	$conn = mysqli_connect('localhost', 'rzrushco_admin', 'rzr_3541', 'rzrushco_main');
 	$own_team_result = mysqli_query($conn,"SELECT * FROM team WHERE `owner`='$userID'");
 	
+	$league_result = mysqli_query($conn,"SELECT * FROM league WHERE id=$leagueid");
+	if (mysqli_num_rows($league_result)==0) {
+		header('Location: 404.php');
+		exit();
+	} else {
+		$leagueData = mysqli_fetch_array($league_result);
+	}
+	
 ?>
 <!DOCTYPE html>
 <html>
@@ -146,6 +154,9 @@ if (!empty($_GET['leagueid'])) {
 				<li>
                   <a href=\"draft.php?leagueid=".$leagueid."\">Draft</a>
                 </li>
+				<li>
+                  <a href=\"tradeblock.php?leagueid=".$leagueid."\">Trade Block</a>
+                </li>
                 <li class=\"active\">
                   <a href=\"leaguealmanac.php?leagueid=".$leagueid."\">Almanac</a>
                 </li>
@@ -158,6 +169,13 @@ if (!empty($_GET['leagueid'])) {
           </div>
         </div>
         <div class="col-sm-9 col-lg-8">
+		<ol class="breadcrumb">
+		<?php
+			$leaguename = $leagueData['leaguename'];
+			echo "<li><a href=\"league.php?leagueid=".$leagueid."\">".$leaguename."</a></li>";
+				echo "<li>Trade Block</li>";
+		?>
+		</ol>
           <div class="main">
             <h3>League Almanac</h3>
             <div class="stat-card">

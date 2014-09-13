@@ -216,20 +216,31 @@
       <div class="row" id="content">
         <div class="col-sm-3 col-lg-2">
           <div class="side-bar">
-            <h3>Profile Links</h3>
-            <div class="nav">
-              <ul class="nav nav-pills nav-stacked navbar-left">
+            <?php 
+			echo "<h3>Profile Links</h3>
+            <div class=\"nav\">
+              <ul class=\"nav nav-pills nav-stacked navbar-left\">
+				<li>
+				<a href=\"messages.php\">Messages ";
+			$newmessage_result = mysqli_query($conn,"SELECT * FROM messages WHERE `read`='0' AND `to`=$userID");
+			if (mysqli_num_rows($newmessage_result) != 0) {
+				$num_unread = mysqli_num_rows($newmessage_result);
+				echo "<span class=\"badge\">".$num_unread."</span>";
+			}
+			echo "</a>
+				</li>
                 <li>
-                  <a href="profile.php">View Profile</a>
+                  <a href=\"profile.php\">View Profile</a>
                 </li>
-				<li class="active">
-                  <a href="editprofile.php">Edit Profile</a>
+				<li class=\"active\">
+                  <a href=\"editprofile.php\">Edit Profile</a>
                 </li>
                 <li>
-                  <a href="#">Premium</a>
+                  <a href=\"#\">Premium</a>
                 </li>
               </ul>
-            </div>
+            </div>";
+			?>
           </div>
 		  <form class="form-horizontal" id="logout-form" action="logout.php" role="form">
 			<button type="submit" class="btn btn-primary">Log out</button>

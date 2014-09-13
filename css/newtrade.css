@@ -35,3 +35,7 @@ textarea {
 	margin-top:15px;
 	margin-bottom:15px;
 }
+
+.playerbox td {
+	padding:3px;
+}

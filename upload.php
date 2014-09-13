@@ -90,8 +90,12 @@ if (isset($_POST['changeprofpic']) || isset($_POST['changelogo'])){
 							alert(\"Invalid image format. JPG or PNG only, please.\");
 						</script>";
 		
-		header('Location: editprofile.php');
- 
+		if (isset($_POST['changeprofpic'])) {
+			header('Location: editprofile.php');
+		} else if (isset($_POST['changelogo'])) {
+			$teamid = $_GET['teamid'];
+			header('Location: team.php?teamid='.$teamid);
+		}
  
 		}
 }

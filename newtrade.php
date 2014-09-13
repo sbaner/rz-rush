@@ -74,6 +74,7 @@
     <link href="../css/newtrade.css" rel="stylesheet" />
 	<link rel="shortcut icon" href="favicon.ico" />
     <script src="../js/jquery-1.11.1.min.js"></script>
+	<script src="js/jquery.number.js"></script>
     <script src="../js/bootstrap.js"></script>
 	<script>document.write('<style>.playerbox { display: none; }</style>');</script>
 	<script>
@@ -83,35 +84,68 @@
 		$('.playerselect').on('change click', function(e){
 			var value = $(this).val();
 			$.ajax({
-		  url: 'playerdata.php',
-		  type: 'POST',
-		  dataType : 'json',
-		  data: {'playerid': value},
-		  success: function(data) {
-			var name = data[0];
-			var position = data[1];
-			var health = data[2];
-			health = health.toLowerCase().replace(/\b[a-z]/g, function(letter) {
-				return letter.toUpperCase();
+			  url: 'playerdata.php',
+			  type: 'POST',
+			  dataType : 'json',
+			  data: {'playerid': value},
+			  success: function(data) {
+				var name = data[0];
+				var position = data[1];
+				var health = data[2];
+				health = health.toLowerCase().replace(/\b[a-z]/g, function(letter) {
+					return letter.toUpperCase();
+				});
+				var rating = data[3];
+				var height = data[4];
+				var weight = data[5];
+				
+				$(".playername").html("<a target=\"_blank\" href=\"player.php?playerid="+value+"\">"+name+"</a>");
+				$(".playerposition").html(position);
+				$(".playerhealth").html(health);
+				$(".playerrating").html(rating);
+				$(".height").html(height);
+				$(".weight").html(weight);
+				
+				 $('.playerbox').fadeIn();
+			  },
+			  error: function(xhr, desc, err) {
+			  console.log(xhr);
+				console.log("Details: " + desc + "\nError:" + err);
+			  }
+			  }); //end ajax 
+		  
+		  //Contract Info
+			$.ajax({
+				url: 'getcontract.php',
+				type: 'POST',
+				dataType: 'json',
+				data: {'playerid': value},
+				success: function(data) {
+				
+					var base = data[0]["base"];
+					var bonus = data[0]["bonus"];
+					var conlength = data.length;
+					var deadcap = 0;
+					for (var i=0;i<conlength;i++) {
+						deadcap = parseInt(data[i]["bonus"])+parseInt(deadcap);
+					}
+					
+					$(".playersal").number(base);
+					$(".playersal").prepend("$");
+					
+					$(".playerbon").number(bonus);
+					$(".playerbon").prepend("$");
+					
+					$(".tradedead").number(deadcap);
+					$(".tradedead").prepend("$");
+					
+					$(".conlength").text(" "+conlength+" years");
+				},
+				error: function(xhr, desc, err) {
+					console.log(xhr);
+					console.log("Details: " + desc + "\nError:" + err);
+				}
 			});
-			var rating = data[3];
-			var height = data[4];
-			var weight = data[5];
-			
-			$(".playername").html("<a target=\"_blank\" href=\"player.php?playerid="+value+"\">"+name+"</a>");
-			$(".playerposition").html(position);
-			$(".playerhealth").html(health);
-			$(".playerrating").html(rating);
-			$(".height").html(height);
-			$(".weight").html(weight);
-			
-			 $('.playerbox').fadeIn();
-		  },
-		  error: function(xhr, desc, err) {
-		  console.log(xhr);
-			console.log("Details: " + desc + "\nError:" + err);
-		  }
-		  }); //end ajax 
 		 
 		});
 		
@@ -135,6 +169,57 @@
 				console.log("Details: " + desc + "\nError:" + err);
 			  }
 			}); //end ajax 
+			
+			//Update Table
+			$.ajax({
+				url: 'getcontract.php',
+				type: 'POST',
+				dataType: 'json',
+				data: {'playerid': value, 'team': '<?php echo $teamid;?>'},
+				success: function(data) {
+				var bonus_array = [];
+				var totcaphit = 0;
+				var contract_length = data.length;
+					for (var i=0;i<contract_length;i++) {
+						var year = i+1;
+						var bonus = data[i]["bonus"];
+						var base = data[i]["base"];
+						var caphit = data[i]["caphit"];
+						
+						bonus_array[bonus_array.length] = bonus;
+						
+						var spendid = "#year-"+year+"-spend";
+						var year_spending = $(spendid).text();
+						
+						year_spending = year_spending.replace(/[^0-9\.]/g, "");
+						
+						var new_spending = year_spending - base;
+						$(spendid).number(new_spending);
+						$(spendid).prepend("$");
+					}
+					
+					for (var i=0;i<bonus_array.length;i++) {
+						totcaphit = parseInt(totcaphit)+parseInt(bonus_array[i]);
+					}
+					var dead_spending = $("#year-1-dead").text();
+					var year_spending = $("#year-1-spend").text();
+					
+					dead_spending = dead_spending.replace(/[^0-9\.]/g, "");
+					year_spending = year_spending.replace(/[^0-9\.]/g, "");
+					
+					var new_dead = parseInt(dead_spending)+parseInt(totcaphit);
+					var new_spending = parseInt(year_spending)+parseInt(totcaphit);
+					$("#year-1-dead").number(new_dead);
+					$("#year-1-dead").prepend("$");
+					$("#year-1-spend").number(new_spending);
+					$("#year-1-spend").prepend("$");
+					
+				},
+				error: function(xhr, desc, err) {
+					console.log(xhr);
+					console.log("Details: " + desc + "\nError:" + err);
+				}
+			});
 		});
 		$('#requestplayer').on('click', function(e) {
 			var value = $('#otherplayers').val();
@@ -156,6 +241,39 @@
 				console.log("Details: " + desc + "\nError:" + err);
 			  }
 			}); //end ajax 
+			
+			//Update Table
+			$.ajax({
+				url: 'getcontract.php',
+				type: 'POST',
+				dataType: 'json',
+				data: {'playerid': value, 'team': '<?php echo $tradeteam;?>'},
+				success: function(data) {
+				var bonus_array = [];
+				var contract_length = data.length;
+					for (var i=0;i<contract_length;i++) {
+						var year = i+1;
+						var bonus = data[i]["bonus"];
+						var base = data[i]["base"];
+						var caphit = data[i]["caphit"];
+						
+						bonus_array[bonus_array.length] = bonus;
+						
+						var spendid = "#year-"+year+"-spend";
+						var year_spending = $(spendid).text();
+						
+						year_spending = year_spending.replace(/[^0-9\.]/g, "");
+						
+						var new_spending = parseInt(year_spending) + parseInt(base);
+						$(spendid).number(new_spending);
+						$(spendid).prepend("$");
+					}
+				},
+				error: function(xhr, desc, err) {
+					console.log(xhr);
+					console.log("Details: " + desc + "\nError:" + err);
+				}
+			});
 		});
 		
 		$('#sendoffer').on('click', function(e) {
@@ -346,8 +464,70 @@
 					</div>
 				</div>
 				<div class="row mainrow">
-					<div class="col-md-8 well">
-					<p><b>Salary Outlook</b></p>
+					<div class="col-sm-8 well">
+					<p><b><?php echo $myteamData['location']." ".$myteamData['teamname'];?> Salary Outlook (if trade accepted)</b></p>
+					<div class='table-responsive'>
+						<table class='table'>
+							<thead>
+								<tr>
+									<th>Year</th>
+									<th>Dead Money</th>
+									<th>Total Spending (includes dead money)</th>
+									<th>Total Cap</th>
+								</tr>
+							</thead>
+							<tbody>
+							<?php
+								for ($year=1;$year<7;$year++) {
+									$contract_year = $league_year + $year-1;
+									$total_result = mysqli_query($conn,"SELECT * FROM contract WHERE team=$teamid AND year=$contract_year");
+									$total_salary = 0;
+									$deadcap = 0;
+									while ($totalData = mysqli_fetch_array($total_result)) {
+										$total_salary = $total_salary + $totalData['bonus'] + $totalData['base'];
+										$deadcap = $deadcap + $totalData['deadcap'];
+									}
+									echo "<tr id='year-".$year."'>
+											<td id='year-".$year."-td'>".$contract_year."</td>
+											<td id='year-".$year."-dead'>$".number_format($deadcap)."</td>
+											<td id='year-".$year."-spend'>$".number_format($total_salary)."</td>
+											<td id='year-".$year."-total'>$130,000,000</td>
+										</tr>";
+								}
+								
+							?>
+							</tbody>
+						</table>
+					</div>
+					</div>
+					<div class="col-sm-4 col-xs-12">
+						<div class="playerbox">
+							<b>Selected Player:</b><br>
+							<b><span class="playername"></span></b>
+							<p><span class="playerposition"></span></p>
+							<p><b>Rating: <span class="playerrating"></span></b></p>
+							<p>Height: <span class="height"></span>, Weight: <span class="weight"></span></p>
+							<p><span class="playerhealth"></span></p>
+							<b>Contract Info</b><br>
+							<table>
+							<tr>
+								<td>Salary This Year: </td>
+								<td class="playersal"></td>
+							</tr>
+							<tr>
+								<td>Bonus This Year: </td>
+								<td class="playerbon"></td>
+							</tr>
+							<tr>
+								<td>Dead Cap if Traded: </td>
+								<td class="tradedead"></td>
+							</tr>
+							<tr>
+								<td>Contract Length: </td>
+								<td class="conlength"></td>
+							</tr>
+							</table>
+						</div>
 					</div>
 				</div>
 				<div class="row mainrow">
@@ -383,16 +563,7 @@
 					</select>
 					<button class="btn btn-primary" id="requestplayer">Request</button></b>
 					</div>
-					<div class="col-sm-2 col-xs-12">
-						<div class="playerbox">
-							<b>Selected Player:</b><br>
-							<b><span class="playername"></span></b>
-							<p><span class="playerposition"></span></p>
-							<p><b>Rating: <span class="playerrating"></span></b></p>
-							<p>Height: <span class="height"></span>, Weight: <span class="weight"></span></p>
-							<p><span class="playerhealth"></span></p>
-						</div>
-					</div>
+					
 				</div>
 				<div class="row mainrow">
 				<div class="col-md-8">

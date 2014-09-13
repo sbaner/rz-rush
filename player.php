@@ -2535,7 +2535,7 @@ if (!empty($_GET['playerid'])) {
 				</div>";
 				} else if ($userteam_rows == 1 && $bid_rows==0) {
 					echo "<div class=\"well contract\">";
-					echo "<h4>Send Contract Offer</h4><p><i>This is the minimum contract the player will accept. He will be more likely to accept your offer if you offer a longer contract with more guaranteed money.</i></p>";
+					echo "<h4>Send Contract Offer</h4><p><i>This is the minimum contract the player will accept. He will be more likely to accept your offer over other teams' if you offer a longer contract with more guaranteed money.</i></p>";
 					echo "<form class=\"form-horizontal\" action=\"player.php?playerid=".$playerid."\" method=\"POST\" id=\"faoffer\" name=\"faoffer\" role=\"form\">
 					<div class=\"row\">
 					
@@ -2636,7 +2636,6 @@ if (!empty($_GET['playerid'])) {
 						echo "</tbody>
 								</table>
 							</div>";
-					echo "</div>";
 					
 				} else {
 					$bidData = mysqli_fetch_array($alreadybid_result);
@@ -2692,9 +2691,16 @@ if (!empty($_GET['playerid'])) {
 						echo "</tbody>
 								</table>
 							</div>";
-					echo "</div>";
-					echo "</div>";
+				} 
+				
+				$bidteams_result = mysqli_query($conn,"SELECT team.id,team.location,team.teamname FROM `bids` JOIN team ON bids.team=team.id WHERE bids.player=$playerid");
+				if (mysqli_num_rows($bidteams_result)>0) {
+					echo "<h4>Teams in the Mix</h4>";
+					while ($bidteamData = mysqli_fetch_array($bidteams_result)) {
+						echo "<a href='team.php?teamid=".$bidteamData['id']."'>".$bidteamData['location']." ".$bidteamData['teamname']."</a><br>";
+					}
 				}
+				echo "</div>";
 				?>
 						
           </div>

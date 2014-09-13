@@ -49,3 +49,19 @@
 .team-card h3 {
 	color:#2d2d2d;
 }	
+
+.tb-card {
+	margin-left:10px;
+	margin-right:10px;
+	padding:10px;
+	background-color:#EEE;
+	color:#2d2d2d;
+}
+
+.tb-card h4 {
+	font-weight:bold;
+}
+
+.tb-card > .tb-notes {
+	margin-left:15px;
+}

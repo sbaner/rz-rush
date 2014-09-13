@@ -1,68 +1,47 @@
 <?php
-	require_once('includes/getweek.php');
+	ob_start();
 	session_start();
+	require_once('includes/getweek.php');
 	if(isset($_SESSION['userID'])) {
 		$userID = $_SESSION['userID'];
 		$username = $_SESSION['username'];
 		$email = $_SESSION['email'];
 	} else {
 		header('Location: index.php');
-	}
-
-	if (!empty($_GET['leagueid'])) {
+	}	
+if (!empty($_GET['leagueid'])) {
 		$leagueid = $_GET['leagueid'];
 	} else {
 		header('Location: 404.php');
+		die();
 	}
+	
 	$conn = mysqli_connect('localhost', 'rzrushco_admin', 'rzr_3541', 'rzrushco_main');
-	$league_result = mysqli_query($conn,"SELECT * FROM `league` WHERE id=$leagueid");
 	$own_team_result = mysqli_query($conn,"SELECT * FROM team WHERE `owner`='$userID'");
-	if(mysqli_num_rows($league_result) == 0) {
-		//no such league
+	
+	$league_result = mysqli_query($conn,"SELECT * FROM league WHERE id=$leagueid");
+	if (mysqli_num_rows($league_result)==0) {
 		header('Location: 404.php');
+		exit();
 	} else {
-		//get league info
-		$leagueData = mysqli_fetch_array($league_result, MYSQL_ASSOC);
-		$leaguename = $leagueData['leaguename'];
-		$frequency = $leagueData['frequency'];
-		$salarycap = $leagueData['salarycap'];
-		$injuries = $leagueData['injuries'];
-		$year = $leagueData['year'];
+		$leagueData = mysqli_fetch_array($league_result);
 	}
 	
-	if (!(isset($_GET['round']))) { 
-		$roundnum = 1; 
-	} else {
-		$roundnum = $_GET['round'];
-	 }
-	 
-	 //Retreive year from POST
-	 if (isset($_POST['draft_year'])) {
-		$draft_year = $_POST['draft_year'];
-	 } else {
-		$draft_year = $year;
-	 }
-	
-	
-	 $draft_result = mysqli_query($conn,"SELECT * FROM player WHERE league=$leagueid AND draft_round=$roundnum AND start_year=$draft_year ORDER BY draft_round,draft_pos");
-	 $draft_result_p = mysqli_query($conn,"SELECT * FROM player WHERE league=$leagueid AND start_year=$draft_year ORDER BY draft_round,draft_pos");
-	 $rows = mysqli_num_rows($draft_result_p); 
-	 $page_rows = 32; 
 ?>
 <!DOCTYPE html>
 <html>
   <head>
     <meta name="generator"
     content="HTML Tidy for HTML5 (experimental) for Windows https://github.com/w3c/tidy-html5/tree/c63cc39" />
-    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
     <link href='http://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css' />
     <link href="css/bootstrap.css" rel="stylesheet" />
     <link href="css/main.css" rel="stylesheet" />
-    <link href="css/freeagents.css" rel="stylesheet" />
+    <link href="css/almanac.css" rel="stylesheet" />
 	<link rel="shortcut icon" href="favicon.ico" />
-	<script src="js/jquery-1.11.1.min.js"></script>
-	<script src="js/bootstrap.js"></script>
-    <title>RedZone Rush - Draft</title>
+    <script src="js/jquery-1.11.1.min.js"></script>
+    <script src="js/bootstrap.js"></script>
+    <title>RedZone Rush - Trade Block</title>
   </head>
   <body>
     <div class="container-fluid">
@@ -75,10 +54,10 @@
         <div class="col-md-10">
           <div class="nav">
             <ul class="nav nav-pills navbar-left">
-              <li>
+			  <li>
                 <a href="profile.php">Profile</a>
               </li>
-              <?php
+             <?php
 			  $teamidArray = array();
 			  $locationArray = array();
 			  $teamnameArray = array();
@@ -140,8 +119,7 @@
         <div class="col-sm-3 col-lg-2">
           <div class="side-bar">
             <div class="team-card">
-            
-			<?php 
+            <?php 
 			$myteam_result = mysqli_query($conn,"SELECT id,division,location,teamname,season_win,season_loss,season_tie,logofile FROM `team` WHERE league=$leagueid AND owner=$userID");
 			if (mysqli_num_rows($myteam_result) != 0) {
 			$myteamData = mysqli_fetch_array($myteam_result, MYSQL_ASSOC);
@@ -163,12 +141,10 @@
 			echo "<p>".getWeek($leagueid)."</p>";
 			}
 			?>
-            
-			
             <h3>League Links</h3></div>
             <div class="nav">
               <ul class="nav nav-pills nav-stacked navbar-left">
-			  <?php
+                <?php
 			  echo
                 "<li>
                   <a href=\"scores.php?leagueid=".$leagueid."\">Scores &amp; Schedule</a>
@@ -176,10 +152,10 @@
                 <li>
                   <a href=\"freeagents.php?leagueid=".$leagueid."\">Free Agents</a>
                 </li>
-				<li class=\"active\">
+				<li>
                   <a href=\"draft.php?leagueid=".$leagueid."\">Draft</a>
                 </li>
-				<li>
+				<li class='active'>
                   <a href=\"tradeblock.php?leagueid=".$leagueid."\">Trade Block</a>
                 </li>
                 <li>
@@ -196,124 +172,51 @@
         <div class="col-sm-9 col-lg-8">
 		<ol class="breadcrumb">
 		<?php
+			$leaguename = $leagueData['leaguename'];
 			echo "<li><a href=\"league.php?leagueid=".$leagueid."\">".$leaguename."</a></li>";
-				echo "<li>Draft</li>";
+				echo "<li>Trade Block</li>";
 		?>
 		</ol>
           <div class="main">
-            <h3><?php echo $leaguename." ".$draft_year." Draft"?></h3>
-			<?php 
-			if ($rows==2560) {
-				echo "<h4>Creation Draft</h4>";
-			}
+            <h3><?php echo $leagueData['leaguename']." Trade Block";?></h3>
+            <div class="stat-card">
+				<?php
+				if (mysqli_num_rows($myteam_result) != 0) {
+					echo "<a href='trades.php?teamid=".$myteamid."&tab=block'>Edit your Trade Block</a>";
+				}
 			?>
-			<form class="form horizontal" action="draft.php?leagueid=<?php echo $leagueid;?>" method="POST">
-			<div class="row">
-				<div class="col-md-2">
-					<select class="form-control" name="draft_year" onchange="this.form.submit()">
-					<?php
-						$draftyear_result = mysqli_query($conn,"SELECT start_year FROM `player` ORDER BY start_year LIMIT 1");
-						$draftyearData = mysqli_fetch_array($draftyear_result);
-						$firstyear = $draftyearData['start_year'];
-						if ($firstyear == $year) {
-							echo "<option>".$firstyear."</option>";
-						} else {
-							for ($i=$firstyear;$i<$year;$i++) {
-								echo "<option>".$i."</option>";
+                <?php
+					$leagueteams_result = mysqli_query($conn,"SELECT id,location,teamname FROM team WHERE league=$leagueid");
+					$tb_empty=true;
+					while ($ltData = mysqli_fetch_array($leagueteams_result)) {
+						$lteam = $ltData['id'];
+						$tb_result = mysqli_query($conn,"SELECT tradeblock.*,player.firstname,player.lastname,player.position FROM tradeblock JOIN player on player.id=tradeblock.player WHERE player.team=$lteam");
+						if (mysqli_num_rows($tb_result)>0) {
+							$tb_empty=false;
+							echo "
+							<div class='row' style='margin-right:0px;'>
+								<div class='tb-card col-sm-6 col-xs-12'>
+									<h4><a href='team.php?teamid=".$lteam."'>".$ltData['location']." ".$ltData['teamname']."</a></h4>";
+							while ($tbData = mysqli_fetch_array($tb_result)) {
+								echo "<a href='player.php?playerid=".$tbData['player']."'>".$tbData['position']." ".$tbData['firstname']." ".$tbData['lastname']."</a><br>";
+								if ($tbData['message']!="") {
+									echo "<p class='tb-notes'><b>Notes: </b>".$tbData['message']."</p>";
+								}
 							}
-							echo "<option selected>".$year."</option>";
+							echo "	</div>
+							</div>";
 						}
-					?>
-					</select>
-				</div>
-			</div>
-			</form>
-			<div class="well playerlist" style="margin-top: 10px">
-			<div class="table-responsive">
-				<table class="table">
-					<thead>
-						<tr>
-							<th width="10%">Pos</th>
-							<th width="20%">Name</th>
-							<th width="20%">Team</th>
-							<th width="20%">Rating</th>
-							<th width="15%">Round</th>
-							<th width="15%">Pick #</th>
-						</tr>
-					</thead>
-					<tbody>
-            <?php 
-			 //This tells us the page number of our last page 
-			 $last = ceil($rows/$page_rows); 
-			 if ($last==0)  {
-				$nopages = true;
-			 } else {
-				$nopages = false;
-			 }
-			 //this makes sure the page number isn't below one, or more than our maximum pages 
-
-			 if ($roundnum < 1) { 
-				$roundnum = 1; 
-			} 
-
-			 elseif ($roundnum > $last) { 
-
-			 $roundnum = $last; 
-
-			 } 
-			 
-			 //This is where you display your query results
-			 while($draftData = mysqli_fetch_array($draft_result))  {
-				$draftteamid = $draftData['draft_team'];
-				$teamname_result = mysqli_query($conn,"SELECT location,teamname FROM team WHERE id=$draftteamid");
-				$teamnameData = mysqli_fetch_array($teamname_result);
-				$teamname = $teamnameData['location']." ".$teamnameData['teamname'];
-				echo "<tr>
-				<td>".$draftData['position']."</td><td><a href=\"player.php?playerid=".$draftData['id']."\">".$draftData['firstname']." ".$draftData['lastname']."</td>",
-				"<td><a href=\"team.php?teamid=".$draftteamid."\">".$teamname."</a></td><td>".$draftData['overall_now']."</td><td>".$draftData['draft_round']."</td><td>".$draftData['draft_pos']."</td>";
-			 } 
-			 
-			 ?>
-			 
-			 </tbody>
-			 </table>
-			 <?php
-			 
-			 // First we check if we are on page one. If we are then we don't need a link to the previous page or the first page so we do nothing. If we aren't then we generate links to the first page, and to the previous page.
-			$previous = $roundnum-1;
-			$next = $roundnum+1;
-			if (!$nopages) {
-			echo "Round $roundnum of $last";
-			echo "<ul class=\"pager\">
-			  <li class=\"previous ";
-			  if ($roundnum == 1) {
-				echo "disabled";
-			  }
-			  echo "\"><a href=\"{$_SERVER['PHP_SELF']}?leagueid=$leagueid&round=1\"><span class=\"glyphicon glyphicon-step-backward\"></span> First</a></li>
-			  <li class=\"previous ";
-			  if ($roundnum == 1) {
-				echo "disabled";
-			  }
-			  echo "\"><a href=\"{$_SERVER['PHP_SELF']}?leagueid=$leagueid&round=$previous\"><span class=\"glyphicon glyphicon-chevron-left\"></span> Previous</a></li>
-			  <li class=\"next ";
-			  if ($roundnum == $last) {
-				echo "disabled";
-			  }
-			  echo "\"><a href=\"{$_SERVER['PHP_SELF']}?leagueid=$leagueid&round=$last\">Last <span class=\"glyphicon glyphicon-step-forward\"></span></a></li>
-			  <li class=\"next ";
-			  if ($roundnum == $last) {
-				echo "disabled";
-			  }
-			  echo "\"><a href=\"{$_SERVER['PHP_SELF']}?leagueid=$leagueid&round=$next\">Next <span class=\"glyphicon glyphicon-chevron-right\"></span></a></li>
-			</ul>";
-			}
-			 ?> 
-			</div>
-			</div>
-			</div>
-        </div>
+					}
+					if ($tb_empty) {
+						echo "<div class='tb-card'>No teams have players on the Trade Block.</div>";
+					}
+				?>
+            </div>
+          </div>
         </div>
       </div>
     </div>
   </body>
 </html>
+
+<?php ob_flush(); ?>

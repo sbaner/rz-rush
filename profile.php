@@ -26,7 +26,8 @@
 	$own_team_result = mysqli_query($conn,"SELECT * FROM team WHERE `owner`='$userID'");
 	$photo_result = mysqli_query($conn,"SELECT * FROM photos WHERE `member_id`='$profileID' and pri='yes'");
 	$profile_team_result = mysqli_query($conn,"SELECT * FROM `team` WHERE owner='$profileID'");
-	
+	$date = date("m")."/".date("d")."/".date("y");
+	mysqli_query($conn, "UPDATE member SET last_login='$date' WHERE username = '$username'");
 	if(mysqli_num_rows($member_result) == 0) { //user not found
 		header('Location: 404.php');
 		die();
