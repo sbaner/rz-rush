@@ -3,9 +3,6 @@
 	date_default_timezone_set('America/New_York');
 	$conn = mysqli_connect('localhost', 'rzrushco_admin', 'rzr_3541', 'rzrushco_main');
 	
-	//Ball position. Field  is a 53 x 100 grid. Endzones are -10 to 0 and 100 to 110. Offense tries to go from 0 to 100.
-	$bally = 0;
-	
 	class Player {
 		//Attributes
 		public $playerid;
@@ -237,6 +234,8 @@
 		$down = 1;
 		$distance = 10;
 		$finished = false;
+		//Ball position. Field  is a 53 x 100 grid. Endzones are -10 to 0 and 100 to 110. Offense tries to go from 0 to 100.
+		$bally = 0;
 		if (mt_rand(0,1)==1) {
 			$offense = $home;
 			$off_str="home";
@@ -256,6 +255,8 @@
 			echo "Down: ".$down.", ".$distance." yards to go.<br>";
 			$play = kickOff($home_st_lineup,$away_st_lineup,$quarter,$time,65);
 			$time = $time-$play["time_elapsed"];
+			$bally = $play["bally"];
+			echo "Ball is on the ".$bally." yard line.<br>";
 			if ($time<=0) {
 				echo "End of quarter.<br>";
 				$time=900;
@@ -263,6 +264,7 @@
 			}
 			if ($quarter==5) {
 				$finished = true;
+				echo "End of game.<br>";
 			}
 		}
 	}
